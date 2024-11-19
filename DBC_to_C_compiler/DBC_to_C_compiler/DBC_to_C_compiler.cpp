@@ -1,20 +1,31 @@
-﻿// DBC_to_C_compiler.cpp : Tento soubor obsahuje funkci main. Provádění programu se tam zahajuje a ukončuje.
-//
+﻿#include <iostream>
+#include <fstream>
+#include <string>
 
-#include <iostream>
+// Funkce pro otevření souboru .dbc a následné vypsání do konzole pro kontrolu
+void openDBCFile(const std::string& path) {
+    std::ifstream dbcFile(path);
 
-int main()
-{
-    std::cout << "Hello World!\n";
+    if (!dbcFile.is_open()) {
+        std::cerr << "Error: Failed to open " << path << std::endl;
+        return;
+    }
+
+    std::cout << "File " << path << " open success." << std::endl;
+
+    std::string line;
+
+    while (std::getline(dbcFile, line)) {
+        std::cout << line << std::endl;
+    }
+
+    dbcFile.close();
 }
 
-// Spuštění programu: Ctrl+F5 nebo nabídka Ladit > Spustit bez ladění
-// Ladění programu: F5 nebo nabídka Ladit > Spustit ladění
+int main() {
+    std::string path = "../../dbc/CAN_example.dbc";
+    
+    openDBCFile(path);
 
-// Tipy pro zahájení práce:
-//   1. K přidání nebo správě souborů použijte okno Průzkumník řešení.
-//   2. Pro připojení ke správě zdrojového kódu použijte okno Team Explorer.
-//   3. K zobrazení výstupu sestavení a dalších zpráv použijte okno Výstup.
-//   4. K zobrazení chyb použijte okno Seznam chyb.
-//   5. Pokud chcete vytvořit nové soubory kódu, přejděte na Projekt > Přidat novou položku. Pokud chcete přidat do projektu existující soubory kódu, přejděte na Projekt > Přidat existující položku.
-//   6. Pokud budete chtít v budoucnu znovu otevřít tento projekt, přejděte na Soubor > Otevřít > Projekt a vyberte příslušný soubor .sln.
+    return 0;
+}
