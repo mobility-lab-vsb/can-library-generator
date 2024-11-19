@@ -50,7 +50,7 @@ BO_ 0 CentralLockingSystemState: 1 SUT
 BO_ 50 VehicleMotion: 3 SUT_Driver
  SG_ EngineRunning : 17|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ CrashDetected : 16|1@1+ (1,0) [0|0] ""  SUT
- SG_ Velocity : 0|16@1- (0.1,0) [-100|350] ""  SUT
+ SG_ Velocity : 0|16@1- (0.1,0) [-100|350] "test"  SUT
 
 BO_ 100 WindowState: 2 SUT
  SG_ WindowPosition : 0|8@1+ (1,0) [0|0] "" Vector__XXX
@@ -104,11 +104,11 @@ BA_DEF_DEF_  "GenSigSendType" "Cyclic";
 BA_DEF_DEF_  "GenSigStartValue" 0;
 BA_ "DiagResponse" BO_ 1536 1;
 BA_ "DiagRequest" BO_ 1792 1;
-BA_ "GenMsgSendType" BO_ 101 0;
-BA_ "GenMsgCycleTime" BO_ 101 500;
-BA_ "GenMsgCycleTimeFast" BO_ 101 20;
-BA_ "GenMsgNrOfRepetition" BO_ 101 2;
 BA_ "GenMsgDelayTime" BO_ 101 18;
+BA_ "GenMsgNrOfRepetition" BO_ 101 2;
+BA_ "GenMsgCycleTimeFast" BO_ 101 20;
+BA_ "GenMsgCycleTime" BO_ 101 500;
+BA_ "GenMsgSendType" BO_ 101 0;
 BA_ "GenSigSendType" SG_ 1 LockRequest 1;
 BA_ "GenSigSendType" SG_ 50 CrashDetected 1;
 BA_ "GenSigSendType" SG_ 100 WindowMotion 1;
