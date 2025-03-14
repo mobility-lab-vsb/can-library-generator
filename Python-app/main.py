@@ -1,79 +1,212 @@
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox
+from ttkwidgets import CheckboxTreeview
 import cantools
+from collections import defaultdict
 
-def open_file():
-    file_path = filedialog.askopenfilename(
-        title="Select file",
-        filetypes=[("DBC files", "*.dbc")])  # Select .dbc files only
-    if file_path:
-        label.config(text=f"Selected file: {file_path}")
 
-        try:
-            # Load DBC file using cantools
-            db = cantools.database.load_file(file_path)
+class DBCLibraryGenerator:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Library generator for DBC files")
+        self.dbs = []  # List of loaded DBC databases
+        self.tree = None  # CheckboxTreeview for messages and signals
+        self.label = None  # Label for selected files
+        self.setup_gui()
 
-            # Get list of nodes, messages, and signals
-            nodes = db.nodes
-            messages = db.messages
-            signals = []
+    def setup_gui(self):
+        """Initialize the GUI components."""
+        # Button for open dialog
+        button = ttk.Button(self.root, text="Select DBC files", command=self.open_files)
+        button.pack(pady=10)
 
-            for msg in messages:  # Access messages by their values
-                signals.extend(msg.signals)  # Add signals for each message
+        # Label for selected files
+        self.label = tk.Label(self.root, text="No files selected.")
+        self.label.pack(pady=10)
 
-            # Show info in GUI
-            display_info(nodes, messages, signals)
-        except Exception as e:
-            messagebox.showerror("Error", f"Can't read DBC file: {e}")
+        # CheckboxTreeview for messages and signals
+        self.tree = CheckboxTreeview(self.root, columns=("Type", "ID"), show="tree headings")
+        self.tree.heading("#0", text="Name")
+        self.tree.heading("Type", text="Type")
+        self.tree.heading("ID", text="ID")
+        self.tree.pack(pady=10, fill=tk.BOTH, expand=True)
 
-def display_info(nodes, messages, signals):
-    # Clean old info
-    listbox_nodes.delete(0, tk.END)
-    listbox_messages.delete(0, tk.END)
-    listbox_signals.delete(0, tk.END)
+        # Button for generating library
+        generate_button = ttk.Button(self.root, text="Generate C++ Library", command=self.generate_library)
+        generate_button.pack(pady=10)
 
-    # Show nodes
-    for node in nodes:
-        listbox_nodes.insert(tk.END, node)
+    def open_files(self):
+        """Open multiple DBC files and load their content into the CheckboxTreeview."""
+        file_paths = filedialog.askopenfilenames(
+            title="Select files",
+            filetypes=[("DBC files", "*.dbc")])  # Select .dbc files only
+        if file_paths:
+            self.label.config(text=f"Selected files: {', '.join(file_paths)}")
+            self.dbs.clear()  # Clear previously loaded databases
+            self.tree.delete(*self.tree.get_children())  # Clear the CheckboxTreeview
 
-    # Show messages
-    for message in messages:
-        listbox_messages.insert(tk.END, message)
+            for file_path in file_paths:
+                try:
+                    # Load DBC file using cantools
+                    db = cantools.database.load_file(file_path)
+                    self.dbs.append(db)
 
-    # Show signals
-    for signal in signals:
-        listbox_signals.insert(tk.END, signal)
+                    # Add messages and signals to the CheckboxTreeview
+                    for message in db.messages:
+                        message_id = self.tree.insert("", "end", text=message.name, values=("Message", message.frame_id))
+                        for signal in message.signals:
+                            self.tree.insert(message_id, "end", text=signal.name, values=("Signal", signal.start))
+
+                except Exception as e:
+                    messagebox.showerror("Error", f"Can't read DBC file {file_path}: {e}")
+
+    def generate_library(self):
+        """Generate C++ library from selected messages and signals."""
+        selected_items = self.tree.get_checked()  # Get all checked items
+        if not selected_items:
+            messagebox.showwarning("Warning", "No items selected for generation.")
+            return
+
+        if not self.dbs:
+            messagebox.showwarning("Warning", "No DBC files loaded.")
+            return
+
+        # Generate C++ header and implementation files
+        hpp_code, cpp_code = self.generate_cpp_code(selected_items)
+
+        # Save generated header file
+        hpp_file_path = filedialog.asksaveasfilename(
+            title="Save generated C++ header file",
+            filetypes=[("Header files", "*.hpp")],
+            defaultextension=".hpp",
+            initialfile="dbc_library.hpp"
+        )
+        if hpp_file_path:
+            with open(hpp_file_path, "w") as file:
+                file.write(hpp_code)
+            messagebox.showinfo("Success", f"Generated C++ header file saved to {hpp_file_path}")
+
+        # Save generated implementation file
+        cpp_file_path = filedialog.asksaveasfilename(
+            title="Save generated C++ implementation file",
+            filetypes=[("C++ files", "*.cpp")],
+            defaultextension=".cpp",
+            initialfile="dbc_library.cpp"
+        )
+        if cpp_file_path:
+            with open(cpp_file_path, "w") as file:
+                file.write(cpp_code)
+            messagebox.showinfo("Success", f"Generated C++ implementation file saved to {cpp_file_path}")
+
+    def generate_cpp_code(self, selected_items):
+        """Generate C++ code for selected messages and signals."""
+        # Generate C++ header file (.hpp)
+        hpp_code = "// Generated C++ library header\n\n"
+        hpp_code += "#ifndef DBC_LIBRARY_HPP\n"
+        hpp_code += "#define DBC_LIBRARY_HPP\n\n"
+        hpp_code += "#include <string>\n"
+        hpp_code += "#include <vector>\n\n"
+
+        # Define the DBCSignal structure
+        hpp_code += "// Structure for signal\n"
+        hpp_code += "struct DBCSignal {\n"
+        hpp_code += "    std::string name;\n"
+        hpp_code += "    int startBit;\n"
+        hpp_code += "    int length;\n"
+        hpp_code += "    std::string byteOrder;\n"
+        hpp_code += "    char valueType;\n"
+        hpp_code += "    double factor;\n"
+        hpp_code += "    double offset;\n"
+        hpp_code += "    double min;\n"
+        hpp_code += "    double max;\n"
+        hpp_code += "    std::string unit;\n"
+        hpp_code += "    std::string receiver;\n"
+        hpp_code += "};\n\n"
+
+        # Define the DBCMessage structure
+        hpp_code += "// Structure for message\n"
+        hpp_code += "struct DBCMessage {\n"
+        hpp_code += "    int id;\n"
+        hpp_code += "    std::string name;\n"
+        hpp_code += "    int dlc;\n"
+        hpp_code += "    std::string sender;\n"
+        hpp_code += "    std::vector<DBCSignal> signals;\n"
+        hpp_code += "};\n\n"
+
+        # Declare messages in the header file
+        hpp_code += "// Message declaration\n"
+        selected_messages = defaultdict(list)  # Dictionary to store selected messages and their signals
+        for item in selected_items:
+            item_type = self.tree.item(item, "values")[0]
+            if item_type == "Message":
+                message_name = self.tree.item(item, "text")
+                selected_messages[message_name] = []  # Select all signals if the message is selected
+            elif item_type == "Signal":
+                parent = self.tree.parent(item)
+                message_name = self.tree.item(parent, "text")
+                signal_name = self.tree.item(item, "text")
+                selected_messages[message_name].append(signal_name)
+
+        for message_name in selected_messages:
+            hpp_code += f"extern DBCMessage {message_name};\n"
+
+        hpp_code += "\n#endif // DBC_LIBRARY_HPP\n"
+
+        # Generate C++ implementation file (.cpp)
+        cpp_code = "// Generated C++ library implementation\n\n"
+        cpp_code += "#include \"dbc_library.hpp\"\n\n"
+
+        # Define messages in the implementation file
+        cpp_code += "// Definition of messages and signals\n"
+        for message_name, signal_names in selected_messages.items():
+            # Find the message in the loaded databases
+            message = None
+            for db in self.dbs:
+                try:
+                    message = db.get_message_by_name(message_name)
+                    break
+                except KeyError:
+                    continue
+
+            if not message:
+                continue  # Skip if the message is not found
+
+            cpp_code += f"// Message: {message.name}\n"
+            cpp_code += f"DBCMessage {message.name} = {{\n"
+            cpp_code += f"    .id = {message.frame_id},\n"
+            cpp_code += f"    .name = \"{message.name}\",\n"
+            cpp_code += f"    .dlc = {message.length},\n"
+            cpp_code += f"    .sender = \"{message.senders[0] if message.senders else ''}\",\n"
+            cpp_code += "    .signals = {\n"
+
+            for signal in message.signals:
+                if not signal_names or signal.name in signal_names:  # Add only selected signals
+                    cpp_code += "        {\n"
+                    cpp_code += f"            .name = \"{signal.name}\",\n"
+                    cpp_code += f"            .startBit = {signal.start},\n"
+                    cpp_code += f"            .length = {signal.length},\n"
+                    cpp_code += f"            .byteOrder = \"{'big_endian' if signal.byte_order == 'big_endian' else 'little_endian'}\",\n"
+                    cpp_code += f"            .valueType = '{'s' if signal.is_signed else 'u'}',\n"
+                    cpp_code += f"            .factor = {signal.scale},\n"
+                    cpp_code += f"            .offset = {signal.offset},\n"
+                    cpp_code += f"            .min = {signal.minimum},\n"
+                    cpp_code += f"            .max = {signal.maximum},\n"
+                    cpp_code += f"            .unit = \"{signal.unit}\",\n"
+                    cpp_code += f"            .receiver = \"{', '.join(signal.receivers) if signal.receivers else ''}\"\n"
+                    cpp_code += "        },\n"
+
+            cpp_code += "    }\n"
+            cpp_code += "};\n\n"
+
+        return hpp_code, cpp_code
+
 
 if __name__ == '__main__':
     # Create main window
     root = tk.Tk()
-    root.title("Library generator for DBC files")
 
-    # Button for open dialog
-    button = tk.Button(root, text="Select DBC file", command=open_file)
-    button.pack(pady=10)
-
-    # Label for selected file
-    label = tk.Label(root, text="No file selected.")
-    label.pack(pady=10)
-
-    # List of nodes
-    label_nodes = tk.Label(root, text="Nodes:")
-    label_nodes.pack(pady=5)
-    listbox_nodes = tk.Listbox(root, height=10, width=50)
-    listbox_nodes.pack(pady=5)
-
-    # List of messages
-    label_messages = tk.Label(root, text="Messages:")
-    label_messages.pack(pady=5)
-    listbox_messages = tk.Listbox(root, height=10, width=50)
-    listbox_messages.pack(pady=5)
-
-    # List of signals
-    label_signals = tk.Label(root, text="Signals:")
-    label_signals.pack(pady=5)
-    listbox_signals = tk.Listbox(root, height=10, width=50)
-    listbox_signals.pack(pady=5)
+    # Initialize the application
+    app = DBCLibraryGenerator(root)
 
     # Run app
     root.mainloop()
