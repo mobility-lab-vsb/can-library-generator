@@ -23,7 +23,7 @@ class DBCLibraryGenerator:
         button.pack(pady=10)
 
         # Label for selected files
-        self.label = tk.Label(self.root, text="No files selected.")
+        self.label = ttk.Label(self.root, text="No files selected.")
         self.label.pack(pady=10)
 
         # CheckboxTreeview for messages and signals
@@ -50,10 +50,11 @@ class DBCLibraryGenerator:
     def open_files(self):
         """Open multiple DBC files and load their content into the CheckboxTreeview."""
         file_paths = filedialog.askopenfilenames(
-            title="Select files",
+            title="Select DBC files",
             filetypes=[("DBC files", "*.dbc")])  # Select .dbc files only
         if file_paths:
-            self.label.config(text=f"Selected files: {', '.join(file_paths)}")
+            shortened_file_paths = [os.path.basename(file_path) for file_path in file_paths]
+            self.label.config(text=f"Selected files: {', '.join(shortened_file_paths)}")
             self.dbs.clear()  # Clear previously loaded databases
             self.tree.delete(*self.tree.get_children())  # Clear the CheckboxTreeview
 
