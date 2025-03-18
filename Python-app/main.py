@@ -3,6 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 from ttkwidgets import CheckboxTreeview
 import cantools
 from collections import defaultdict
+import os
 
 
 class DBCLibraryGenerator:
@@ -12,6 +13,7 @@ class DBCLibraryGenerator:
         self.dbs = []  # List of loaded DBC databases
         self.tree = None  # CheckboxTreeview for messages and signals
         self.label = None  # Label for selected files
+        self.library_name_entry = None  # Entry for library name
         self.setup_gui()
 
     def setup_gui(self):
@@ -31,9 +33,19 @@ class DBCLibraryGenerator:
         self.tree.heading("ID", text="ID")
         self.tree.pack(pady=10, fill=tk.BOTH, expand=True)
 
+        # Frame for library name and generate button
+        bottom_frame = ttk.Frame(self.root)
+        bottom_frame.pack(pady=10, fill=tk.X)
+
+        # Entry for library name
+        ttk.Label(bottom_frame, text="Library Name:").pack(side=tk.LEFT, padx=5)
+        self.library_name_entry = ttk.Entry(bottom_frame)
+        self.library_name_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
+        self.library_name_entry.insert(0, "dbc_library")  # Default library name
+
         # Button for generating library
-        generate_button = ttk.Button(self.root, text="Generate C++ Library", command=self.generate_library)
-        generate_button.pack(pady=10)
+        generate_button = ttk.Button(bottom_frame, text="Generate C++ Library", command=self.generate_library)
+        generate_button.pack(side=tk.LEFT, padx=5)
 
     def open_files(self):
         """Open multiple DBC files and load their content into the CheckboxTreeview."""
@@ -71,39 +83,39 @@ class DBCLibraryGenerator:
             messagebox.showwarning("Warning", "No DBC files loaded.")
             return
 
+        # Get the library name from the entry
+        library_name = self.library_name_entry.get().strip()
+        if not library_name:
+            library_name = "dbc_library"  # Default name if the entry is empty
+
+        # Ask the user to select a directory
+        directory = filedialog.askdirectory(
+            title="Select directory to save the library"
+        )
+        if not directory:  # User canceled the dialog
+            return
+
         # Generate C++ header and implementation files
-        hpp_code, cpp_code = self.generate_cpp_code(selected_items)
+        hpp_code, cpp_code = self.generate_cpp_code(selected_items, library_name)
 
         # Save generated header file
-        hpp_file_path = filedialog.asksaveasfilename(
-            title="Save generated C++ header file",
-            filetypes=[("Header files", "*.hpp")],
-            defaultextension=".hpp",
-            initialfile="dbc_library.hpp"
-        )
-        if hpp_file_path:
-            with open(hpp_file_path, "w") as file:
-                file.write(hpp_code)
-            messagebox.showinfo("Success", f"Generated C++ header file saved to {hpp_file_path}")
+        hpp_file_path = os.path.join(directory, f"{library_name}.hpp")
+        with open(hpp_file_path, "w") as file:
+            file.write(hpp_code)
+        messagebox.showinfo("Success", f"Generated C++ header file saved to {hpp_file_path}")
 
         # Save generated implementation file
-        cpp_file_path = filedialog.asksaveasfilename(
-            title="Save generated C++ implementation file",
-            filetypes=[("C++ files", "*.cpp")],
-            defaultextension=".cpp",
-            initialfile="dbc_library.cpp"
-        )
-        if cpp_file_path:
-            with open(cpp_file_path, "w") as file:
-                file.write(cpp_code)
-            messagebox.showinfo("Success", f"Generated C++ implementation file saved to {cpp_file_path}")
+        cpp_file_path = os.path.join(directory, f"{library_name}.cpp")
+        with open(cpp_file_path, "w") as file:
+            file.write(cpp_code)
+        messagebox.showinfo("Success", f"Generated C++ implementation file saved to {cpp_file_path}")
 
-    def generate_cpp_code(self, selected_items):
+    def generate_cpp_code(self, selected_items, library_name):
         """Generate C++ code for selected messages and signals."""
         # Generate C++ header file (.hpp)
-        hpp_code = "// Generated C++ library header\n\n"
-        hpp_code += "#ifndef DBC_LIBRARY_HPP\n"
-        hpp_code += "#define DBC_LIBRARY_HPP\n\n"
+        hpp_code = f"// Generated C++ library header for {library_name}\n\n"
+        hpp_code += f"#ifndef {library_name.upper()}_HPP\n"
+        hpp_code += f"#define {library_name.upper()}_HPP\n\n"
         hpp_code += "#include <string>\n"
         hpp_code += "#include <vector>\n\n"
 
@@ -150,11 +162,11 @@ class DBCLibraryGenerator:
         for message_name in selected_messages:
             hpp_code += f"extern DBCMessage {message_name};\n"
 
-        hpp_code += "\n#endif // DBC_LIBRARY_HPP\n"
+        hpp_code += f"\n#endif // {library_name.upper()}_HPP\n"
 
         # Generate C++ implementation file (.cpp)
-        cpp_code = "// Generated C++ library implementation\n\n"
-        cpp_code += "#include \"dbc_library.hpp\"\n\n"
+        cpp_code = f"// Generated C++ library implementation for {library_name}\n\n"
+        cpp_code += f'#include "{library_name}.hpp"\n\n'
 
         # Define messages in the implementation file
         cpp_code += "// Definition of messages and signals\n"
