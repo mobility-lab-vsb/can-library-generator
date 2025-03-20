@@ -43,6 +43,14 @@ class DBCLibraryGenerator:
         self.library_name_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
         self.library_name_entry.insert(0, "dbc_library")  # Default library name
 
+        # Button for selecting all items
+        select_all_button = ttk.Button(bottom_frame, text="Select All", command=self.select_all)
+        select_all_button.pack(side=tk.LEFT, padx=5)
+
+        # Button for deselecting all items
+        select_all_button = ttk.Button(bottom_frame, text="Deselect All", command=self.deselect_all)
+        select_all_button.pack(side=tk.LEFT, padx=5)
+
         # Button for generating library
         generate_button = ttk.Button(bottom_frame, text="Generate C++ Library", command=self.generate_library)
         generate_button.pack(side=tk.LEFT, padx=5)
@@ -72,6 +80,20 @@ class DBCLibraryGenerator:
 
                 except Exception as e:
                     messagebox.showerror("Error", f"Can't read DBC file {file_path}: {e}")
+
+    def select_all(self):
+        """Select all items in the CheckboxTreeview."""
+        for item in self.tree.get_children():
+            self.tree.change_state(item, "checked")  # Select message
+            for child in self.tree.get_children(item):
+                self.tree.change_state(child, "checked")  # Select signal
+
+    def deselect_all(self):
+        """Select all items in the CheckboxTreeview."""
+        for item in self.tree.get_children():
+            self.tree.change_state(item, "unchecked")  # Select message
+            for child in self.tree.get_children(item):
+                self.tree.change_state(child, "unchecked")  # Select signal
 
     def generate_library(self):
         """Generate C++ library from selected messages and signals."""
