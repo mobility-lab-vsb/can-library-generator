@@ -18,49 +18,72 @@ class DBCLibraryGenerator:
 
     def setup_gui(self):
         """Initialize the GUI components."""
+        # Windows size
+        self.root.geometry("600x500")
+
+        # Frame for file selection
+        file_frame = ttk.Frame(self.root, padding=10)
+        file_frame.pack(fill=tk.X)
+
         # Button for open dialog
-        button = ttk.Button(self.root, text="Select DBC files", command=self.open_files)
-        button.pack(pady=10)
+        button = ttk.Button(file_frame, text="\U0001F5C1 Select DBC files", command=self.open_files)
+        button.pack(side=tk.LEFT, padx=5)
 
         # Label for selected files
-        self.label = ttk.Label(self.root, text="No files selected.")
-        self.label.pack(pady=10)
+        self.label = ttk.Label(file_frame, text="No files selected.", foreground="gray")
+        self.label.pack(side=tk.LEFT, padx=10)
+
+        # Frame for CheckboxTreeview
+        tree_frame = ttk.Frame(self.root, padding=10)
+        tree_frame.pack(fill=tk.BOTH, expand=True)
 
         # CheckboxTreeview for messages and signals
-        self.tree = CheckboxTreeview(self.root, columns=("Type", "ID"), show="tree headings")
-        self.tree.heading("#0", text="Name")
-        self.tree.heading("Type", text="Type")
-        self.tree.heading("ID", text="ID")
-        self.tree.pack(pady=10, fill=tk.BOTH, expand=True)
+        self.tree = CheckboxTreeview(tree_frame, columns=("Type", "ID"), show="tree headings")
+        self.tree.heading("#0", text="Name", anchor="w")
+        self.tree.heading("Type", text="Type", anchor="center")
+        self.tree.heading("ID", text="ID", anchor="center")
+        self.tree.column("#0", width=250)
+        self.tree.column("Type", width=100, anchor="center")
+        self.tree.column("ID", width=100, anchor="center")
+        self.tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
 
-        # Frame for library name, language selection and generate button
-        bottom_frame = ttk.Frame(self.root)
-        bottom_frame.pack(pady=10, fill=tk.X)
+        # Frame for controls
+        bottom_frame = ttk.Frame(self.root, padding=10)
+        bottom_frame.pack(fill=tk.X)
 
-        # Entry for library name
-        ttk.Label(bottom_frame, text="Library Name:").pack(side=tk.LEFT, padx=5)
-        self.library_name_entry = ttk.Entry(bottom_frame)
-        self.library_name_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5)
-        self.library_name_entry.insert(0, "dbc_library")  # Default library name
+        # Library name entry
+        ttk.Label(bottom_frame, text="Library Name:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.library_name_entry = ttk.Entry(bottom_frame, font=("Arial", 10))
+        self.library_name_entry.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        self.library_name_entry.insert(0, "dbc_library")
 
-        # Radio buttons for language selection
-        self.language_var = tk.StringVar(value="c")  # Default: C++
-        c_radio = ttk.Radiobutton(bottom_frame, text="C", variable=self.language_var, value="c")
-        cpp_radio = ttk.Radiobutton(bottom_frame, text="C++", variable=self.language_var, value="cpp")
+        # Language selection
+        self.language_var = tk.StringVar(value="c")
+        lang_frame = ttk.Frame(bottom_frame)
+        lang_frame.grid(row=0, column=2, padx=5, pady=5)
+
+        ttk.Label(lang_frame, text="Language:").pack(side=tk.LEFT)
+        c_radio = ttk.Radiobutton(lang_frame, text="C", variable=self.language_var, value="c")
+        cpp_radio = ttk.Radiobutton(lang_frame, text="C++", variable=self.language_var, value="cpp")
         c_radio.pack(side=tk.LEFT, padx=5)
         cpp_radio.pack(side=tk.LEFT, padx=5)
 
-        # Button for selecting all items
-        select_all_button = ttk.Button(bottom_frame, text="Select All", command=self.select_all)
+        # Selection buttons
+        action_frame = ttk.Frame(bottom_frame)
+        action_frame.grid(row=1, column=0, columnspan=3, pady=10)
+
+        select_all_button = ttk.Button(action_frame, text="\u2705 Select All", command=self.select_all, width=15)
         select_all_button.pack(side=tk.LEFT, padx=5)
 
-        # Button for deselecting all items
-        select_all_button = ttk.Button(bottom_frame, text="Deselect All", command=self.deselect_all)
-        select_all_button.pack(side=tk.LEFT, padx=5)
+        deselect_all_button = ttk.Button(action_frame, text="\u274E Deselect All", command=self.deselect_all, width=15)
+        deselect_all_button.pack(side=tk.LEFT, padx=5)
 
-        # Button for generating library
+        # Generate button
         generate_button = ttk.Button(bottom_frame, text="Generate Library", command=self.generate_library)
-        generate_button.pack(side=tk.LEFT, padx=5)
+        generate_button.grid(row=2, column=0, columnspan=3, pady=10)
+
+        # Configure layout
+        bottom_frame.columnconfigure(1, weight=1)
 
     def open_files(self):
         """Open multiple DBC files and load their content into the CheckboxTreeview."""
