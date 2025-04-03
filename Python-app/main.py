@@ -296,7 +296,24 @@ class DBCLibraryGenerator:
         return hpp_code, cpp_code
 
     def generate_c_code(self, selected_items, library_name):
-        """Generate C code for selected messages and signals."""
+        """Generate C code with:
+        - Unique struct per message (e.g., DBCMessageEngineData).
+        - Direct signal pointers (e.g., Velocity, RPM).
+        - Signals array (DBCSignal *Signals) for iteration.
+        """
+        # Group selected messages and signals
+        selected_messages = defaultdict(list)
+        for item in selected_items:
+            item_type = self.tree.item(item, "values")[0]
+            if item_type == "Message":
+                message_name = self.tree.item(item, "text")
+                selected_messages[message_name] = []
+            elif item_type == "Signal":
+                parent = self.tree.parent(item)
+                message_name = self.tree.item(parent, "text")
+                signal_name = self.tree.item(item, "text")
+                selected_messages[message_name].append(signal_name)
+
         # Generate C header file (.h)
         h_code = f"// Generated C library header for {library_name}\n\n"
         h_code += f"#ifndef {library_name.upper()}_H\n"
@@ -304,7 +321,7 @@ class DBCLibraryGenerator:
         h_code += "#include <stdint.h>\n"
         h_code += "#include <stddef.h>\n\n"
 
-        # Define the DBCSignal structure
+        # Define the DBCSignal structure (unchanged)
         h_code += "// Structure for signal\n"
         h_code += "typedef struct {\n"
         h_code += "    const char *name;\n"
@@ -320,42 +337,7 @@ class DBCLibraryGenerator:
         h_code += "    const char *receiver;\n"
         h_code += "} DBCSignal;\n\n"
 
-        # Define the DBCMessage structure
-        h_code += "// Structure for message\n"
-        h_code += "typedef struct {\n"
-        h_code += "    int id;\n"
-        h_code += "    const char *name;\n"
-        h_code += "    int dlc;\n"
-        h_code += "    const char *sender;\n"
-        h_code += "    size_t num_signals;\n"
-        h_code += "    DBCSignal *signals;\n"
-        h_code += "} DBCMessage;\n\n"
-
-        # Declare messages in the header file
-        h_code += "// Message declaration\n"
-        selected_messages = defaultdict(list)
-        for item in selected_items:
-            item_type = self.tree.item(item, "values")[0]
-            if item_type == "Message":
-                message_name = self.tree.item(item, "text")
-                selected_messages[message_name] = []
-            elif item_type == "Signal":
-                parent = self.tree.parent(item)
-                message_name = self.tree.item(parent, "text")
-                signal_name = self.tree.item(item, "text")
-                selected_messages[message_name].append(signal_name)
-
-        for message_name in selected_messages:
-            h_code += f"extern DBCMessage {message_name};\n"
-
-        h_code += f"\n#endif // {library_name.upper()}_H\n"
-
-        # Generate C implementation file (.c)
-        c_code = f"// Generated C library implementation for {library_name}\n\n"
-        c_code += f'#include "{library_name}.h"\n\n'
-
-        # Define messages in the implementation file
-        c_code += "// Definition of messages and signals\n"
+        # Generate unique struct for each message
         for message_name, signal_names in selected_messages.items():
             message = None
             for db in self.dbs:
@@ -364,15 +346,57 @@ class DBCLibraryGenerator:
                     break
                 except KeyError:
                     continue
-
             if not message:
                 continue
 
+            # Struct name (e.g., DBCMessageEngineData)
+            struct_name = f"DBCMessage{message_name.replace(' ', '')}"
+            h_code += f"// Message: {message_name}\n"
+            h_code += f"typedef struct {{\n"
+            h_code += "    int id;\n"
+            h_code += "    const char *name;\n"
+            h_code += "    int dlc;\n"
+            h_code += "    const char *sender;\n"
+            h_code += "    size_t num_signals;\n"
+            h_code += "    DBCSignal *Signals;  // Array of all signals (for iteration)\n"
+
+            # Add direct signal pointers (e.g., DBCSignal *Velocity;)
+            for signal in message.signals:
+                if not signal_names or signal.name in signal_names:
+                    h_code += f"    DBCSignal *{signal.name};\n"
+
+            h_code += f"}} {struct_name};\n\n"
+
+        # Declare messages as extern
+        h_code += "// Message declarations\n"
+        for message_name in selected_messages:
+            struct_name = f"DBCMessage{message_name.replace(' ', '')}"
+            h_code += f"extern {struct_name} {message_name};\n"
+
+        h_code += f"\n#endif // {library_name.upper()}_H\n"
+
+        # Generate C implementation file (.c)
+        c_code = f"// Generated C library implementation for {library_name}\n\n"
+        c_code += f'#include "{library_name}.h"\n\n'
+
+        # Define messages and signals
+        for message_name, signal_names in selected_messages.items():
+            message = None
+            for db in self.dbs:
+                try:
+                    message = db.get_message_by_name(message_name)
+                    break
+                except KeyError:
+                    continue
+            if not message:
+                continue
+
+            struct_name = f"DBCMessage{message_name.replace(' ', '')}"
+
             c_code += f"// Message: {message.name}\n"
 
-            # Check if the message has any signals
+            # Define signals array (if any signals)
             if message.signals:
-                # Define signals array only if the message has signals
                 c_code += f"static DBCSignal {message.name}_signals[] = {{\n"
                 for signal in message.signals:
                     if not signal_names or signal.name in signal_names:
@@ -396,23 +420,26 @@ class DBCLibraryGenerator:
                         c_code += "    },\n"
                 c_code += "};\n\n"
 
-                # Set num_signals based on the number of signals
-                num_signals = len(message.signals)
+                num_signals = len([s for s in message.signals if not signal_names or s.name in signal_names])
             else:
-                # If there are no signals, set num_signals to 0
                 num_signals = 0
                 c_code += "// No signals for this message\n"
 
-            # Define message structure
+            # Define message struct with Signals array and direct pointers
             sender_value = f"\"{message.senders[0]}\"" if message.senders else "NULL"
-
-            c_code += f"DBCMessage {message.name} = {{\n"
+            c_code += f"{struct_name} {message.name} = {{\n"
             c_code += f"    .id = {message.frame_id},\n"
             c_code += f"    .name = \"{message.name}\",\n"
             c_code += f"    .dlc = {message.length},\n"
             c_code += f"    .sender = {sender_value},\n"
-            c_code += f"    .num_signals = {num_signals},\n"  # Use calculated num_signals
-            c_code += f"    .signals = {message.name}_signals\n" if message.signals else "    .signals = NULL\n"
+            c_code += f"    .num_signals = {num_signals},\n"
+            c_code += f"    .signals = {message.name}_signals,\n"
+
+            # Assign direct pointers to signals (e.g., .Velocity = &signals[0])
+            for i, signal in enumerate(message.signals):
+                if not signal_names or signal.name in signal_names:
+                    c_code += f"    .{signal.name} = &{message.name}_signals[{i}],\n"
+
             c_code += "};\n\n"
 
         return h_code, c_code
