@@ -441,7 +441,8 @@ class DBCLibraryGenerator:
                 c_code += "// No signals for this message\n"
 
             # Define message struct
-            sender_value = f"\"{message.senders[0]}\"" if message.senders else "NULL"
+            senders = ', '.join(message.senders)
+            sender_value = f"\"{senders}\"" if message.senders else "NULL"
             signals_array = f"{message.name}_signals" if num_signals > 0 else "NULL"
 
             c_code += f"{struct_name} {message.name} = {{\n"
