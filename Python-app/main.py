@@ -384,7 +384,7 @@ class DBCLibraryGenerator:
         # Function
         h_code += "// Functions\n"
         h_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
-        h_code += "uint64_t dbc_extract_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
+        h_code += "uint64_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
         h_code += "int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n\n"
 
         h_code += f"#endif // {library_name.upper()}_H\n"
@@ -417,8 +417,8 @@ class DBCLibraryGenerator:
                     if not signal_names or signal.name in signal_names:
                         min_value = signal.minimum if signal.minimum is not None else 0.0
                         max_value = signal.maximum if signal.maximum is not None else 0.0
-                        unit_value = f"\"{signal.unit}\"" if signal.unit else "NULL"
-                        receiver_value = f"\"{', '.join(signal.receivers)}\"" if signal.receivers else "NULL"
+                        unit_value = f"\"{signal.unit}\"" if signal.unit else "\"\""
+                        receiver_value = f"\"{', '.join(signal.receivers)}\"" if signal.receivers else "\"\""
 
                         c_code += "    {\n"
                         c_code += f"        .name = \"{signal.name}\",\n"
@@ -443,8 +443,8 @@ class DBCLibraryGenerator:
 
             # Define message struct
             senders = ', '.join(message.senders)
-            sender_value = f"\"{senders}\"" if message.senders else "NULL"
-            signals_array = f"{message.name}_signals" if num_signals > 0 else "NULL"
+            sender_value = f"\"{senders}\"" if message.senders else "\"\""
+            signals_array = f"{message.name}_signals" if num_signals > 0 else "\"\""
 
             c_code += f"{struct_name} {message.name} = {{\n"
             c_code += f"    .base = {{\n"
@@ -483,9 +483,9 @@ DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
 }
 \n"""
 
-        # Extract signal function
-        c_code +="""// Extract signal function
-uint64_t dbc_extract_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder) {
+        # Parse signal function
+        c_code +="""// Parse signal function
+uint64_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder) {
     uint64_t result = 0;
 
     if (strcmp(byteOrder, "little_endian") == 0) {
@@ -538,8 +538,8 @@ int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     for (size_t i = 0; i < msg->num_signals; i++) {
         DBCSignal* sig = &msg->signals[i];
 
-        // Extract raw value
-        sig->raw_value = dbc_extract_signal(data, sig->startBit, sig->length, sig->byteOrder);
+        // Parse raw value
+        sig->raw_value = dbc_parse_signal(data, sig->startBit, sig->length, sig->byteOrder);
 
         // Exchange to physical value
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
