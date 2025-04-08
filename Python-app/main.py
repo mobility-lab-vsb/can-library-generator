@@ -381,9 +381,10 @@ class DBCLibraryGenerator:
         h_code += "extern DBCMessageBase* const dbc_all_messages[];\n"
         h_code += "extern const size_t dbc_all_messages_count;\n\n"
 
-        # Function prototypes
-        h_code += "// Function prototypes\n"
+        # Function
+        h_code += "// Functions\n"
         h_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
+        h_code += "uint64_t dbc_extract_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
         h_code += "int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n\n"
 
         h_code += f"#endif // {library_name.upper()}_H\n"
@@ -472,52 +473,86 @@ class DBCLibraryGenerator:
 
         # Find message function
         c_code += """// Find message by CAN ID
-    DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
-        for (size_t i = 0; i < dbc_all_messages_count; i++) {
-            if (dbc_all_messages[i]->id == can_id) {
-                return dbc_all_messages[i];
-            }
+DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
+    for (size_t i = 0; i < dbc_all_messages_count; i++) {
+        if (dbc_all_messages[i]->id == can_id) {
+            return dbc_all_messages[i];
         }
-        return NULL;
     }
-    \n"""
+    return NULL;
+}
+\n"""
+
+        # Extract signal function
+        c_code +="""// Extract signal function
+uint64_t dbc_extract_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder) {
+    uint64_t result = 0;
+
+    if (strcmp(byteOrder, "little_endian") == 0) {
+        // Intel (little endian)
+        int byteIndex = startBit / 8;
+        int bitIndex = startBit % 8;
+        int bitsLeft = length;
+        int shift = 0;
+
+        while (bitsLeft > 0) {
+            uint8_t byte = data[byteIndex];
+            int bitsInThisByte = (bitsLeft < (8 - bitIndex)) ? bitsLeft : (8 - bitIndex);
+            uint8_t mask = ((1 << bitsInThisByte) - 1) << bitIndex;
+            uint8_t bits = (byte & mask) >> bitIndex;
+            result |= ((uint64_t)bits << shift);
+
+            bitsLeft -= bitsInThisByte;
+            shift += bitsInThisByte;
+            byteIndex++;
+            bitIndex = 0;
+        }
+
+    }
+    else {
+        // Motorola (big endian)
+        for (int i = 0; i < length; i++) {
+            int bitPos = startBit - i;
+            int byteIndex = bitPos / 8;
+            int bitIndex = bitPos % 8;
+            uint8_t bit = (data[byteIndex] >> (7 - bitIndex)) & 0x1;
+            result = (result << 1) | bit;
+        }
+    }
+
+    return result;
+}
+\n"""
 
         # Decode message function
         c_code += """// Decode CAN message
-    int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
-        DBCMessageBase* msg = dbc_find_message_by_id(can_id);
-        if (!msg || msg->dlc != dlc) {
-            printf(\"Message not found!\\n\");
-            return -1;
-        }
-
-        printf(\"Message found!\\n\");
-
-        for (size_t i = 0; i < msg->num_signals; i++) {
-            DBCSignal* sig = &msg->signals[i];
-            uint64_t raw = 0;
-
-            // Extract raw value
-            int start_byte = sig->startBit / 8;
-            for (int j = 0; j < (sig->length + 7)/8; j++) {
-                if (strcmp(sig->byteOrder, "big_endian") == 0) {
-                    raw = (raw << 8) | data[start_byte + j];
-                } else {
-                    raw |= ((uint64_t)data[start_byte + j] << (j*8));
-                }
-            }
-
-            // Apply bit mask and shift
-            sig->raw_value = (raw >> (sig->startBit % 8)) & ((1ULL << sig->length) - 1);
-
-            // Convert the raw value to real value
-            sig->value = (sig->raw_value * sig->factor) + sig->offset;
-        }
-
-        return 0;
+int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+    DBCMessageBase* msg = dbc_find_message_by_id(can_id);
+    if (!msg || msg->dlc != dlc) {
+        printf("Message not found!\\n");
+        return -1;
     }
-    \n"""
 
+    printf("Message found!\\n");
+
+    for (size_t i = 0; i < msg->num_signals; i++) {
+        DBCSignal* sig = &msg->signals[i];
+
+        // Extract raw value
+        sig->raw_value = dbc_extract_signal(data, sig->startBit, sig->length, sig->byteOrder);
+
+        // Exchange to physical value
+        sig->value = (sig->raw_value * sig->factor) + sig->offset;
+
+        // Debug print signal values
+        //printf("%s : %.2f\\n", sig->name, sig->value);
+        //printf("(%llu * %.2f) + %.2f = %.2f\\n",
+            //sig->raw_value, sig->factor, sig->offset, sig->value);
+    }
+
+    return 0;
+}
+\n"""
         return h_code, c_code
 
 
