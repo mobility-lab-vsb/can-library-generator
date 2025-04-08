@@ -335,8 +335,8 @@ class DBCLibraryGenerator:
         h_code += "    double value;\n"
         h_code += "} DBCSignal;\n\n"
 
-        # Base message structure for iteration
-        h_code += "// Base message structure for iteration\n"
+        # Base message structure
+        h_code += "// Base message structure\n"
         h_code += "typedef struct {\n"
         h_code += "    uint32_t id;\n"
         h_code += "    const char *name;\n"
@@ -377,7 +377,7 @@ class DBCLibraryGenerator:
             h_code += f"extern {struct_name} {message_name};\n"
 
         # Message registry
-        h_code += "\n// Message registry for iteration\n"
+        h_code += "\n// Message registry\n"
         h_code += "extern DBCMessageBase* const dbc_all_messages[];\n"
         h_code += "extern const size_t dbc_all_messages_count;\n\n"
 
