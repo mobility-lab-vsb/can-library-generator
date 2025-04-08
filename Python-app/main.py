@@ -106,7 +106,7 @@ class DBCLibraryGenerator:
                     for message in db.messages:
                         message_id = self.tree.insert("", "end", text=message.name, values=("Message", message.frame_id))
                         for signal in message.signals:
-                            self.tree.insert(message_id, "end", text=signal.name, values=("Signal", signal.start))
+                            self.tree.insert(message_id, "end", text=signal.name, values="Signal")
 
                 except Exception as e:
                     messagebox.showerror("Error", f"Can't read DBC file {file_path}: {e}")
@@ -529,7 +529,7 @@ uint64_t dbc_extract_signal(const uint8_t* data, uint16_t startBit, uint8_t leng
 int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     if (!msg || msg->dlc != dlc) {
-        printf("Message not found!\\n");
+        printf("Message not found or DLC mismatch!\\n");
         return -1;
     }
 
