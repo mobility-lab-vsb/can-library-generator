@@ -331,7 +331,7 @@ class DBCLibraryGenerator:
         h_code += "    double max;\n"
         h_code += "    const char *unit;\n"
         h_code += "    const char *receiver;\n"
-        h_code += "    uint64_t raw_value;\n"
+        h_code += "    uint32_t raw_value;\n"
         h_code += "    double value;\n"
         h_code += "} DBCSignal;\n\n"
 
@@ -384,7 +384,7 @@ class DBCLibraryGenerator:
         # Function
         h_code += "// Functions\n"
         h_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
-        h_code += "uint64_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
+        h_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
         h_code += "int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n\n"
 
         h_code += f"#endif // {library_name.upper()}_H\n"
@@ -485,7 +485,7 @@ DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
 
         # Parse signal function
         c_code +="""// Parse signal function
-uint64_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder) {
+uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder) {
     uint64_t result = 0;
 
     if (strcmp(byteOrder, "little_endian") == 0) {
