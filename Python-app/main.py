@@ -104,7 +104,8 @@ class DBCLibraryGenerator:
 
                     # Add messages and signals to the CheckboxTreeview
                     for message in db.messages:
-                        message_id = self.tree.insert("", "end", text=message.name, values=("Message", message.frame_id))
+                        message_id = self.tree.insert("", "end", text=message.name, values=("Message", hex(message.frame_id)))
+                        print(message.frame_id)
                         for signal in message.signals:
                             self.tree.insert(message_id, "end", text=signal.name, values="Signal")
 
