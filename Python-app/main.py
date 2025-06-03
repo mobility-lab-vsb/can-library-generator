@@ -5,6 +5,9 @@ import cantools
 from collections import defaultdict
 import os
 
+# Define your app version
+__version__ = "0.1.0"
+
 
 class DBCLibraryGenerator:
     def __init__(self, root):
@@ -84,6 +87,10 @@ class DBCLibraryGenerator:
 
         # Configure layout
         bottom_frame.columnconfigure(1, weight=1)
+
+        # Label for app version
+        self.label = ttk.Label(root, text=f"App version {__version__}", foreground="gray")
+        self.label.pack(side=tk.RIGHT, padx=10)
 
     def open_files(self):
         """Open multiple DBC files and load their content into the CheckboxTreeview."""
