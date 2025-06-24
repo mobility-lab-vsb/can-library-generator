@@ -58,7 +58,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code += "    std::string name;\n"
     hpp_code += "    int dlc;\n"
     hpp_code += "    std::string sender;\n"
-    hpp_code += "    std::vector<DBCSignal> signals;\n"
+    hpp_code += "    std::vector<DBCSignal*> signals;\n"
     hpp_code += "};\n\n"
 
     # Generate unique struct for each message
@@ -99,7 +99,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code += "// Functions\n"
     hpp_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
     hpp_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
-    hpp_code += "bool dbc_decode_mesage(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
+    hpp_code += "bool dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
 
     hpp_code += f"\n#endif // {library_name.upper()}_HPP\n"
 
@@ -150,7 +150,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
         cpp_code += "        {\n"
 
         for signal in message.signals:
-            cpp_code += f"            {signal.name},\n"
+            cpp_code += f"            &{signal.name},\n"
 
         cpp_code += "        }\n"
         cpp_code += "    },\n"
@@ -208,25 +208,25 @@ uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length
 
     # Decode message function
     cpp_code += """// Decode CAN message
-bool dbc_decode_mesage(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
-    std::cout << "Decodeding started!" << std::endl;
+bool dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
-    if (!msg) {
-        std::cout << "Message not found!" << std::endl;
+    if (!msg || msg->dlc != dlc) {
+        std::cout << "Message not found or DLC mismatch!" << std::endl;
         return false;
     }
+    std::cout << "Message found!" << std::endl;
 
-    for (auto& sig : msg->signals) {
-        uint32_t raw = dbc_parse_signal(data, sig.startBit, sig.length, sig.byteOrder.c_str());
-        sig.raw_value = raw;
-        if (sig.valueType == 's') {
+    for (DBCSignal* sig : msg->signals) {
+        uint32_t raw = dbc_parse_signal(data, sig->startBit, sig->length, sig->byteOrder.c_str());
+        sig->raw_value = raw;
+        if (sig->valueType == 's') {
             int64_t signed_val = static_cast<int64_t>(raw);
-            int shift = 64 - sig.length;
+            int shift = 64 - sig->length;
             signed_val = (signed_val << shift) >> shift;  // sign-extend
-            sig.value = signed_val * sig.factor + sig.offset;
+            sig->value = signed_val * sig->factor + sig->offset;
         }
         else {
-            sig.value = raw * sig.factor + sig.offset;
+            sig->value = raw * sig->factor + sig->offset;
         }
     }
 

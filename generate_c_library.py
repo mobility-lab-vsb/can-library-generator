@@ -250,11 +250,6 @@ int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
 
         // Exchange to physical value
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
-
-        // Debug print signal values
-        //printf("%s : %.2f\\n", sig->name, sig->value);
-        //printf("(%llu * %.2f) + %.2f = %.2f\\n",
-            //sig->raw_value, sig->factor, sig->offset, sig->value);
     }
 
     return 0;

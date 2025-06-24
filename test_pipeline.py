@@ -1,3 +1,4 @@
+import os
 import subprocess
 import cantools
 import shutil
@@ -6,14 +7,21 @@ from generate_c_library import generate_c_code
 from generate_cpp_library import generate_cpp_code
 from collections import namedtuple
 
+# Configuration
+dbc_path = "dbc/CAN_example.dbc"
+library_name = "dbc_library_test"
+output_dir = "temp"
+test_dir = "test_apps"
+
 # Mock database
-dbc_path = "dbc/STES_CANchasis.dbc"
 dbc_dbs = []
+
 try:
     db = cantools.db.load_file(dbc_path)
     dbc_dbs.append(db)
 except Exception as e:
     print("Error", f"Can't read DBC file {dbc_path}: {e}")
+    sys.exit(1)
 
 
 # Mock structure for tree type (represents GUI tree)
@@ -42,22 +50,21 @@ class MockTree:
     def parent(self, item_id):
         return SelectedItem("Message", item_id.parent, None)
 
-# Initialize tree and set library name
 tree = MockTree()
-library_name = "dbc_library_test"
 
 # Generate C library
 h_code, c_code = generate_c_code(selected_items, library_name, dbc_dbs, tree)
-with open(f"{library_name}.h", "w") as f:
+os.makedirs(output_dir, exist_ok=True)
+with open(f"temp/{library_name}.h", "w") as f:
     f.write(h_code)
-with open(f"{library_name}.c", "w") as f:
+with open(f"temp/{library_name}.c", "w") as f:
     f.write(c_code)
 
 # Generate C++ library
 hpp_code, cpp_code = generate_cpp_code(selected_items, library_name, dbc_dbs, tree)
-with open(f"{library_name}.hpp", "w") as f:
+with open(f"temp/{library_name}.hpp", "w") as f:
     f.write(hpp_code)
-with open(f"{library_name}.cpp", "w") as f:
+with open(f"temp/{library_name}.cpp", "w") as f:
     f.write(cpp_code)
 
 # Test if GCC and G++ are installed
@@ -69,20 +76,43 @@ if shutil.which("g++") is None:
     print("Error: 'g++' not found. Please install GCC and make sure it's in your PATH.")
     sys.exit(1)
 
-# Compile C files
-print("Compiling C files...")
-c_result = subprocess.run(["gcc", f"{library_name}.c", "-c", "-o", f"{library_name}.o"], capture_output=True, text=True)
+# Compile and test C files
+print("Compiling and testing C files...")
+c_test_file = os.path.join(test_dir, "test_decode_c.c")
+c_exec = os.path.join(output_dir, "test_decode_c.exe")
+c_result = subprocess.run(["gcc", c_test_file, f"{output_dir}/{library_name}.c", "-I", output_dir, "-o", c_exec], capture_output=True, text=True)
 if c_result.returncode == 0:
     print("Compilation succeeded!\n")
+    c_run = subprocess.run([c_exec], capture_output=True, text=True)
+    print("Program output:\n", c_run.stdout)
 else:
     print("Compilation failed!\n")
     print(c_result.stderr)
 
-# Compile C++ files
-print("Compiling C++ files...")
-cpp_result = subprocess.run(["g++", f"{library_name}.cpp", "-c", "-o", f"{library_name}_cpp.o"], capture_output=True, text=True)
+# Compile and test C++ files
+print("Compiling and testing C++ files...")
+cpp_test_file = os.path.join(test_dir, "test_decode_cpp.cpp")
+cpp_exec = os.path.join(output_dir, "test_decode_cpp.exe")
+cpp_result = subprocess.run(["g++", cpp_test_file, f"{output_dir}/{library_name}.cpp", "-I", output_dir, "-o", cpp_exec], capture_output=True, text=True)
 if cpp_result.returncode == 0:
     print("Compilation succeeded!\n")
+    cpp_run = subprocess.run([cpp_exec], capture_output=True, text=True)
+    print("Program output:\n", cpp_run.stdout)
 else:
     print("Compilation failed!\n")
     print(cpp_result.stderr)
+
+for filename in os.listdir(output_dir):
+    file_path = os.path.join(output_dir, filename)
+    try:
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.remove(file_path)
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+        print(f"Removing {file_path}...")
+    except Exception as e:
+        print(f"Error removing {file_path}: {e}")
+
+if os.path.exists(output_dir):
+    shutil.rmtree(output_dir)
+    print(f"Removing {output_dir}...")

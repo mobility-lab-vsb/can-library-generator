@@ -38,4 +38,4 @@ The scriptgenerates the foloving C files:
 - name_of_your_library.c - Source file implementing parsing and struct handling
 
 ## License
-This project is licensed inder the <b>MIT Licence</b>
+This project is licensed under the <b>MIT Licence</b>

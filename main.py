@@ -17,7 +17,8 @@ class DBCLibraryGenerator:
         self.root.title("Library generator for DBC files")
         self.dbs = []  # List of loaded DBC databases
         self.tree = None  # CheckboxTreeview for messages and signals
-        self.label = None  # Label for selected files
+        self.files = None  # Label for selected files
+        self.version = None # Label for version
         self.library_name_entry = None  # Entry for library name
         self.setup_gui()
 
@@ -35,8 +36,8 @@ class DBCLibraryGenerator:
         button.pack(side=tk.LEFT, padx=5)
 
         # Label for selected files
-        self.label = ttk.Label(file_frame, text="No files selected.", foreground="gray")
-        self.label.pack(side=tk.LEFT, padx=10)
+        self.files = ttk.Label(file_frame, text="No files selected.", foreground="gray")
+        self.files.pack(side=tk.LEFT, padx=10)
 
         # Frame for CheckboxTreeview
         tree_frame = ttk.Frame(self.root, padding=10)
@@ -91,8 +92,8 @@ class DBCLibraryGenerator:
         bottom_frame.columnconfigure(1, weight=1)
 
         # Label for app version
-        self.label = ttk.Label(root, text=f"App version {__version__}", foreground="gray")
-        self.label.pack(side=tk.RIGHT, padx=10)
+        self.version = ttk.Label(root, text=f"App version {__version__}", foreground="gray")
+        self.version.pack(side=tk.RIGHT, padx=10)
 
     def open_files(self):
         """Open multiple DBC files and load their content into the CheckboxTreeview."""
@@ -101,7 +102,7 @@ class DBCLibraryGenerator:
             filetypes=[("DBC files", "*.dbc")])  # Select .dbc files only
         if file_paths:
             shortened_file_paths = [os.path.basename(file_path) for file_path in file_paths]
-            self.label.config(text=f"Selected files: {', '.join(shortened_file_paths)}")
+            self.files.config(text=f"Selected files: {', '.join(shortened_file_paths)}")
             self.dbs.clear()  # Clear previously loaded databases
             self.tree.delete(*self.tree.get_children())  # Clear the CheckboxTreeview
 
