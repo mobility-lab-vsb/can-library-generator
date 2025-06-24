@@ -21,7 +21,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code = f"// Generated C++ library header for {library_name}\n\n"
     hpp_code += f"#ifndef {library_name.upper()}_HPP\n"
     hpp_code += f"#define {library_name.upper()}_HPP\n\n"
-    hpp_code += "#include <string>\n"
+    hpp_code += "#include <cstring>\n"
     hpp_code += "#include <vector>\n"
     hpp_code += "#include <cstdint>\n"
     hpp_code += "#include <iostream>\n\n"
