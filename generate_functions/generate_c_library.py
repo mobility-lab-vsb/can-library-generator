@@ -93,7 +93,8 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
     h_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
     h_code += "int dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
-    h_code += "int dbc_package_message(uint32_t can_id, uint8_t dlc);\n\n"
+    h_code += "void dbc_insert_signal(uint8_t* data, uint32_t raw_value, int start_bit, int length, const char* byteOrder);\n"
+    h_code += "int dbc_package_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n\n"
 
     h_code += f"#endif // {library_name.upper()}_H\n"
 
@@ -251,6 +252,63 @@ int dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
 
         // Exchange to physical value
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
+    }
+
+    return 0;
+}
+\n"""
+
+    # Insert signal data function
+    c_code += """// Insert signal data function
+void dbc_insert_signal(uint8_t* data, uint32_t raw_value, int start_bit, int length, const char* byteOrder) {
+    if (strcmp(byteOrder, "little_endian") == 0) {
+        for (int i = 0; i < length; i++) {
+            int bitIndex;
+            if (strcmp(byteOrder, "little_endian") == 0) {
+                // Intel (little endian)
+                bitIndex = start_bit + i;
+            }
+
+            else {
+                int byteIndex = start_bit / 8;
+                int bit_in_byte = 7 - (start_bit % 8);
+                int abs_bit = byteIndex * 8 + bit_in_byte;
+
+                int bit_offset = i;
+                int current_bit = abs_bit - bit_offset;
+
+                bitIndex = current_bit;
+            }
+
+            int byteIndex = bitIndex / 8;
+            int bit_in_byte = bitIndex % 8;
+
+            if ((raw_value >> i) & 1) {
+                data[byteIndex] |= (1 << bit_in_byte);
+            }
+            else {
+                data[byteIndex] &= ~(1 << bit_in_byte);
+            }
+        }
+    }
+}
+\n"""
+
+    # Package message function
+    c_code += """// Package message
+int dbc_package_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+    DBCMessageBase* msg = dbc_find_message_by_id(can_id);
+    if (!msg || msg->dlc != dlc) {
+        printf("Message not found or DLC mismatch!\\n");
+        return -1;
+    }
+
+    printf("Message found!\\n");
+
+    for (size_t i = 0; i < msg->num_signals; i++) {
+        DBCSignal* sig = &msg->signals[i];
+
+        dbc_insert_signal(data, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
     }
 
     return 0;

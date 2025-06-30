@@ -98,7 +98,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     # Function
     hpp_code += "// Functions\n"
     hpp_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
-    hpp_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
+    hpp_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder);\n"
     hpp_code += "bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
 
     hpp_code += f"\n#endif // {library_name.upper()}_HPP\n"
@@ -182,7 +182,7 @@ DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
 
     # Parse signal function
     cpp_code += """// Parse signal function
-uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder) {
+uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder) {
     uint64_t raw = 0;
 
     for (int i = 0; i < 8; ++i) {
