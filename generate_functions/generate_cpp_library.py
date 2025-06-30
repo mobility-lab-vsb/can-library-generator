@@ -100,6 +100,8 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
     hpp_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder);\n"
     hpp_code += "bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
+    hpp_code += "void dbc_insert_signal(uint8_t* data, uint32_t raw_value, uint16_t start_bit, uint8_t length, std::string byteOrder);\n"
+    hpp_code += "bool dbc_package_message(uint32_t can_id, uint8_t dlc, uint8_t* data);\n"
 
     hpp_code += f"\n#endif // {library_name.upper()}_HPP\n"
 
@@ -189,7 +191,7 @@ uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length
         raw |= (static_cast<uint64_t>(data[i]) << (i * 8));
     }
 
-    if (strcmp(byteOrder, "little_endian") == 0) {
+    if (byteOrder == "little_endian") {
         return static_cast<uint32_t>((raw >> startBit) & ((1ULL << length) - 1));
     }
     else {
@@ -228,6 +230,59 @@ bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
         else {
             sig->value = raw * sig->factor + sig->offset;
         }
+    }
+
+    return true;
+}\n\n"""
+
+    # Insert signal function
+    cpp_code += """// Insert signal function
+void dbc_insert_signal(uint8_t* data, uint32_t raw_value, uint16_t startBit, uint8_t length, std::string byteOrder) {
+    for (int i = 0; i < length; i++) {
+        uint8_t bitIndex;
+
+        if (byteOrder == "little_endian") {
+            // Intel (little endian)
+            bitIndex = static_cast<uint8_t>(startBit + i);
+        }
+
+        else {
+            // Motorola (big endian)
+            uint8_t byteIndex = startBit / 8;
+            uint8_t bit_in_byte = 7 - (startBit % 8);
+            uint8_t abs_bit = byteIndex * 8 + bit_in_byte;
+
+            int bit_offset = i;
+            int current_bit = abs_bit - bit_offset;
+
+            bitIndex = static_cast<uint8_t>(current_bit);
+        }
+
+        uint8_t byteIndex = bitIndex / 8;
+        uint8_t bit_in_byte = bitIndex % 8;
+
+        if ((raw_value >> i) & 1) {
+            data[byteIndex] |= (1 << bit_in_byte);
+        }
+
+        else {
+            data[byteIndex] & ~(1 << bit_in_byte);
+        }
+    }
+}\n\n"""
+
+    # Package message function
+    cpp_code += """//Package message function
+bool dbc_package_message(uint32_t can_id, uint8_t dlc, uint8_t* data) {
+    DBCMessageBase* msg = dbc_find_message_by_id(can_id);
+    if (!msg || msg->dlc != dlc) {
+        std::cout << "Message not found or DLC mismatch!" << std::endl;
+        return false;
+    }
+    std::cout << "Message found!" << std::endl;
+
+    for (DBCSignal* sig : msg->signals) {
+        dbc_insert_signal(data, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
     }
 
     return true;

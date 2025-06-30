@@ -91,10 +91,6 @@ if shutil.which("g++") is None:
     print("Error: 'g++' not found. Please install GCC and make sure it's in your PATH.")
     sys.exit(1)
 
-with open(f"{output_dir}/{library_name}.h") as f:
-    print(f"Contents of {library_name}.h:")
-    print(f.read())
-
 # Compile and test C files
 print("Compiling and testing C files...")
 c_test_file = os.path.join(test_dir, "test_c.c")

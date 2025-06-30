@@ -11,18 +11,18 @@ int main() {
 
     std::cout << "Unpackaging message..." << std::endl;
 
-    if (dbc_unpackage_message(can_id, dlc, can_data) != 0) {
+    if (dbc_unpackage_message(can_id, dlc, can_data) == false) {
         std::cout << "Unpackage failed or message not found!" << std::endl;
         
         return 1;
     }
     
     else {
-        for (int i = 0; i < msgMotor_01.base.num_signals; i++) {
-            if (can_data_real[i] != msgMotor_01.base.signals[i].value) {
-                std::cout << "Signal" << msgMotor_01.base.signals[i].name << "has wrong real value!" << std::endl;
-                std::cout << "Original value: " << can_data_real[i] << " ::Unpackaged value : " << msgMotor_01.base.signals[i].value << std::endl;
-                std::cout << "Unpackaged raw value: " << msgMotor_01.base.signals[i].raw_value << std::endl;
+        for (int i = 0; i < msgMotor_01.base.signals.size(); i++) {
+            if (can_data_real[i] != msgMotor_01.base.signals[i]->value) {
+                std::cout << "Signal" << msgMotor_01.base.signals[i]->name << "has wrong real value!" << std::endl;
+                std::cout << "Original value: " << can_data_real[i] << " ::Unpackaged value : " << msgMotor_01.base.signals[i]->value << std::endl;
+                std::cout << "Unpackaged raw value: " << msgMotor_01.base.signals[i]->raw_value << std::endl;
 
                 status = 1;
             }
@@ -36,14 +36,14 @@ int main() {
     std::cout << "\nPackaging message..." << std::endl;
     status = 0;
 
-    if (dbc_package_message(can_id, dlc, packaged_data) != 0) {
+    if (dbc_package_message(can_id, dlc, packaged_data) == false) {
         std::cout << "Package message failed or message not Found!" << std::endl;
 
         return 1;
     }
 
     else {
-        for (int j = 0; j < msgMotor_01.base.num_signals; j++) {
+        for (int j = 0; j < msgMotor_01.base.signals.size(); j++) {
             if (packaged_data[j] != can_data[j]) {
                 std::cout << "Original data does not match with packaged data!" << std::endl;
                 std::cout << "Original: " << can_data[j] << " :: Packaged: " << packaged_data[j] << std::endl;
