@@ -1,0 +1,31 @@
+name: Test CAN Library Generator
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      CFLAGS: "-Wall -Werror"
+      CXXFLAGS: "-Wall -Werror"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ make
+          pip install cantools
+
+      - name: Run test pipeline script
+        run: python3 test_apps/test_pipeline.py
