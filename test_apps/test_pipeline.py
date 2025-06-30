@@ -11,8 +11,12 @@ from collections import namedtuple
 dbc_path = os.path.join(os.path.dirname(__file__), '..', 'dbc', 'CAN_example.dbc')
 dbc_path = os.path.abspath(dbc_path)
 library_name = "dbc_library_test"
-output_dir = "../temp"
+output_dir = os.path.join(os.path.dirname(__file__), '..', 'temp')
 test_dir = os.path.abspath(os.path.dirname(__file__))
+
+if os.path.exists(output_dir):
+    shutil.rmtree(output_dir)
+os.makedirs(output_dir, exist_ok=True)
 
 # Mock database
 dbc_dbs = []
@@ -86,6 +90,10 @@ if shutil.which("gcc") is None:
 if shutil.which("g++") is None:
     print("Error: 'g++' not found. Please install GCC and make sure it's in your PATH.")
     sys.exit(1)
+
+with open(f"{output_dir}/{library_name}.h") as f:
+    print(f"Contents of {library_name}.h:")
+    print(f.read())
 
 # Compile and test C files
 print("Compiling and testing C files...")
