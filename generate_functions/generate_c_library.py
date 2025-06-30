@@ -92,7 +92,8 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "// Functions\n"
     h_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
     h_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
-    h_code += "int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n\n"
+    h_code += "int dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
+    h_code += "int dbc_package_message(uint32_t can_id, uint8_t dlc);\n\n"
 
     h_code += f"#endif // {library_name.upper()}_H\n"
 
@@ -231,9 +232,9 @@ uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length
 }
 \n"""
 
-    # Decode message function
-    c_code += """// Decode CAN message
-int dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+    # Unpackage message function
+    c_code += """// Unpackage CAN message
+int dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     if (!msg || msg->dlc != dlc) {
         printf("Message not found or DLC mismatch!\\n");

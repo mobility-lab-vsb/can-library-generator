@@ -6,7 +6,7 @@ int main() {
     uint32_t can_id = 0x121;
     uint8_t dlc = 8;
 
-    if (!dbc_decode_message(can_id, dlc, can_data)) {
+    if (!dbc_unpackage_message(can_id, dlc, can_data)) {
         std::cerr << "Decode failed or message not found\n";
         return 1;
     }

@@ -2,10 +2,9 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from ttkwidgets import CheckboxTreeview
 import cantools
-from collections import defaultdict
 import os
-from generate_c_library import generate_c_code
-from generate_cpp_library import generate_cpp_code
+from generate_functions.generate_c_library import generate_c_code
+from generate_functions.generate_cpp_library import generate_cpp_code
 
 # Define your app version
 __version__ = "0.2.0"

@@ -3,15 +3,15 @@ import subprocess
 import cantools
 import shutil
 import sys
-from generate_c_library import generate_c_code
-from generate_cpp_library import generate_cpp_code
+from generate_functions.generate_c_library import generate_c_code
+from generate_functions.generate_cpp_library import generate_cpp_code
 from collections import namedtuple
 
 # Configuration
-dbc_path = "dbc/CAN_example.dbc"
+dbc_path = "../dbc/CAN_example.dbc"
 library_name = "dbc_library_test"
-output_dir = "temp"
-test_dir = "test_apps"
+output_dir = "../temp"
+test_dir = ""
 
 # Mock database
 dbc_dbs = []
@@ -55,16 +55,16 @@ tree = MockTree()
 # Generate C library
 h_code, c_code = generate_c_code(selected_items, library_name, dbc_dbs, tree)
 os.makedirs(output_dir, exist_ok=True)
-with open(f"temp/{library_name}.h", "w") as f:
+with open(f"{output_dir}/{library_name}.h", "w") as f:
     f.write(h_code)
-with open(f"temp/{library_name}.c", "w") as f:
+with open(f"{output_dir}/{library_name}.c", "w") as f:
     f.write(c_code)
 
 # Generate C++ library
 hpp_code, cpp_code = generate_cpp_code(selected_items, library_name, dbc_dbs, tree)
-with open(f"temp/{library_name}.hpp", "w") as f:
+with open(f"{output_dir}/{library_name}.hpp", "w") as f:
     f.write(hpp_code)
-with open(f"temp/{library_name}.cpp", "w") as f:
+with open(f"{output_dir}/{library_name}.cpp", "w") as f:
     f.write(cpp_code)
 
 # Test if GCC and G++ are installed

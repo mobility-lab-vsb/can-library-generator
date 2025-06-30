@@ -99,7 +99,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code += "// Functions\n"
     hpp_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
     hpp_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
-    hpp_code += "bool dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
+    hpp_code += "bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
 
     hpp_code += f"\n#endif // {library_name.upper()}_HPP\n"
 
@@ -206,9 +206,9 @@ uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length
     }
 }\n\n"""
 
-    # Decode message function
-    cpp_code += """// Decode CAN message
-bool dbc_decode_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+    # Unpackage message function
+    cpp_code += """// Unpackage CAN message
+bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     if (!msg || msg->dlc != dlc) {
         std::cout << "Message not found or DLC mismatch!" << std::endl;
