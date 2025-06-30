@@ -10,10 +10,9 @@ from collections import namedtuple
 # Configuration
 dbc_path = os.path.join(os.path.dirname(__file__), '..', 'dbc', 'CAN_example.dbc')
 dbc_path = os.path.abspath(dbc_path)
-# dbc_path = "../dbc/CAN_example.dbc"
 library_name = "dbc_library_test"
 output_dir = "../temp"
-test_dir = ""
+test_dir = os.path.abspath(os.path.dirname(__file__))
 
 # Mock database
 dbc_dbs = []
@@ -90,8 +89,8 @@ if shutil.which("g++") is None:
 
 # Compile and test C files
 print("Compiling and testing C files...")
-c_test_file = os.path.join(test_dir, "test_decode_c.c")
-c_exec = os.path.join(output_dir, "test_decode_c.exe")
+c_test_file = os.path.join(test_dir, "test_c.c")
+c_exec = os.path.join(output_dir, "test_c.exe")
 c_result = subprocess.run(["gcc", c_test_file, f"{output_dir}/{library_name}.c", "-I", output_dir, "-o", c_exec], capture_output=True, text=True)
 if c_result.returncode == 0:
     c_run = subprocess.run([c_exec], capture_output=True, text=True)
@@ -107,8 +106,8 @@ else:
 
 # Compile and test C++ files
 print("Compiling and testing C++ files...")
-cpp_test_file = os.path.join(test_dir, "test_decode_cpp.cpp")
-cpp_exec = os.path.join(output_dir, "test_decode_cpp.exe")
+cpp_test_file = os.path.join(test_dir, "test_cpp.cpp")
+cpp_exec = os.path.join(output_dir, "test_cpp.exe")
 cpp_result = subprocess.run(["g++", cpp_test_file, f"{output_dir}/{library_name}.cpp", "-I", output_dir, "-o", cpp_exec], capture_output=True, text=True)
 if cpp_result.returncode == 0:
     cpp_run = subprocess.run([cpp_exec], capture_output=True, text=True)
