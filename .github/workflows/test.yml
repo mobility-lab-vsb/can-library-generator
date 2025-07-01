@@ -27,6 +27,16 @@ jobs:
           sudo apt-get install -y gcc g++ make
           pip install cantools
 
+      - name: Get version from Git
+        id: get_version
+        run: |
+          VERSION=$(git describe --tags --always)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Update version in main.py
+        run: |
+          sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" main.py
+
       - name: Run test pipeline script
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
