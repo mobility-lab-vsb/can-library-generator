@@ -9,7 +9,7 @@ from generate_functions.generate_c_library import generate_c_code
 from generate_functions.generate_cpp_library import generate_cpp_code
 
 # Define your app version
-__version__ = "0.1.0"
+__version__ = "6ae8377"
 
 
 class DBCLibraryGenerator:
