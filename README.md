@@ -64,12 +64,10 @@ All generated files are stored in the `temp/` directory and are automatically cl
 ## 📁 Project structure
 ```graphql
 ├── dbc/                     # DBC files
+├── generate_functions/      # Scripts for generating libraries
 ├── temp/                    # Temporary files (auto-cleaned)
 ├── test_apps/               # Test applications
-├── generate_c_library.py    # Script for generating C library
-├── generate_cpp_library.py  # Script for generating C++ library
 ├── main.py                  # DBC to code generator
-├── test_pipeline.py         # Automated test runner
 ├── requirements.txt
 └── README.md
 ```
