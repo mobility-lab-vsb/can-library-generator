@@ -9,6 +9,7 @@ from generate_functions.generate_cpp_library import generate_cpp_code
 # Define your app version
 __version__ = "0.1.0"
 
+
 class DBCLibraryGenerator:
     def __init__(self, root):
         self.root = root
