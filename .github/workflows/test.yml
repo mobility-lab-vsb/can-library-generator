@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: write
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -28,14 +31,20 @@ jobs:
           pip install cantools
 
       - name: Get version from Git
-        id: get_version
         run: |
           VERSION=$(git describe --tags --always)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Update version in main.py
+        run: sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" main.py
+
+      - name: Commit updated version
         run: |
-          sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" main.py
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add main.py
+          git commit -m "CI: bump version to $VERSION" || echo "No changes to commit"
+          git push
 
       - name: Run test pipeline script
         run: |
