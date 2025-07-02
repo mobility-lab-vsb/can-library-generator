@@ -13,9 +13,9 @@ import os
 from PIL import Image, ImageTk
 from ttkwidgets.utilities import get_assets_directory
 
-IM_CHECKED = "png/checked.png"
-IM_UNCHECKED = "png/unchecked.png"
-IM_TRISTATE = "png/tristate.png"
+IM_CHECKED = os.path.join("png", "checked.png")
+IM_UNCHECKED = os.path.join("png", "unchecked.png")
+IM_TRISTATE = os.path.join("png", "tristate.png")
 
 
 class CheckboxTreeview(ttk.Treeview):
