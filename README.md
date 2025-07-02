@@ -6,9 +6,9 @@ This project is a Python-based tool that parses DBC (CAN database) files and gen
 
 - Parses DBC files using the [`cantools`](https://github.com/eerimoq/cantools) library.
 - Generates type-safe and structured in C or C++.
-- Supports signal decoding, raw values, scaling and offset.
+- Supports signal decoding/encoding, raw values, scaling and offset.
 - Provides a test pipeline for verifying generated libraries.
-- Cross-platform support (Windows, Linux via GCC/MinGW)
+- Cross-platform support (Windows, Linux, macOS via GCC/MinGW)
 
 ## 📦 Installation
 
@@ -41,14 +41,14 @@ The script creates the following:
 - `your_library.c` - Implementation for decoding and parsing CAN message.
 - *(if using C++ mode)* `your_library.hpp` and `your_library.cpp` with moder classes and vector support.
 
-## 🧪 Test Pipeline
+## 🧪 Test Pipeline (Automatic after every commit)
 ```sh
 python test_pipeline.py
 ```
 The pipeline will:
 - Compile the generated code.
 - Run example test applications.
-- Check that decoding (e.g. `dbc_decode_message()`) works correctly.
+- Check that unpacking and packing (e.g. `dbc_unpackage_message()`, `dbc_package_message()`) works correctly.
 - Clean up temporary files in the `temp/` directory.
 
 Test data and messages are defined in `test_pipeline.py`.
@@ -56,6 +56,8 @@ Test data and messages are defined in `test_pipeline.py`.
 ## 🛠 Requirements
 - Python 3.10+
 - [`cantools`](https://github.com/eerimoq/cantools)
+- [`darkdetect`](https://github.com/albertosottile/darkdetect)
+- [`sv_ttk`](https://github.com/rdbende/Sun-Valley-ttk-theme)
 - GCC or MinGW (for Windows)
 
 ## 🧹 Cleaning Up
@@ -63,12 +65,27 @@ All generated files are stored in the `temp/` directory and are automatically cl
 
 ## 📁 Project structure
 ```graphql
-├── dbc/                     # DBC files
-├── generate_functions/      # Scripts for generating libraries
-├── img/                     # Organization logo
-├── temp/                    # Temporary files (auto-cleaned)
-├── test_apps/               # Test applications
-├── main.py                  # DBC to code generator
+├── dbc/                           # DBC files
+|   └── CAN_example.dbc
+├── dist/                          # Executable files
+|   ├── CAN Library Generator.dmg
+|   └── CAN Library Generator.exe
+├── generate_functions/            # Scripts for generating libraries
+|   ├── generate_c_library.py
+|   └── generate_cpp_library.py
+├── png/                           # Images
+|   ├── checked.png
+|   ├── tristate.png
+|   ├── unchecked.png
+|   └── VSB-TUO_logo.png
+├── temp/                          # Temporary files (auto-cleaned)
+├── test_apps/                     # Test applications
+|   ├── test_c.c
+|   ├── test_cpp.cpp
+|   └── test_pipeline.py
+├── ttkwidget/                     # CheckboxTreeview class
+|   └── checkboxtreeview.py
+├── main.py                        # DBC to code generator
 ├── requirements.txt
 └── README.md
 ```

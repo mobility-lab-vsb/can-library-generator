@@ -10,12 +10,18 @@ Treeview with checkboxes at each item and a noticeable disabled style
 from tkinter import ttk
 
 import os
+import sys
 from PIL import Image, ImageTk
 from ttkwidgets.utilities import get_assets_directory
 
-IM_CHECKED = os.path.join("png", "checked.png")
-IM_UNCHECKED = os.path.join("png", "unchecked.png")
-IM_TRISTATE = os.path.join("png", "tristate.png")
+
+def resource_path(relative_path):
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    return os.path.join(base_path, relative_path)
+
+IM_CHECKED = resource_path(os.path.join("png", "checked.png"))
+IM_UNCHECKED = resource_path(os.path.join("png", "unchecked.png"))
+IM_TRISTATE = resource_path(os.path.join("png", "tristate.png"))
 
 
 class CheckboxTreeview(ttk.Treeview):

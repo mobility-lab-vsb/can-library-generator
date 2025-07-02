@@ -6,6 +6,7 @@ import cantools
 import os
 import sv_ttk
 import darkdetect
+import sys
 from PIL import Image, ImageTk
 
 from generate_functions.generate_c_library import generate_c_code
@@ -26,6 +27,10 @@ class DBCLibraryGenerator:
         self.language_var = tk.StringVar(value="c") # Language selection variable
         self.image = None
         self.setup_gui()
+
+    def resource_path(self, relative_path):
+        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+        return os.path.join(base_path, relative_path)
 
     def setup_gui(self):
         """Initialize the GUI components."""
@@ -54,7 +59,8 @@ class DBCLibraryGenerator:
         self.files_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         # VSB logo
-        self.image = Image.open(os.path.join("png", "VSB-TUO_logo.png"))
+        image_path = self.resource_path(os.path.join("png", "VSB-TUO_logo.png"))
+        self.image = Image.open(image_path)
         self.image = self.image.resize((145, 62))
         logo = ImageTk.PhotoImage(self.image)
 
