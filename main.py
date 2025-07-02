@@ -5,6 +5,7 @@ import cantools
 import os
 import sv_ttk
 import darkdetect
+from PIL import Image, ImageTk
 
 from generate_functions.generate_c_library import generate_c_code
 from generate_functions.generate_cpp_library import generate_cpp_code
@@ -22,6 +23,7 @@ class DBCLibraryGenerator:
         self.files_label = None  # Label for selected files
         self.library_name_entry = None  # Entry for library name
         self.language_var = tk.StringVar(value="c") # Language selection variable
+        self.image = None
         self.setup_gui()
 
     def setup_gui(self):
@@ -49,6 +51,15 @@ class DBCLibraryGenerator:
         # Label for selected files
         self.files_label = ttk.Label(file_frame, text="No files selected.", foreground="gray")
         self.files_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+
+        # VSB logo
+        self.image = Image.open("img/VSB-TUO_logo.png")
+        self.image = self.image.resize((145, 62))
+        logo = ImageTk.PhotoImage(self.image)
+
+        logo_label = ttk.Label(file_frame, image=logo)
+        logo_label.image = logo
+        logo_label.grid(row=0, column=2, sticky="ne")
 
         # --- Middle Frame: CheckboxTreeview for Messages and Signals ---
         tree_frame = ttk.LabelFrame(self.root, text="Messages and Signals", padding=(20, 10))
