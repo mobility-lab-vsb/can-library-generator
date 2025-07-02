@@ -4,6 +4,7 @@ from ttkwidgets import CheckboxTreeview
 import cantools
 import os
 import sv_ttk
+import darkdetect
 
 from generate_functions.generate_c_library import generate_c_code
 from generate_functions.generate_cpp_library import generate_cpp_code
@@ -25,8 +26,11 @@ class DBCLibraryGenerator:
 
     def setup_gui(self):
         """Initialize the GUI components."""
-        # Apply Sun Valley theme
-        sv_ttk.set_theme("dark")
+        # Detect if the system is in dark mode and apply Sun Valley theme
+        if darkdetect.isDark():
+            sv_ttk.set_theme("dark")
+        else:
+            sv_ttk.set_theme("light")
 
         # Configure main window grid layout
         self.root.grid_rowconfigure(1, weight=1)
