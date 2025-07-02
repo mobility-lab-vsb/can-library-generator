@@ -30,7 +30,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gcc g++ make
-          pip install cantools
+          pip install -r requirements.txt
 
       - name: Get version from Git
         run: |
