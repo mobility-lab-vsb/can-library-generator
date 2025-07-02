@@ -65,6 +65,7 @@ All generated files are stored in the `temp/` directory and are automatically cl
 ```graphql
 ├── dbc/                     # DBC files
 ├── generate_functions/      # Scripts for generating libraries
+├── img/                     # Organization logo
 ├── temp/                    # Temporary files (auto-cleaned)
 ├── test_apps/               # Test applications
 ├── main.py                  # DBC to code generator
