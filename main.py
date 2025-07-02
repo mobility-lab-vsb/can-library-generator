@@ -26,7 +26,7 @@ class DBCLibraryGenerator:
     def setup_gui(self):
         """Initialize the GUI components."""
         # Apply Sun Valley theme
-        sv_ttk.set_theme("light")
+        sv_ttk.set_theme("dark")
 
         # Configure main window grid layout
         self.root.grid_rowconfigure(1, weight=1)
