@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 #from ttkwidgets import CheckboxTreeview
-from ttkwidget.checkboxtreeview import CheckboxTreeview
+from src.ttkwidget.checkboxtreeview import CheckboxTreeview
 import cantools
 import os
 import sv_ttk
@@ -9,8 +9,8 @@ import darkdetect
 import sys
 from PIL import Image, ImageTk
 
-from generate_functions.generate_c_library import generate_c_code
-from generate_functions.generate_cpp_library import generate_cpp_code
+from src.generate_functions.generate_c_library import generate_c_code
+from src.generate_functions.generate_cpp_library import generate_cpp_code
 
 # Define your app version
 __version__ = "dev"
@@ -59,7 +59,7 @@ class DBCLibraryGenerator:
         self.files_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         # VSB logo
-        image_path = self.resource_path(os.path.join("png", "VSB-TUO_logo.png"))
+        image_path = self.resource_path(os.path.join("src","png", "VSB-TUO_logo.png"))
         self.image = Image.open(image_path)
         self.image = self.image.resize((145, 62))
         logo = ImageTk.PhotoImage(self.image)

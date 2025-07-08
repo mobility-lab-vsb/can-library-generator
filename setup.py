@@ -1,12 +1,12 @@
 from setuptools import setup
 
 APP = ['main.py']
-APP_NAME = 'CAN Library Generator'
+APP_NAME = 'CAN_Library_Generator'
 DATA_FILES = ['png']
 OPTIONS = {
     'argv_emulation': True,
     'packages': ['tkinter', 'PIL', 'sv_ttk', 'ttkwidget', 'cantools', 'darkdetect'],
-    # 'iconfile': 'ico/muj_icon.icns',  # pokud máš ikonu pro mac
+    # 'iconfile': 'ico/muj_icon.icns',
     'includes': ['PIL', 'tkinter', 'sv_ttk', 'ttkwidget', 'cantools', 'darkdetect']
 }
 
@@ -17,9 +17,3 @@ setup(
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
 )
-
-# pip install py2app
-# python setup.py py2app
-
-# brew install create-dmg
-# create-dmg dist/main.app

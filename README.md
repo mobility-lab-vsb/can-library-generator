@@ -65,29 +65,27 @@ All generated files are stored in the `temp/` directory and are automatically cl
 
 ## 📁 Project structure
 ```graphql
-├── dbc/                           # DBC files
-|   └── CAN_example.dbc
-├── dist/                          # Executable files
-|   ├── CAN Library Generator.dmg
-|   └── CAN Library Generator.exe
-├── generate_functions/            # Scripts for generating libraries
-|   ├── generate_c_library.py
-|   └── generate_cpp_library.py
-├── png/                           # Images
-|   ├── checked.png
-|   ├── tristate.png
-|   ├── unchecked.png
-|   └── VSB-TUO_logo.png
-├── temp/                          # Temporary files (auto-cleaned)
-├── test_apps/                     # Test applications
-|   ├── test_c.c
-|   ├── test_cpp.cpp
-|   └── test_pipeline.py
-├── ttkwidget/                     # CheckboxTreeview class
-|   └── checkboxtreeview.py
-├── main.py                        # DBC to code generator
+├── src/                            # Source files
+|   ├── dbc/                           # DBC files
+|   |   └── CAN_example.dbc
+|   ├── generate_functions/            # Scripts for generating libraries
+|   |   ├── generate_c_library.py
+|   |   └── generate_cpp_library.py
+|   ├── png/                           # Images
+|   |   ├── checked.png
+|   |   ├── tristate.png
+|   |   ├── unchecked.png
+|   |   └── VSB-TUO_logo.png
+|   ├── test/                          # Test applications
+|   |   ├── test_c.c
+|   |   ├── test_cpp.cpp
+|   |   └── test_pipeline.py
+|   └── ttkwidget/                     # CheckboxTreeview class
+|       └── checkboxtreeview.py
+├── main.py                         # DBC to code generator
+├── README.md
 ├── requirements.txt
-└── README.md
+└── setup.py
 ```
 
 ## 📝 License

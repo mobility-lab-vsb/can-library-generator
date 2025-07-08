@@ -16,12 +16,12 @@ from ttkwidgets.utilities import get_assets_directory
 
 
 def resource_path(relative_path):
-    base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
+    base_path = getattr(sys, '_MEIPASS', os.path.abspath(""))
     return os.path.join(base_path, relative_path)
 
-IM_CHECKED = resource_path(os.path.join("png", "checked.png"))
-IM_UNCHECKED = resource_path(os.path.join("png", "unchecked.png"))
-IM_TRISTATE = resource_path(os.path.join("png", "tristate.png"))
+IM_CHECKED = resource_path(os.path.join("src", "png", "checked.png"))
+IM_UNCHECKED = resource_path(os.path.join("src", "png", "unchecked.png"))
+IM_TRISTATE = resource_path(os.path.join("src", "png", "tristate.png"))
 
 
 class CheckboxTreeview(ttk.Treeview):
