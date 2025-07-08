@@ -1,0 +1,15 @@
+venv
+library
+test.py
+.gitignore
+.vs
+.idea
+build
+ico
+main.spec
+CAN Library Generator.spec
+generate_functions
+!generate_functions/generate_c_library.py
+!generate_functions/generate_cpp_library.py
+ttkwidget
+!ttkwidget/checkboxtreeview.py
