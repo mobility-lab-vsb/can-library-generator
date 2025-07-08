@@ -51,6 +51,9 @@ jobs:
         run: |
           python setup.py py2app
 
+      - name: List contents of dist/ (debug)
+        run: ls -la dist
+
       - name: Create DMG
         run: |
           hdiutil create -volname "CAN Library Generator" \
