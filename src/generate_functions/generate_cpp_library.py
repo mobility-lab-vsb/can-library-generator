@@ -344,7 +344,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
         brief="Unpackages a received CAN message and updates signal values.",
         details={"true": "Message was successfully unpackaged.", "false": "Message not found or DLC mismatch."}
     )
-    cpp_code += """//bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+    cpp_code += """bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     if (!msg || msg->dlc != dlc) {
         std::cout << "Message not found or DLC mismatch!" << std::endl;
