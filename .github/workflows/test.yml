@@ -32,22 +32,6 @@ jobs:
           sudo apt-get install -y gcc g++ make
           pip install -r requirements.txt
 
-      - name: Get version from Git
-        run: |
-          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || git rev-parse --short HEAD)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Update version in main.py
-        run: sed -i "s/^__version__ = .*/__version__ = \"$VERSION\"/" main.py
-
-      - name: Commit updated version
-        run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add main.py
-          git commit -m "CI: bump version to $VERSION" || echo "No changes to commit"
-          git push
-
       - name: Run test pipeline script
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
