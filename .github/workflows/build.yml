@@ -1,0 +1,91 @@
+name: Build and Release Python App
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Build Windows executable
+        run: |
+          pyinstaller --clean --onefile --windowed --add-data "png;png" --name "CAN Library Generator" main.py
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/CAN\ Library\ Generator.exe
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install py2app
+
+      - name: Build macOS app
+        run: |
+          python setup.py py2app
+
+      - name: Create DMG
+        run: |
+          hdiutil create -volname "CAN Library Generator" \
+                         -srcfolder "dist/CAN Library Generator.app" \
+                         -ov -format UDZO dist/CAN_Library_Generator.dmg
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/CAN Library Generator.app
+            dist/CAN_Library_Generator.dmg
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdk-pixbuf2.0-0 libglib2.0-0
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+
+      - name: Build Linux executable
+        run: |
+          pyinstaller --clean --onefile --windowed --add-data "png:png" --name "can_library_generator" main.py
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/can_library_generator
