@@ -46,7 +46,7 @@ jobs:
 
       - name: Build Windows executable
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "png;png" --name "CAN_Library_Generator" main.py
+          pyinstaller --clean --onefile --windowed --add-data "src/png;png" --name "CAN_Library_Generator" main.py
 
       - name: Run the application
         run: |
@@ -130,7 +130,7 @@ jobs:
 
       - name: Build Linux executable
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "png:png" --name "Can_Library_Generator" main.py
+          pyinstaller --clean --onefile --windowed --add-data "src/png:png" --name "Can_Library_Generator" main.py
 
       - name: Run the application
         run: |

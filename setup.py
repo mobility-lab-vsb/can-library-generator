@@ -5,9 +5,33 @@ APP_NAME = 'CAN_Library_Generator'
 DATA_FILES = ['png']
 OPTIONS = {
     'argv_emulation': True,
-    'packages': ['tkinter', 'PIL', 'sv_ttk', 'ttkwidget', 'cantools', 'darkdetect'],
+    'packages': [
+        'tkinter',
+        'PIL',        # pillow
+        'sv_ttk',
+        'cantools',
+        'darkdetect',
+        'bitstruct',
+        'crccheck',
+        'python_can', # corresponds to python-can
+        'ttkbootstrap',
+        'ttkwidgets',
+        'textparser'
+    ],
     # 'iconfile': 'ico/muj_icon.icns',
-    'includes': ['PIL', 'tkinter', 'sv_ttk', 'ttkwidget', 'cantools', 'darkdetect']
+    'includes': [
+        'PIL',        # pillow
+        'tkinter',
+        'sv_ttk',
+        'cantools',
+        'darkdetect',
+        'bitstruct',
+        'crccheck',
+        'python_can', # corresponds to python-can
+        'ttkbootstrap',
+        'ttkwidgets',
+        'textparser'
+    ]
 }
 
 setup(

@@ -12,7 +12,6 @@ from tkinter import ttk
 import os
 import sys
 from PIL import Image, ImageTk
-from ttkwidgets.utilities import get_assets_directory
 
 
 def resource_path(relative_path):
