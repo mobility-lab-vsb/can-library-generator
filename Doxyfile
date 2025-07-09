@@ -3,7 +3,7 @@ OUTPUT_DIRECTORY       = docs
 GENERATE_HTML          = YES
 HTML_OUTPUT            = html
 
-INPUT                  = library/
+INPUT                  = src/test/temp/
 RECURSIVE              = YES
 FILE_PATTERNS          = *.h *.c *.cpp
 
