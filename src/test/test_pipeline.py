@@ -11,7 +11,7 @@ from collections import namedtuple
 dbc_path = os.path.join(os.path.dirname(__file__), '..', 'dbc', 'CAN_example.dbc')
 dbc_path = os.path.abspath(dbc_path)
 library_name = "dbc_library_test"
-output_dir = os.path.join(os.environ.get('GITHUB_WORKSPACE', os.getcwd()), 'generated_libs')
+output_dir = os.path.join(os.path.dirname(__file__), '..', 'temp')
 if os.path.exists(output_dir):
     shutil.rmtree(output_dir)
 os.makedirs(output_dir, exist_ok=True)

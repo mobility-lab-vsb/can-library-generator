@@ -13,7 +13,7 @@ jobs:
     env:
       CFLAGS: "-Wall -Werror"
       CXXFLAGS: "-Wall -Werror"
-      GENERATED_LIBS_DIR: ${{ github.workspace }}/generated_libs
+      GENERATED_LIBS_DIR: ${{ github.workspace }}/src/temp
       DOXYGEN_TEMP_OUTPUT_DIR: _site
 
     steps:
