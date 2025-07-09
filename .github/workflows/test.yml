@@ -1,4 +1,4 @@
-name: Test CAN Library Generator
+name: Test CAN Library Generator and Generate Docs
 
 on:
   push:
@@ -7,17 +7,20 @@ permissions:
   contents: write
 
 jobs:
-  test:
+  test_and_deploy_docs:
     runs-on: ubuntu-latest
 
     env:
       CFLAGS: "-Wall -Werror"
       CXXFLAGS: "-Wall -Werror"
+      GENERATED_LIBS_DIR: ${{ github.workspace }}/generated_libs
+      DOXYGEN_TEMP_OUTPUT_DIR: _site
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Set up Python
@@ -32,6 +35,62 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run test pipeline script
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
         run: |
           export PYTHONPATH=$PYTHONPATH:$(pwd)
+          rm -rf ${{ env.GENERATED_LIBS_DIR }}
+          mkdir -p ${{ env.GENERATED_LIBS_DIR }}
           python3 src/test/test_pipeline.py
+          echo "Generated library files:"
+          ls -la ${{ env.GENERATED_LIBS_DIR }}
+
+      - name: Install Doxygen
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      - name: Configure Doxygen (if Doxyfile not committed)
+        run: |
+          if [ ! -f Doxyfile ]; then
+            echo "PROJECT_NAME           = CAN Library Documentation" > Doxyfile
+            echo "OUTPUT_DIRECTORY       = ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }}" >> Doxyfile
+            echo "GENERATE_HTML          = YES" >> Doxyfile
+            echo "HTML_OUTPUT            = html" >> Doxyfile
+            echo "GENERATE_LATEX         = YES" >> Doxyfile
+            echo "LATEX_OUTPUT           = latex" >> Doxyfile
+            echo "COMPACT_LATEX          = YES" >> Doxyfile
+            echo "PAPER_TYPE             = A4" >> Doxyfile
+            echo "INPUT                  = ${{ env.GENERATED_LIBS_DIR }}" >> Doxyfile
+            echo "RECURSIVE              = YES" >> Doxyfile
+            echo "FILE_PATTERNS          = *.h *.c" >> Doxyfile
+            echo "EXTRACT_ALL            = NO" >> Doxyfile
+            echo "EXTRACT_LOCAL_CLASSES  = NO" >> Doxyfile
+            echo "EXTRACT_STATIC         = NO" >> Doxyfile
+            echo "EXTRACT_PRIVATE        = NO" >> Doxyfile
+            echo "HIDE_UNDOC_MEMBERS     = YES" >> Doxyfile
+            echo "HIDE_UNDOC_CLASSES     = YES" >> Doxyfile
+            echo "JAVADOC_AUTOBRIEF      = NO" >> Doxyfile
+            echo "QT_AUTOBRIEF           = NO" >> Doxyfile
+            echo "MULTILINE_CPP_IS_BRIEF = NO" >> Doxyfile
+            echo "WARN_NO_PARAMDOC       = NO" >> Doxyfile
+            echo "QUIET                  = YES" >> Doxyfile
+            echo "HAVE_DOT               = YES" >> Doxyfile
+          fi
+          echo "Doxyfile content:"
+          cat Doxyfile
+
+      - name: Run Doxygen to generate documentation
+        run: |
+          doxygen Doxyfile
+          echo "Generated Doxygen documentation:"
+          ls -la ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }}
+
+      - name: Deploy generated documentation files
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }}
+          publish_branch: dev
+          destination_dir: docs
+          message: 'Deploy docs for ${{ github.sha }} [skip ci]'

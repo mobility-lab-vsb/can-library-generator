@@ -11,7 +11,11 @@ from collections import namedtuple
 dbc_path = os.path.join(os.path.dirname(__file__), '..', 'dbc', 'CAN_example.dbc')
 dbc_path = os.path.abspath(dbc_path)
 library_name = "dbc_library_test"
-output_dir = os.path.join(os.path.dirname(__file__), '..', 'temp')
+output_dir = os.path.join(os.environ.get('GITHUB_WORKSPACE', os.getcwd()), 'generated_libs')
+if os.path.exists(output_dir):
+    shutil.rmtree(output_dir)
+os.makedirs(output_dir, exist_ok=True)
+
 test_dir = os.path.abspath(os.path.dirname(__file__))
 
 if os.path.exists(output_dir):
@@ -125,7 +129,7 @@ else:
     print(cpp_result.stderr)
     sys.exit(1)
 
-for filename in os.listdir(output_dir):
+"""for filename in os.listdir(output_dir):
     file_path = os.path.join(output_dir, filename)
     try:
         if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -138,4 +142,4 @@ for filename in os.listdir(output_dir):
 
 if os.path.exists(output_dir):
     shutil.rmtree(output_dir)
-    print(f"Removing {output_dir}...")
+    print(f"Removing {output_dir}...")"""

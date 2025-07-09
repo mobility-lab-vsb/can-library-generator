@@ -91,21 +91,11 @@ jobs:
           sleep 10
           pkill -f "CAN_Library_Generator" || true
 
-      - name: List dist directory after py2app
-        run: |
-          ls -la dist/
-          ls -la dist/CAN_Library_Generator.app/ # Podívejte se i dovnitř .app bundle
-
       - name: Create DMG
         run: |
           hdiutil create -volname "CAN_Library_Generator" \
                          -srcfolder "dist/CAN_Library_Generator.app" \
                          -ov -format UDZO dist/CAN_Library_Generator.dmg
-
-      - name: List dist directory after DMG creation
-        run: |
-          ls -la dist/
-          ls -la dist/CAN_Library_Generator.app/
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
