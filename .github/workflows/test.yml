@@ -86,6 +86,10 @@ jobs:
           echo "Generated Doxygen documentation:"
           ls -la ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }}
 
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
       - name: Deploy generated documentation files
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -93,4 +97,4 @@ jobs:
           publish_dir: ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }}
           publish_branch: dev
           destination_dir: docs
-          message: 'Deploy docs for ${{ github.sha }} [skip ci]'
+          commit_message: "Documentation files ${{ steps.date.outputs.date }}"
