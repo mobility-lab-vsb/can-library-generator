@@ -90,12 +90,20 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
+      - name: Remove old documentation to ensure clean deploy
+        run: |
+          rm -rf docs
+
+      - name: Move generated documentation to target folder
+        run: |
+          mv ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }} docs
+
       - name: Deploy generated documentation files
-        uses: peaceiris/actions-gh-pages@v3
+        uses: EndBug/add-and-commit@v9
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ env.DOXYGEN_TEMP_OUTPUT_DIR }}
-          publish_branch: dev
-          destination_dir: docs
-          force_orphan: true
-          commit_message: "Documentation files ${{ steps.date.outputs.date }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          add: 'docs'
+          message: "Documentation files ${{ steps.date.outputs.date }}"
+          author_name: 'GitHub Actions'
+          author_email: 'action@github.com'
+          force: true
