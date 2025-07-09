@@ -57,7 +57,7 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/CAN\ Library\ Generator.exe
+          files: dist/CAN_Library_Generator.exe
 
   build-macos:
     runs-on: macos-latest
@@ -91,11 +91,21 @@ jobs:
           sleep 10
           pkill -f "CAN_Library_Generator" || true
 
+      - name: List dist directory after py2app
+        run: |
+          ls -la dist/
+          ls -la dist/CAN_Library_Generator.app/ # Podívejte se i dovnitř .app bundle
+
       - name: Create DMG
         run: |
           hdiutil create -volname "CAN_Library_Generator" \
                          -srcfolder "dist/CAN_Library_Generator.app" \
                          -ov -format UDZO dist/CAN_Library_Generator.dmg
+
+      - name: List dist directory after DMG creation
+        run: |
+          ls -la dist/
+          ls -la dist/CAN_Library_Generator.app/
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
@@ -130,15 +140,15 @@ jobs:
 
       - name: Build Linux executable
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "src/png:src/png" --name "Can_Library_Generator" --hidden-import "PIL._tkinter_finder" main.py
+          pyinstaller --clean --onefile --windowed --add-data "src/png:src/png" --name "CAN_Library_Generator" --hidden-import "PIL._tkinter_finder" main.py
 
       - name: Run the application
         run: |
-          xvfb-run ./dist/Can_Library_Generator &
+          xvfb-run ./dist/CAN_Library_Generator &
           sleep 10
           kill $!
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/can_library_generator
+          files: dist/CAN_library_generator
