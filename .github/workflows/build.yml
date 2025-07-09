@@ -1,4 +1,4 @@
-name: Build and Release Python App
+name: Build, Run and Release Python App
 
 on:
   push:
@@ -48,6 +48,12 @@ jobs:
         run: |
           pyinstaller --clean --onefile --windowed --add-data "png;png" --name "CAN_Library_Generator" main.py
 
+      - name: Run the application
+        run: |
+          Start-Process -FilePath "dist/CAN_Library_Generator.exe"
+          Start-Sleep -Seconds 10
+          Stop-Process -Name "CAN_Library_Generator" - ErrorAction SilentlyContinue
+
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
@@ -78,6 +84,12 @@ jobs:
       - name: Build macOS app
         run: |
           python setup.py py2app
+
+      - name: Run the application
+        run: |
+          open dist/CAN_Library_Generator.app
+          sleep 10
+          pkill -f "CAN_Library_Generator" || true
 
       - name: Create DMG
         run: |
@@ -119,6 +131,12 @@ jobs:
       - name: Build Linux executable
         run: |
           pyinstaller --clean --onefile --windowed --add-data "png:png" --name "Can_Library_Generator" main.py
+
+      - name: Run the application
+        run: |
+          xvfb-run ./dist/Can_Library_Generator &
+          sleep 10
+          kill $!
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
