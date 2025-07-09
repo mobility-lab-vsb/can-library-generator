@@ -7,27 +7,25 @@ OPTIONS = {
     'argv_emulation': True,
     'packages': [
         'tkinter',
-        'PIL',        # pillow
+        'PIL',
         'sv_ttk',
         'cantools',
         'darkdetect',
         'bitstruct',
         'crccheck',
-        'python-can', # corresponds to python-can
         'ttkbootstrap',
         'ttkwidgets',
         'textparser'
     ],
     # 'iconfile': 'ico/muj_icon.icns',
     'includes': [
-        'PIL',        # pillow
+        'PIL',
         'tkinter',
         'sv_ttk',
         'cantools',
         'darkdetect',
         'bitstruct',
         'crccheck',
-        'python-can', # corresponds to python-can
         'ttkbootstrap',
         'ttkwidgets',
         'textparser'

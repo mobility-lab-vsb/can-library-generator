@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-#from ttkwidgets import CheckboxTreeview
 from src.ttkwidget.checkboxtreeview import CheckboxTreeview
 import cantools
 import os
