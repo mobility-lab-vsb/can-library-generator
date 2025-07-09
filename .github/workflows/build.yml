@@ -151,4 +151,4 @@ jobs:
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/CAN_library_generator
+          files: dist/CAN_Library_generator
