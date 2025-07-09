@@ -59,7 +59,7 @@ class DBCLibraryGenerator:
         self.files_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         # VSB logo
-        image_path = self.resource_path(os.path.join("src","png", "VSB-TUO_logo.png"))
+        image_path = self.resource_path(os.path.join("src", "png", "VSB-TUO_logo.png"))
         self.image = Image.open(image_path)
         self.image = self.image.resize((145, 62))
         logo = ImageTk.PhotoImage(self.image)

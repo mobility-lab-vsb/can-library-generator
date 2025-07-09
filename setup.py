@@ -13,7 +13,7 @@ OPTIONS = {
         'darkdetect',
         'bitstruct',
         'crccheck',
-        'python_can', # corresponds to python-can
+        'python-can', # corresponds to python-can
         'ttkbootstrap',
         'ttkwidgets',
         'textparser'
@@ -27,7 +27,7 @@ OPTIONS = {
         'darkdetect',
         'bitstruct',
         'crccheck',
-        'python_can', # corresponds to python-can
+        'python-can', # corresponds to python-can
         'ttkbootstrap',
         'ttkwidgets',
         'textparser'

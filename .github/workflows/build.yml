@@ -46,13 +46,13 @@ jobs:
 
       - name: Build Windows executable
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "src/png;png" --name "CAN_Library_Generator" main.py
+          pyinstaller --clean --onefile --windowed --add-data "src/png;src/png" --name "CAN_Library_Generator" main.py
 
       - name: Run the application
         run: |
           Start-Process -FilePath "dist/CAN_Library_Generator.exe"
           Start-Sleep -Seconds 10
-          Stop-Process -Name "CAN_Library_Generator" - ErrorAction SilentlyContinue
+          Stop-Process -Name "CAN_Library_Generator" -ErrorAction SilentlyContinue
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
@@ -130,7 +130,7 @@ jobs:
 
       - name: Build Linux executable
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "src/png:png" --name "Can_Library_Generator" main.py
+          pyinstaller --clean --onefile --windowed --add-data "src/png:src/png" --name "Can_Library_Generator" main.py
 
       - name: Run the application
         run: |
