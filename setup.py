@@ -2,7 +2,7 @@ from setuptools import setup
 
 APP = ['main.py']
 APP_NAME = 'CAN_Library_Generator'
-DATA_FILES = ['png']
+DATA_FILES = ['src/png']
 OPTIONS = {
     'argv_emulation': True,
     'packages': [
