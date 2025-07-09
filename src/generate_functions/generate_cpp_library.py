@@ -23,6 +23,11 @@ def _generate_file_header_comment(file_name, brief_description):
 * during subsequent generation.
 *
 ******************************************************************************/
+
+/**
+ * @file {file_name}
+ * @brief Defines the core structures and functions for CAN communication.
+ */
 \n"""
     return comment
 
@@ -132,7 +137,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
             continue
 
         struct_name = f"DBCMessage_{message_name.replace(' ', '')}"
-        hpp_code += f"/**\n * @brief   Structure for CAN message '{message_name}'.\n */\n"
+        hpp_code += f"// Structure for CAN message '{message_name}'.\n"
         hpp_code += f"struct {struct_name} {{\n"
         hpp_code += "    DBCMessageBase base;\n"
 
@@ -144,13 +149,13 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
         hpp_code += "};\n\n"
 
     # Declare messages in the header file as extern
-    hpp_code += "/**\n * @brief   Declaration of global CAN message instances.\n */\n"
+    hpp_code += "// Declaration of global CAN message instances.\n"
     for message_name in selected_messages:
         struct_name = f"DBCMessage_{message_name.replace(' ', '')}"
         hpp_code += f"extern {struct_name} {message_name};\n"
 
     # Message registry
-    hpp_code += "\n/**\n * @brief   Global registry of all defined CAN messages.\n */\n"
+    hpp_code += "// Global registry of all defined CAN messages.\n"
     hpp_code += "extern std::vector<DBCMessageBase*> dbc_all_messages;\n\n"
 
     # Function declaration with Doxygen comments
@@ -282,14 +287,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
 
     # Functions
     cpp_code += "// ---------------- Functions ----------------\n\n"
-    # Find message by ID function
-    cpp_code += _generate_function_doxygen_comment(
-        "dbc_find_message_by_id",
-        [("can_id", "The CAN ID of the message to find.")],
-        "DBCMessageBase*",
-        brief="Finds a CAN message in the registry by its ID.",
-        details="Returns a pointer to the found message or `nullptr` if the message was not found."
-    )
+    # Find a message by ID function
     cpp_code += """DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
     for (auto* msg : dbc_all_messages) {
         if (msg->id == static_cast<int>(can_id)) {
@@ -300,17 +298,8 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
 }\n\n"""
 
     # Parse signal function
-    cpp_code += _generate_function_doxygen_comment(
-        "dbc_parse_signal",
-        [("data", "Pointer to the array of CAN data bytes."),
-         ("startBit", "Start bit of the signal."),
-         ("length", "Length of the signal in bits."),
-         ("byteOrder", "String specifying byte order (\"little_endian\" or \"big_endian\").")],
-        "uint32_t",
-        brief="Parses the raw signal value from CAN data.",
-        details="Extracts signal bits from the data array according to the specified start bit, length, and byte order."
-    )
-    cpp_code += """uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder) {
+    cpp_code += """// Parse signal function
+uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder) {
     uint64_t raw = 0;
 
     for (int i = 0; i < 8; ++i) {
@@ -335,16 +324,8 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
 }\n\n"""
 
     # Unpackage message function
-    cpp_code += _generate_function_doxygen_comment(
-        "dbc_unpackage_message",
-        [("can_id", "CAN ID of the received message."),
-         ("dlc", "Data Length Code (DLC) of the received message."),
-         ("data", "Pointer to the array of received CAN data bytes.")],
-        "bool",
-        brief="Unpackages a received CAN message and updates signal values.",
-        details={"true": "Message was successfully unpackaged.", "false": "Message not found or DLC mismatch."}
-    )
-    cpp_code += """bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+    cpp_code += """// Unpackage message function
+bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     if (!msg || msg->dlc != dlc) {
         std::cout << "Message not found or DLC mismatch!" << std::endl;
@@ -369,19 +350,9 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     return true;
 }\n\n"""
 
-    # Insert signal function
-    cpp_code += _generate_function_doxygen_comment(
-        "dbc_insert_signal",
-        [("data", "Pointer to the byte array where the signal should be inserted."),
-         ("raw_value", "Raw signal value to insert."),
-         ("start_bit", "Start bit of the signal."),
-         ("length", "Length of the signal in bits."),
-         ("byteOrder", "String specifying byte order (\"little_endian\" or \"big_endian\").")],
-        "void",
-        brief="Inserts the raw signal value into a CAN data byte array.",
-        details="Writes the bits of the raw signal value into the data array according to the specified start bit, length, and byte order."
-    )
-    cpp_code += """void dbc_insert_signal(uint8_t* data, uint32_t raw_value, uint16_t startBit, uint8_t length, std::string byteOrder) {
+    # Insert signal data function
+    cpp_code += """// Insert signal data function
+void dbc_insert_signal(uint8_t* data, uint32_t raw_value, uint16_t startBit, uint8_t length, std::string byteOrder) {
     for (int i = 0; i < length; i++) {
         uint8_t bitIndex;
 
@@ -416,16 +387,8 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
 }\n\n"""
 
     # Package message function
-    cpp_code += _generate_function_doxygen_comment(
-        "dbc_package_message",
-        [("can_id", "CAN ID of the message to package."),
-         ("dlc", "Data Length Code (DLC) of the message to package."),
-         ("data", "Pointer to the byte array where message signals should be packaged.")],
-        "bool",
-        brief="Packages CAN message signals into a data array for transmission.",
-        details={"true": "Message was successfully packaged.", "false": "Message not found or DLC mismatch."}
-    )
-    cpp_code += """bool dbc_package_message(uint32_t can_id, uint8_t dlc, uint8_t* data) {
+    cpp_code += """// Package message function
+bool dbc_package_message(uint32_t can_id, uint8_t dlc, uint8_t* data) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     if (!msg || msg->dlc != dlc) {
         std::cout << "Message not found or DLC mismatch!" << std::endl;

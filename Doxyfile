@@ -1,0 +1,24 @@
+PROJECT_NAME           = CAN Library Documentation
+OUTPUT_DIRECTORY       = docs
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+
+INPUT                  = library/
+RECURSIVE              = YES
+FILE_PATTERNS          = *.h *.c *.cpp
+
+EXTRACT_ALL            = NO
+EXTRACT_LOCAL_CLASSES  = NO
+EXTRACT_STATIC         = NO
+EXTRACT_PRIVATE        = NO
+
+HIDE_UNDOC_MEMBERS     = YES
+HIDE_UNDOC_CLASSES     = YES
+
+JAVADOC_AUTOBRIEF      = NO
+QT_AUTOBRIEF           = NO
+MULTILINE_CPP_IS_BRIEF = NO
+
+WARN_NO_PARAMDOC       = NO
+QUIET                  = YES
+HAVE_DOT               = YES
