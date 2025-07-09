@@ -111,7 +111,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/CAN_Library_Generator.app
+            dist/CAN_Library_Generator.app/
             dist/CAN_Library_Generator.dmg
 
   build-linux:
