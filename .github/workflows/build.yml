@@ -125,6 +125,20 @@ jobs:
         env:
           MOUNT_POINT: ${{ steps.mount_dmg.outputs.mount_point }}
 
+      - name: Simulate double-click using open + detect crash
+        run: |
+          open "$MOUNT_POINT/CAN_Library_Generator.app"
+          sleep 10
+          # Hledání crashu v system logu
+          if log show --predicate 'eventMessage contains "CAN_Library_Generator"' --last 1m | grep -q "crashed"; then
+            echo "❌ App crashed on GUI launch (double-click style)"
+            exit 1
+          else
+            echo "✅ App launched via open (double-click) successfully"
+          fi
+        env:
+          MOUNT_POINT: ${{ steps.mount_dmg.outputs.mount_point }}
+
       - name: Unmount DMG
         if: always()
         run: |
