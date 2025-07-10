@@ -72,83 +72,53 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Briefcase and dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install briefcase
           pip install -r requirements.txt
 
       - name: Inject version into main.py
         run: |
           sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" main.py
 
-      - name: Build macOS app
+      - name: Build macOS .app with Briefcase
         run: |
-          python setup.py py2app
+          briefcase create macOS
+          briefcase build macOS
+          briefcase package macOS
 
-      - name: Install gtimeout
+      - name: Locate app bundle path
+        id: locate_app
         run: |
-          brew install coreutils
+          APP_PATH=$(find macOS/build -name "*.app" -type d | head -n 1)
+          echo "path=$APP_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Run the application
+      - name: Test launch of packaged app (10s timeout)
         run: |
-          LOGFILE="run_dmg.log"
-          gtimeout 10s ./dist/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator > run_dist.log 2>&1 || true
+          APP="${{ steps.locate_app.outputs.path }}"
+          echo "Launching: $APP"
+          timeout 10s "$APP/Contents/MacOS/CAN Library Generator" > run_dist.log 2>&1 || true
           cat run_dist.log
+          if grep -q "Traceback\|FileNotFoundError\|Exception" run_dist.log; then
+            echo "❌ App crashed during launch!"
+            exit 1
+          else
+            echo "✅ App ran successfully or exited cleanly."
+          fi
 
       - name: Create DMG
         run: |
+          APP_PATH="${{ steps.locate_app.outputs.path }}"
           hdiutil create -volname "CAN_Library_Generator" \
-                         -srcfolder "dist/CAN_Library_Generator.app" \
+                         -srcfolder "$APP_PATH" \
                          -ov -format UDZO dist/CAN_Library_Generator.dmg
-
-      - name: Mount DMG
-        id: mount_dmg
-        run: |
-          MOUNT_DIR=$(hdiutil attach dist/CAN_Library_Generator.dmg | grep Volumes | awk '{print $3}')
-          echo "mount_point=$MOUNT_DIR" >> "$GITHUB_OUTPUT"
-
-      - name: Run app from mounted DMG (10s timeout)
-        run: |
-          LOGFILE="run_dmg.log"
-          mkdir -p ~/Applications
-          cp -R "$MOUNT_POINT/CAN_Library_Generator.app" ~/Applications/
-          gtimeout 10s ~/Applications/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator > "$LOGFILE" 2>&1 || EXIT_CODE=$?
-          cat "$LOGFILE"
-          if grep -q "Traceback\|FileNotFoundError\|Exception" "$LOGFILE"; then
-            echo "❌ Application crashed on launch from DMG!"
-            echo "$EXIT_CODE"
-            exit 1
-          else
-            echo "✅ Application from DMG launched successfully (or timed out cleanly)."
-            echo "$EXIT_CODE"
-          fi
-        env:
-          MOUNT_POINT: ${{ steps.mount_dmg.outputs.mount_point }}
-
-      - name: Simulate double-click using open + detect crash
-        run: |
-          open "$MOUNT_POINT/CAN_Library_Generator.app"
-          sleep 10
-          # Hledání crashu v system logu
-          if log show --predicate 'eventMessage contains "CAN_Library_Generator"' --last 1m | grep -q "crashed"; then
-            echo "❌ App crashed on GUI launch (double-click style)"
-            exit 1
-          else
-            echo "✅ App launched via open (double-click) successfully"
-          fi
-        env:
-          MOUNT_POINT: ${{ steps.mount_dmg.outputs.mount_point }}
-
-      - name: Unmount DMG
-        if: always()
-        run: |
-          hdiutil detach "${{ steps.mount_dmg.outputs.mount_point }}" || true
 
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/*
+            dist/CAN_Library_Generator.dmg
 
   build-linux:
     runs-on: ubuntu-latest

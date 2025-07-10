@@ -235,13 +235,11 @@ class DBCLibraryGenerator:
             messagebox.showerror("Generation Error", f"An error occurred during {library_name} generation: {e}")
 
 
-if __name__ == '__main__':
-    # Create main window
+def main():
     root = tk.Tk()
-
-    # Initialize the application
     app = DBCLibraryGenerator(root)
     print("CAN_Library_Generator started...")
-
-    # Run app
     root.mainloop()
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,76 @@
+[build-system]
+requires = ["briefcase"]
+build-backend = "briefcase.build_system"
+
+[project]
+name = "CAN_Library_Generator"
+version = "1.0.0"
+description = "GUI tool for generating C/C++ libraries from DBC files"
+authors = [
+    { name = "Adam Rychtář", email = "rychtar.adam@email.cz" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "altgraph==0.17.4",
+    "argparse-addons==0.12.0",
+    "bitstruct==8.20.0",
+    "cantools==40.2.1",
+    "crccheck==1.3.0",
+    "darkdetect==0.8.0",
+    "diskcache==5.6.3",
+    "macholib==1.16.3",
+    "modulegraph==0.19.6",
+    "packaging==24.2",
+    "pefile==2023.2.7",
+    "pillow==10.4.0",
+    "pywin32-ctypes==0.2.3",
+    "sv_ttk==2.6.1",
+    "textparser==0.24.0",
+    "ttkbootstrap==1.13.12",
+    "ttkwidgets==0.13.0",
+    "typing_extensions==4.12.2",
+    "wrapt==1.17.2"
+]
+[project.license]
+file = "LICENSE"
+
+[tool.briefcase]
+project_name = "CAN Library Generator"
+bundle = "cz.adamrychtar"
+version = "1.0.0"
+description = "GUI tool for generating C/C++ libraries from DBC files"
+author = "Adam Rychtář"
+author_email = "rychtar.adam@email.cz"
+
+[tool.briefcase.app]
+formal_name = "CAN Library Generator"
+description = "GUI tool for generating C/C++ libraries from DBC files"
+sources = ["."]
+entry_point = "main:main"
+#icon = "icon.icns"
+
+requires = [
+    "altgraph==0.17.4",
+    "argparse-addons==0.12.0",
+    "bitstruct==8.20.0",
+    "cantools==40.2.1",
+    "crccheck==1.3.0",
+    "darkdetect==0.8.0",
+    "diskcache==5.6.3",
+    "macholib==1.16.3",
+    "modulegraph==0.19.6",
+    "packaging==24.2",
+    "pefile==2023.2.7",
+    "pillow==10.4.0",
+    "pywin32-ctypes==0.2.3",
+    "sv_ttk==2.6.1",
+    "textparser==0.24.0",
+    "ttkbootstrap==1.13.12",
+    "ttkwidgets==0.13.0",
+    "typing_extensions==4.12.2",
+    "wrapt==1.17.2"
+]
+
+[tool.briefcase.app.macOS]
+requires = []
