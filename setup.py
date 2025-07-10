@@ -2,7 +2,7 @@ from setuptools import setup
 
 APP = ['main.py']
 APP_NAME = 'CAN_Library_Generator'
-DATA_FILES = ['src/png']
+#DATA_FILES = ['src/png']
 OPTIONS = {
     'argv_emulation': True,
     'packages': [
@@ -17,7 +17,6 @@ OPTIONS = {
         'ttkwidgets',
         'textparser'
     ],
-    # 'iconfile': 'ico/muj_icon.icns',
     'includes': [
         'PIL',
         'tkinter',
@@ -29,13 +28,15 @@ OPTIONS = {
         'ttkbootstrap',
         'ttkwidgets',
         'textparser'
-    ]
+    ],
+    'resources': ['src/png']
+    #'iconfile': 'ico/muj_icon.icns',
 }
 
 setup(
     app=APP,
     name=APP_NAME,
-    data_files=DATA_FILES,
+    #data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
 )
