@@ -91,7 +91,7 @@ jobs:
 
       - name: Run the application
         run: |
-          gtimeout 10s./dist/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator > run.log 2>&1 || true
+          gtimeout 10s ./dist/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator > run.log 2>&1 || true
           if grep -q "Traceback (most recent call last):" run.log; then
             echo "❌ App crashed:"
             cat run.log
