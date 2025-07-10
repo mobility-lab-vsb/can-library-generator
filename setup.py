@@ -21,6 +21,9 @@ DATA_FILES = find_data_files('src/png', 'src/png')
 print(DATA_FILES)
 OPTIONS = {
     'argv_emulation': True,
+    'plist': {
+        'LSUIElement': False,
+    },
     'packages': [
         'tkinter',
         'PIL',
