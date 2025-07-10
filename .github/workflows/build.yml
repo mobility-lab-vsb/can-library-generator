@@ -110,6 +110,7 @@ jobs:
       - name: Run app from mounted DMG (10s timeout)
         run: |
           LOGFILE="run_dmg.log"
+          mkdir -p ~/Applications
           cp -R "$MOUNT_POINT/CAN_Library_Generator.app" ~/Applications/
           gtimeout 10s ~/Applications/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator > "$LOGFILE" 2>&1 || EXIT_CODE=$?
           cat "$LOGFILE"
