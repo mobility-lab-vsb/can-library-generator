@@ -241,6 +241,7 @@ if __name__ == '__main__':
 
     # Initialize the application
     app = DBCLibraryGenerator(root)
+    print("CAN_Library_Generator started...")
 
     # Run app
     root.mainloop()
