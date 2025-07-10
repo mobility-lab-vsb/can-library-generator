@@ -87,9 +87,7 @@ jobs:
 
       - name: Run the application
         run: |
-          open dist/CAN_Library_Generator.app
-          sleep 10
-          pkill -f "CAN_Library_Generator" || true
+          ./dist/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator || exit 1
 
       - name: Create DMG
         run: |
