@@ -205,13 +205,14 @@ class DBCLibraryGenerator:
                 h_file_path = os.path.join(directory, f"{library_name}.h")
                 with open(h_file_path, "w") as h_file:
                     h_file.write(h_code)
-                messagebox.showinfo("Success", f"Generated {library_name} in {h_file_path}")
 
                 # Save generated implementation file
                 c_file_path = os.path.join(directory, f"{library_name}.c")
                 with open(c_file_path, "w") as c_file:
                     c_file.write(c_code)
-                messagebox.showinfo("Success", f"Generated {library_name} in {c_file_path}")
+
+                messagebox.showinfo("Success", f"Generated {library_name}.h and {library_name}.c \n "
+                                               f"files in {directory}")
 
             else:
                 # Generate C++ header and implementation files
@@ -221,13 +222,14 @@ class DBCLibraryGenerator:
                 hpp_file_path = os.path.join(directory, f"{library_name}.hpp")
                 with open(hpp_file_path, "w") as hpp_file:
                     hpp_file.write(hpp_code)
-                messagebox.showinfo("Success", f"Generated {library_name} in {hpp_file_path}")
 
                 # Save generated implementation file
                 cpp_file_path = os.path.join(directory, f"{library_name}.cpp")
                 with open(cpp_file_path, "w") as cpp_file:
                     cpp_file.write(cpp_code)
-                messagebox.showinfo("Success", f"Generated {library_name} in {cpp_file_path}")
+
+                messagebox.showinfo("Success", f"Generated {library_name}.h and {library_name}.c \n "
+                                               f"files in {directory}")
 
         except Exception as e:
             messagebox.showerror("Generation Error", f"An error occurred during {library_name} generation: {e}")

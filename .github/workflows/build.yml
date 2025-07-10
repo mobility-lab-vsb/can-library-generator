@@ -106,6 +106,24 @@ jobs:
                          -srcfolder "dist/CAN_Library_Generator.app" \
                          -ov -format UDZO dist/CAN_Library_Generator.dmg
 
+      - name: Mount DMG
+        id: mount_dmg
+        run: |
+          MOUNT_DIR=$(hdiutil attach dist/CAN_Library_Generator.dmg | grep Volumes | awk '{print $3}')
+          echo "mount_point=$MOUNT_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Run app from mounted DMG (10s timeout)
+        run: |
+          brew install coreutils
+          gtimeout 10s "$MOUNT_POINT/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator" || true
+        env:
+          MOUNT_POINT: ${{ steps.mount_dmg.outputs.mount_point }}
+
+      - name: Unmount DMG
+        if: always()
+        run: |
+          hdiutil detach "${{ steps.mount_dmg.outputs.mount_point }}" || true
+
       - name: Upload release assets
         uses: softprops/action-gh-release@v1
         with:
