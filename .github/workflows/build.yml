@@ -115,7 +115,14 @@ jobs:
       - name: Run app from mounted DMG (10s timeout)
         run: |
           brew install coreutils
-          gtimeout 10s "$MOUNT_POINT/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator" || true
+          gtimeout 10s "$MOUNT_POINT/CAN_Library_Generator.app/Contents/MacOS/CAN_Library_Generator" > run.log 2>&1 || true
+          if grep -q "Traceback (most recent call last):" run.log; then
+            echo "❌ App crashed:"
+            cat run.log
+            exit 1
+          else
+            echo "✅ App ran successfully"
+          fi
         env:
           MOUNT_POINT: ${{ steps.mount_dmg.outputs.mount_point }}
 
