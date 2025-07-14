@@ -3,7 +3,7 @@ requires = ["briefcase"]
 build-backend = "briefcase.build_system"
 
 [project]
-name = "can_library_generator"
+name = "can-library-generator"
 version = "1.0.0"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 readme = "README.md"
@@ -32,13 +32,13 @@ url = "https://github.com/mobility-lab-vsb/can-library-generator"
 author = "Adam Rychtar"
 author_email = "rychtar.adam@email.cz"
 
-[tool.briefcase.app.can_library_generator]
+[tool.briefcase.app.can-library-generator]
 formal_name = "CANLibraryGenerator"
-app_name = "can_library_generator"
+app_name = "can-library-generator"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 long_description = "Generate C/C++ code from CAN DBC files via a GUI interface."
-sources = ["src/can_library_generator"]
-entry_point = "can_library_generator.__main__:main"
+sources = ["src/can-library-generator"]
+entry_point = "can-library-generator.__main__:main"
 
 requires = [
     "bitstruct==8.21.0",
@@ -52,5 +52,5 @@ requires = [
     "python-can==4.5.0",
 ]
 
-[tool.briefcase.app.can_library_generator.macOS]
+[tool.briefcase.app.can-library-generator.macOS]
 universal_build = true
