@@ -34,6 +34,7 @@ author_email = "rychtar.adam@email.cz"
 
 [tool.briefcase.app.can_library_generator]
 formal_name = "CANLibraryGenerator"
+app_name = "canlibrarygenerator"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 long_description = "Generate C/C++ code from CAN DBC files via a GUI interface."
 sources = ["src/can_library_generator"]
