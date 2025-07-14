@@ -3,8 +3,8 @@ import subprocess
 import cantools
 import shutil
 import sys
-from src.can-library-generator.generate_functions.generate_c_library import generate_c_code
-from src.can-library-generator.generate_functions.generate_cpp_library import generate_cpp_code
+from src.canlibrarygenerator.generate_functions.generate_c_library import generate_c_code
+from src.canlibrarygenerator.generate_functions.generate_cpp_library import generate_cpp_code
 from collections import namedtuple
 
 # Configuration

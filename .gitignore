@@ -7,6 +7,6 @@ test.py
 ico
 logs
 build
-!src/can-library-generator/generate_functions/generate_c_library.py
-!src/can-library-generator/generate_functions/generate_cpp_library.py
-!src/can-library-generator/ttkwidget/checkboxtreeview.py
+!src/canlibrarygenerator/generate_functions/generate_c_library.py
+!src/canlibrarygenerator/generate_functions/generate_cpp_library.py
+!src/canlibrarygenerator/ttkwidget/checkboxtreeview.py
