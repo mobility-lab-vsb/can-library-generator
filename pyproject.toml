@@ -25,7 +25,7 @@ dependencies = [
 ]
 
 [tool.briefcase]
-project_name = "CAN Library Generator"
+project_name = "CAN_Library_Generator"
 bundle = "cz.adamrychtar"
 version = "1.0.0"
 url = "https://github.com/mobility-lab-vsb/can-library-generator"
@@ -33,7 +33,7 @@ author = "Adam Rychtar"
 author_email = "rychtar.adam@email.cz"
 
 [tool.briefcase.app.can_library_generator]
-formal_name = "CAN Library Generator"
+formal_name = "CANLibraryGenerator"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 long_description = "Generate C/C++ code from CAN DBC files via a GUI interface."
 sources = ["src/can_library_generator"]

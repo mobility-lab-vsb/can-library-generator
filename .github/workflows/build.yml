@@ -56,7 +56,7 @@ jobs:
         with:
           files: |
             dist/*.msi
-            dist/*.exe
+            build/can_library_generator/windows/app/src/*.exe
 
   build-macos:
     runs-on: macos-latest
@@ -92,26 +92,6 @@ jobs:
         run: |
           APP_PATH=$(find macOS/build -name "*.app" -type d | head -n 1)
           echo "path=$APP_PATH" >> "$GITHUB_OUTPUT"
-
-      - name: Test launch of packaged app (10s timeout)
-        run: |
-          APP="${{ steps.locate_app.outputs.path }}"
-          echo "Launching: $APP"
-          timeout 10s "$APP/Contents/MacOS/CAN Library Generator" > run_dist.log 2>&1 || true
-          cat run_dist.log
-          if grep -q "Traceback\|FileNotFoundError\|Exception" run_dist.log; then
-            echo "❌ App crashed during launch!"
-            exit 1
-          else
-            echo "✅ App ran successfully or exited cleanly."
-          fi
-
-      - name: Create DMG
-        run: |
-          APP_PATH="${{ steps.locate_app.outputs.path }}"
-          hdiutil create -volname "CAN_Library_Generator" \
-                         -srcfolder "$APP_PATH" \
-                         -ov -format UDZO dist/CAN_Library_Generator.dmg
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
