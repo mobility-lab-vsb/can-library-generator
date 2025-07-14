@@ -34,9 +34,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install Briefcase and dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install briefcase
           pip install -r requirements.txt
 
       - name: Inject version into main.py
@@ -44,20 +45,18 @@ jobs:
         run: |
           (Get-Content main.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content main.py
 
-      - name: Build Windows executable
+      - name: Build Windows app with Briefcase
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "src/png;src/png" --name "CAN_Library_Generator" main.py
-
-      - name: Run the application
-        run: |
-          Start-Process -FilePath "dist/CAN_Library_Generator.exe"
-          Start-Sleep -Seconds 10
-          Stop-Process -Name "CAN_Library_Generator" -ErrorAction SilentlyContinue
+          briefcase create windows
+          briefcase build windows
+          briefcase package windows
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/CAN_Library_Generator.exe
+          files: |
+            windows/dist/*.msi
+            windows/dist/*.exe
 
   build-macos:
     runs-on: macos-latest
@@ -82,7 +81,7 @@ jobs:
         run: |
           sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" main.py
 
-      - name: Build macOS .app with Briefcase
+      - name: Build macOS app with Briefcase
         run: |
           briefcase create macOS
           briefcase build macOS
@@ -114,11 +113,10 @@ jobs:
                          -srcfolder "$APP_PATH" \
                          -ov -format UDZO dist/CAN_Library_Generator.dmg
 
-      - name: Upload release assets
+      - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            dist/CAN_Library_Generator.dmg
+          files: dist/CAN_Library_Generator.dmg
 
   build-linux:
     runs-on: ubuntu-latest
@@ -133,28 +131,30 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgdk-pixbuf2.0-0 libglib2.0-0
+          sudo apt-get install -y libgdk-pixbuf2.0-0 libglib2.0-0 libxkbcommon-x11-0
+
+      - name: Install Briefcase and dependencies
+        run: |
           python -m pip install --upgrade pip
+          pip install briefcase
           pip install -r requirements.txt
 
       - name: Inject version into main.py
         run: |
           sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" main.py
 
-      - name: Build Linux executable
+      - name: Build Linux app with Briefcase
         run: |
-          pyinstaller --clean --onefile --windowed --add-data "src/png:src/png" --name "CAN_Library_Generator" --hidden-import "PIL._tkinter_finder" main.py
-
-      - name: Run the application
-        run: |
-          xvfb-run ./dist/CAN_Library_Generator &
-          sleep 10
-          kill $!
+          briefcase create linux
+          briefcase build linux
+          briefcase package linux
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/CAN_Library_Generator
+          files: |
+            linux/dist/*.AppImage
+            linux/dist/*.deb
