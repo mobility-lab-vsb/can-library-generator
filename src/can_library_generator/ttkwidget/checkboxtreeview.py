@@ -15,12 +15,17 @@ from PIL import Image, ImageTk
 
 
 def resource_path(relative_path):
-    base_path = getattr(sys, '_MEIPASS', os.path.abspath(""))
-    return os.path.join(base_path, relative_path)
+    if hasattr(sys, '_MEIPASS'):
+        base_path = sys._MEIPASS
+        return os.path.join(base_path, relative_path)
+    else:
+        # Předpokládáme, že relative_path je relativní k modulu __main__ (nebo aktuální složce)
+        base_dir = os.path.dirname(__file__)  # složka, kde je aktuální skript (__main__.py)
+        return os.path.abspath(os.path.join(base_dir, relative_path))
 
-IM_CHECKED = resource_path(os.path.join("src", "png", "checked.png"))
-IM_UNCHECKED = resource_path(os.path.join("src", "png", "unchecked.png"))
-IM_TRISTATE = resource_path(os.path.join("src", "png", "tristate.png"))
+IM_CHECKED = resource_path(os.path.join("..", "png", "checked.png"))
+IM_UNCHECKED = resource_path(os.path.join("..", "png", "unchecked.png"))
+IM_TRISTATE = resource_path(os.path.join("..", "png", "tristate.png"))
 
 
 class CheckboxTreeview(ttk.Treeview):

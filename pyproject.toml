@@ -3,14 +3,16 @@ requires = ["briefcase"]
 build-backend = "briefcase.build_system"
 
 [project]
-name = "CAN_Library_Generator"
+name = "can_library_generator"
 version = "1.0.0"
 description = "GUI tool for generating C/C++ libraries from DBC files"
+readme = "README.md"
+requires-python = ">=3.10"
+license.file = "LICENSE"
 authors = [
     { name = "Adam Rychtář", email = "rychtar.adam@email.cz" }
 ]
-readme = "README.md"
-requires-python = ">=3.10"
+
 dependencies = [
     "altgraph==0.17.4",
     "argparse-addons==0.12.0",
@@ -27,28 +29,24 @@ dependencies = [
     "pywin32-ctypes==0.2.3",
     "sv_ttk==2.6.1",
     "textparser==0.24.0",
-    "ttkbootstrap==1.13.12",
-    "ttkwidgets==0.13.0",
     "typing_extensions==4.12.2",
     "wrapt==1.17.2"
 ]
-[project.license]
-file = "LICENSE"
 
 [tool.briefcase]
 project_name = "CAN Library Generator"
 bundle = "cz.adamrychtar"
 version = "1.0.0"
-description = "GUI tool for generating C/C++ libraries from DBC files"
+url = "https://github.com/mobility-lab-vsb/can-library-generator"
 author = "Adam Rychtář"
 author_email = "rychtar.adam@email.cz"
 
-[tool.briefcase.app]
+[tool.briefcase.app.can_library_generator]
 formal_name = "CAN Library Generator"
 description = "GUI tool for generating C/C++ libraries from DBC files"
-sources = ["."]
-entry_point = "main:main"
-#icon = "icon.icns"
+long_description = "Generate C/C++ code from CAN DBC files via a GUI interface."
+sources = ["src/can_library_generator"]
+entry_point = "can_library_generator.__main__:main"
 
 requires = [
     "altgraph==0.17.4",
@@ -66,11 +64,9 @@ requires = [
     "pywin32-ctypes==0.2.3",
     "sv_ttk==2.6.1",
     "textparser==0.24.0",
-    "ttkbootstrap==1.13.12",
-    "ttkwidgets==0.13.0",
     "typing_extensions==4.12.2",
     "wrapt==1.17.2"
 ]
 
-[tool.briefcase.app.macOS]
-requires = []
+[tool.briefcase.app.can_library_generator.macOS]
+universal_build = true

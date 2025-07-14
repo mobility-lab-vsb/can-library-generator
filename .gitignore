@@ -5,8 +5,8 @@ test.py
 .vs
 .idea
 ico
-
-!src/generate_functions/generate_c_library.py
-!src/generate_functions/generate_cpp_library.py
-
-!src/ttkwidget/checkboxtreeview.py
+logs
+build
+!src/can_library_generator/generate_functions/generate_c_library.py
+!src/can_library_generator/generate_functions/generate_cpp_library.py
+!src/can_library_generator/ttkwidget/checkboxtreeview.py

@@ -1,15 +1,16 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from src.ttkwidget.checkboxtreeview import CheckboxTreeview
+from .ttkwidget.checkboxtreeview import CheckboxTreeview
 import cantools
 import os
 import sv_ttk
 import darkdetect
 import sys
+import importlib.resources
 from PIL import Image, ImageTk
 
-from src.generate_functions.generate_c_library import generate_c_code
-from src.generate_functions.generate_cpp_library import generate_cpp_code
+from .generate_functions.generate_c_library import generate_c_code
+from .generate_functions.generate_cpp_library import generate_cpp_code
 
 # Define your app version
 __version__ = "dev"
@@ -28,8 +29,13 @@ class DBCLibraryGenerator:
         self.setup_gui()
 
     def resource_path(self, relative_path):
-        base_path = getattr(sys, '_MEIPASS', os.path.abspath("."))
-        return os.path.join(base_path, relative_path)
+        if hasattr(sys, '_MEIPASS'):
+            base_path = sys._MEIPASS
+            return os.path.join(base_path, relative_path)
+        else:
+            # Předpokládáme, že relative_path je relativní k modulu __main__ (nebo aktuální složce)
+            base_dir = os.path.dirname(__file__)  # složka, kde je aktuální skript (__main__.py)
+            return os.path.abspath(os.path.join(base_dir, relative_path))
 
     def setup_gui(self):
         """Initialize the GUI components."""
@@ -58,7 +64,7 @@ class DBCLibraryGenerator:
         self.files_label.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
         # VSB logo
-        image_path = self.resource_path(os.path.join("src", "png", "VSB-TUO_logo.png"))
+        image_path = self.resource_path(os.path.join("png", "VSB-TUO_logo.png"))
         self.image = Image.open(image_path)
         self.image = self.image.resize((145, 62))
         logo = ImageTk.PhotoImage(self.image)
