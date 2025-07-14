@@ -14,7 +14,7 @@ authors = [
 ]
 
 dependencies = [
-    "bitstruct==8.20.0",
+    "bitstruct==8.21.0",
     "cantools==40.2.1",
     "crccheck==1.3.0",
     "darkdetect==0.8.0",
@@ -40,7 +40,7 @@ sources = ["src/can_library_generator"]
 entry_point = "can_library_generator.__main__:main"
 
 requires = [
-    "bitstruct==8.20.0",
+    "bitstruct==8.21.0",
     "cantools==40.2.1",
     "crccheck==1.3.0",
     "darkdetect==0.8.0",
