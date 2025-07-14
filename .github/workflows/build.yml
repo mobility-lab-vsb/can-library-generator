@@ -43,7 +43,7 @@ jobs:
       - name: Inject version into __main__.py
         shell: pwsh
         run: |
-          (Get-Content __main__.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content __main__.py
+          (Get-Content src/can_library_generator/__main__.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content src/can_library_generator/__main__.py
 
       - name: Build Windows app with Briefcase
         run: |
@@ -79,7 +79,7 @@ jobs:
 
       - name: Inject version into __main__.py
         run: |
-          sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" __main__.py
+          sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/can_library_generator/__main__.py
 
       - name: Build macOS app with Briefcase
         run: |
@@ -144,7 +144,7 @@ jobs:
 
       - name: Inject version into __main__.py
         run: |
-          sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" __main__.py
+          sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/can_library_generator/__main__.py
 
       - name: Build Linux app with Briefcase
         run: |
