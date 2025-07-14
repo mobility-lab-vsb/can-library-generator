@@ -55,8 +55,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            windows/dist/*.msi
-            windows/dist/*.exe
+            dist/*.msi
+            dist/*.exe
 
   build-macos:
     runs-on: macos-latest
@@ -85,7 +85,7 @@ jobs:
         run: |
           briefcase create macOS
           briefcase build macOS
-          briefcase package macOS
+          briefcase package macOS --adhoc-sign
 
       - name: Locate app bundle path
         id: locate_app
@@ -156,5 +156,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            linux/dist/*.AppImage
-            linux/dist/*.deb
+            dist/*.AppImage
+            dist/*.deb
