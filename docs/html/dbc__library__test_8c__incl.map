@@ -1,5 +1,5 @@
-<map id="src/can_library_generator/temp/dbc_library_test.c" name="src/can_library_generator/temp/dbc_library_test.c">
-<area shape="rect" id="Node000001" title="Defines the core structures and functions for CAN communication." alt="" coords="89,5,275,45"/>
+<map id="src/canlibrarygenerator/temp/dbc_library_test.c" name="src/canlibrarygenerator/temp/dbc_library_test.c">
+<area shape="rect" id="Node000001" title="Defines the core structures and functions for CAN communication." alt="" coords="93,5,271,45"/>
 <area shape="rect" id="Node000002" href="$dbc__library__test_8h.html" title="Defines the core structures and functions for CAN communication." alt="" coords="113,93,251,119"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,46,185,79,179,79,179,46"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="5,167,76,192"/>
