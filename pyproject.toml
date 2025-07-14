@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license.file = "LICENSE"
 authors = [
-    { name = "Adam Rychtář", email = "rychtar.adam@email.cz" }
+    { name = "Adam Rychtar", email = "rychtar.adam@email.cz" }
 ]
 
 dependencies = [
@@ -29,7 +29,7 @@ project_name = "CAN Library Generator"
 bundle = "cz.adamrychtar"
 version = "1.0.0"
 url = "https://github.com/mobility-lab-vsb/can-library-generator"
-author = "Adam Rychtář"
+author = "Adam Rychtar"
 author_email = "rychtar.adam@email.cz"
 
 [tool.briefcase.app.can_library_generator]
