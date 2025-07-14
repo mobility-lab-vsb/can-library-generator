@@ -49,7 +49,7 @@ jobs:
         run: |
           briefcase create windows
           briefcase build windows
-          briefcase package windows
+          briefcase package windows --adhoc-sign
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
@@ -135,5 +135,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/*.AppImage
             dist/*.deb

@@ -4,7 +4,7 @@ build-backend = "briefcase.build_system"
 
 [project]
 name = "canlibrarygenerator"
-version = "1.0.0"
+version = "´0.3.0"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 readme = "README.md"
 requires-python = ">=3.10"
