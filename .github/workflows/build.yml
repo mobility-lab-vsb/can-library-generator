@@ -86,12 +86,6 @@ jobs:
           briefcase build macOS
           briefcase package macOS --adhoc-sign
 
-      - name: Locate app bundle path
-        id: locate_app
-        run: |
-          APP_PATH=$(find macOS/build -name "*.app" -type d | head -n 1)
-          echo "path=$APP_PATH" >> "$GITHUB_OUTPUT"
-
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
