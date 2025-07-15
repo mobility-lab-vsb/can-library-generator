@@ -137,7 +137,7 @@ jobs:
             -v "$PWD":/app \
             -v "$PWD/dist":/app/dist \
             -w /app \
-            python:3.12-slim bash -c "
+            python:3.12 bash -c "
               apt-get update && \
               apt-get install -y python3-pyqt6 && \
               apt-get install -y git libgdk-pixbuf2.0-0 libglib2.0-0 libxkbcommon-x11-0 build-essential curl sed lsb-release && \
@@ -145,7 +145,8 @@ jobs:
               ln -s /usr/lib/qt6/bin/qmake6 /usr/bin/qmake || true && \
               pip install --upgrade pip && \
               pip install briefcase && \
-              pip install --no-deps --no-index -r <(grep -v '^PyQt6' requirements.txt) && \
+              grep -v '^PyQt6' requirements.txt > clean_requirements.txt && \
+              pip install --no-deps --no-index -r clean_requirements.txt && \
               sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
               briefcase create linux && \
               briefcase build linux && \
