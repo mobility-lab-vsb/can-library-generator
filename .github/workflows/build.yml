@@ -141,7 +141,8 @@ jobs:
               apt-get update && \
               apt-get install -y python3-pyqt6 && \
               apt-get install -y git libgdk-pixbuf2.0-0 libglib2.0-0 libxkbcommon-x11-0 build-essential curl sed && \
-              ln -s /usr/lib/qt6/bin/qmake6 /usr/bin/qmake || true
+              ln -sf $(which python) /usr/bin/python3 && \
+              ln -s /usr/lib/qt6/bin/qmake6 /usr/bin/qmake || true && \
               pip install --upgrade pip && \
               pip install briefcase && \
               pip install --no-deps --no-index -r <(grep -v '^PyQt6' requirements.txt) && \
