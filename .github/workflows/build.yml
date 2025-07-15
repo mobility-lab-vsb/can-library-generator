@@ -164,7 +164,7 @@ jobs:
               pip install --no-deps --no-index -r <(grep -v '^PyQt6' requirements.txt) && \
           
               # Download pyqt6_tools wheel manually (platform-independent)
-              curl -L -o pyqt6_tools.whl https://files.pythonhosted.org/packages/.../pyqt6_tools-6.4.2.3.3-py3-none-any.whl && \
+              curl -L -o pyqt6_tools.whl https://files.pythonhosted.org/packages/82/bc/dcea094a26697ba76ae73dec030dd4070836b1e7e810d304d4917518423b/pyqt6_tools-6.4.2.3.3-py3-none-any.whl && \
           
               # Unzip, patch METADATA (remove hard PyQt6== constraint), repackage
               mkdir pyqt6tools && unzip pyqt6_tools.whl -d pyqt6tools && \
