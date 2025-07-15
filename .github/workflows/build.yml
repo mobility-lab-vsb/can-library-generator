@@ -141,8 +141,6 @@ jobs:
               set -e &&
               apt-get update && \
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                python3-pyqt6 \
-                python3-dev \
                 git \
                 lsb-release \
                 libgdk-pixbuf2.0-0 \
@@ -152,14 +150,7 @@ jobs:
                 curl \
                 sed \
                 unzip \
-                zip \
-                qmake \
-                qt6-base-dev \
-                qt6-base-dev-tools \
-                qt6-tools-dev \
-                qt6-tools-dev-tools && \
-          
-              ln -s /usr/lib/qt6/bin/qmake6 /usr/bin/qmake || true
+                zip && \
           
               # Install pip & briefcase
               pip install --upgrade pip && \
@@ -170,6 +161,16 @@ jobs:
           
               # Patch version in __main__.py
               sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
+          
+              apt install python3-dev
+              apt install python3-pyqt6
+              apt install qmake
+              apt intall qt6-base-dev
+              apt intall qt6-base-dev-tools
+              apt intall qt6-tools-dev
+              apt intall qt6-tools-dev-tools
+          
+              ln -s /usr/lib/qt6/bin/qmake6 /usr/bin/qmake || true
           
               # Build
               briefcase create linux && \
