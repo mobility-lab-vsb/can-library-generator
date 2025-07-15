@@ -150,16 +150,26 @@ jobs:
                 build-essential \
                 curl \
                 sed && \
-              python -m pip install --upgrade pip && \
-              python -m pip install briefcase && \
-              grep -v '^PyQt6' requirements.txt > clean_requirements.txt && \
-              python -m pip install --no-deps --no-index -r clean_requirements.txt && \
-              sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
+              
+              python -m venv venv-briefcase && \
+              source venv-briefcase/bin/activate && \
+              
+              echo '--- Inside virtual environment ---' && \
               which python && python --version && \
               which python3 && python3 --version && \
-              python -m briefcase create linux && \
-              python -m briefcase build linux && \
-              python -m briefcase package linux
+              echo '----------------------------------' && \
+  
+              pip install --upgrade pip && \
+              pip install briefcase && \
+  
+              grep -v '^PyQt6' requirements.txt > clean_requirements.txt && \
+              pip install --no-deps --no-index -r clean_requirements.txt && \
+              
+              sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
+              
+              briefcase create linux && \
+              briefcase build linux && \
+              briefcase package linux
             "
           fi
 
