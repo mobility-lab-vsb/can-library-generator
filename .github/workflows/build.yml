@@ -105,7 +105,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
       - name: Ensure dist/ exists
         run: mkdir -p dist/
@@ -132,7 +132,7 @@ jobs:
             briefcase build linux
             briefcase package linux
           else
-            # Emulolated build for ARM64 insede Docker
+            # Emulated build for ARM64 insede Docker
             docker run --rm --platform linux/arm64 \
             -v "$PWD":/app \
             -v "$PWD/dist":/app/dist \
