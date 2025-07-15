@@ -140,7 +140,6 @@ jobs:
             python:3.11 bash -c "
               apt-get update && \
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
-                python3-pyqt6 \
                 python3-dev \
                 git \
                 lsb-release \
@@ -162,8 +161,7 @@ jobs:
               pip install --upgrade pip && \
               pip install briefcase && \
   
-              grep -v '^PyQt6' requirements.txt > clean_requirements.txt && \
-              pip install --no-deps --no-index -r clean_requirements.txt && \
+              pip install -r requirements.txt && \
               
               sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
               
