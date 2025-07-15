@@ -105,7 +105,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.11"
 
       - name: Ensure dist/ exists
         run: mkdir -p dist/
@@ -137,7 +137,7 @@ jobs:
             -v "$PWD":/app \
             -v "$PWD/dist":/app/dist \
             -w /app \
-            python:3.12 bash -c "
+            python:3.11 bash -c "
               apt-get update && \
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 python3-pyqt6 \
