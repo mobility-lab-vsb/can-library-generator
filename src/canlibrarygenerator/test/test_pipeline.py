@@ -129,7 +129,7 @@ else:
     print(cpp_result.stderr)
     sys.exit(1)
 
-"""for filename in os.listdir(output_dir):
+for filename in os.listdir(output_dir):
     file_path = os.path.join(output_dir, filename)
     try:
         if os.path.isfile(file_path) or os.path.islink(file_path):
@@ -142,4 +142,4 @@ else:
 
 if os.path.exists(output_dir):
     shutil.rmtree(output_dir)
-    print(f"Removing {output_dir}...")"""
+    print(f"Removing {output_dir}...")
