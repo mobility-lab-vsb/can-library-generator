@@ -143,8 +143,8 @@ jobs:
               ln -s /usr/lib/qt6/bin/qmake6 /usr/bin/qmake || true
               pip install --upgrade pip && \
               pip install briefcase && \
-              pip install -r requirements.txt && \
-              sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' app/src/canlibrarygenerator/__main__.py && \
+              pip install -r requirements.txt || apt-get install -y python3-pyqt6 && \
+              sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
               briefcase create linux && \
               briefcase build linux && \
               briefcase package linux
