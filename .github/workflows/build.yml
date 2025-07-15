@@ -173,7 +173,7 @@ jobs:
               cd pyqt6tools && zip -r ../pyqt6_tools-6.4.2.3.3-py3-none-any.whl . && cd .. && \
           
               # Install patched wheel
-              pip install pyqt6_tools_patched.whl && \
+              pip install pyqt6_tools-6.4.2.3.3-py3-none-any.whl && \
           
               # Patch version in __main__.py
               sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
