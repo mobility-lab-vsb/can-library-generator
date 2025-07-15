@@ -142,6 +142,7 @@ jobs:
               apt-get update && \
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
                 python3-pyqt6 \
+                python3-dev \
                 git \
                 lsb-release \
                 libgdk-pixbuf2.0-0 \
