@@ -170,7 +170,7 @@ jobs:
               # Unzip, patch METADATA (remove hard PyQt6== constraint), repackage
               mkdir pyqt6tools && unzip pyqt6_tools.whl -d pyqt6tools && \
               sed -i '/^Requires-Dist: PyQt6/d' pyqt6tools/pyqt6_tools-6.4.2.3.3.dist-info/METADATA && \
-              cd pyqt6tools && zip -r ../pyqt6_tools_patched.whl . && cd .. && \
+              cd pyqt6tools && zip -r ../pyqt6_tools-6.4.2.3.3-py3-none-any.whl . && cd .. && \
           
               # Install patched wheel
               pip install pyqt6_tools_patched.whl && \
