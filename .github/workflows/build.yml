@@ -138,8 +138,10 @@ jobs:
             -v "$PWD/dist":/app/dist \
             -w /app \
             python:3.11 bash -c "
+              set -e &&
               apt-get update && \
               DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                python3-pyqt6 \
                 git \
                 lsb-release \
                 libgdk-pixbuf2.0-0 \
@@ -148,20 +150,34 @@ jobs:
                 build-essential \
                 curl \
                 sed \
+                unzip \
                 qt6-base-dev \
                 qt6-base-dev-tools \
                 qt6-tools-dev \
-                qt6-tools-dev-tools \
-                python3-pyqt6 \
-                python3-pyqt6.qt6-tools \
-                && \
-              
+                qt6-tools-dev-tools && \
+          
+              # Install pip & briefcase
               pip install --upgrade pip && \
               pip install briefcase && \
+          
+              # Install rest of requirements except PyQt6
               pip install --no-deps --no-index -r <(grep -v '^PyQt6' requirements.txt) && \
-              
+          
+              # Download pyqt6_tools wheel manually (platform-independent)
+              curl -L -o pyqt6_tools.whl https://files.pythonhosted.org/packages/.../pyqt6_tools-6.4.2.3.3-py3-none-any.whl && \
+          
+              # Unzip, patch METADATA (remove hard PyQt6== constraint), repackage
+              mkdir pyqt6tools && unzip pyqt6_tools.whl -d pyqt6tools && \
+              sed -i '/^Requires-Dist: PyQt6/d' pyqt6tools/pyqt6_tools-6.4.2.3.3.dist-info/METADATA && \
+              cd pyqt6tools && zip -r ../pyqt6_tools_patched.whl . && cd .. && \
+          
+              # Install patched wheel
+              pip install pyqt6_tools_patched.whl && \
+          
+              # Patch version in __main__.py
               sed -i 's/^__version__ = .*/__version__ = \"${APP_VERSION}\"/' src/canlibrarygenerator/__main__.py && \
-              
+          
+              # Build
               briefcase create linux && \
               briefcase build linux && \
               briefcase package linux
