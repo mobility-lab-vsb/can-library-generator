@@ -80,11 +80,33 @@ jobs:
         run: |
           sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
 
+      - name: Import Apple Code Signing Certificates
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
+          p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
+
       - name: Build macOS app with Briefcase
         run: |
           briefcase create macOS
           briefcase build macOS
-          briefcase package macOS --adhoc-sign
+          briefcase package macOS -i "Developer ID Application: Josef Drozd (${{ secrets.APPLE_TEAM_ID }})" --no-notarize
+
+      - name: Notarize DMG with Apple
+        run: |
+          DMG_PATH=$(find dist -name "*.dmg" | head -n 1)
+          echo "Notarizing $DMG_PATH..."
+          xcrun notarytool submit "$DMG_PATH" \
+            --apple-id "${{ secrets.APPLE_ID }}" \
+            --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
+            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
+            --wait
+
+      - name: Staple the notarization ticket to DMG
+        run: |
+          DMG_PATH=$(find dist -name "*.dmg" | head -n 1)
+          echo "Stapling $DMG_PATH..."
+          xcrun stapler staple "$DMG_PATH"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
