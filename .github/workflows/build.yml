@@ -195,4 +195,4 @@ jobs:
         with:
           files: |
             dist/*.flatpak
-        if: success(
+        if: success()
