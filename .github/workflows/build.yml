@@ -187,7 +187,7 @@ jobs:
         run: briefcase create linux
 
       - name: Update Briefcase dependencies
-        run: briefcase update linux --update-properties --update-dependencies --update-resources
+        run: briefcase update linux --update-resources
 
       - name: Build ARM64 Linux App (Flatpak)
         run: briefcase build linux
