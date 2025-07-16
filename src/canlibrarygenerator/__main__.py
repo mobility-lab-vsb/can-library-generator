@@ -14,8 +14,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 
-from .generate_functions.generate_c_library import generate_c_code
-from .generate_functions.generate_cpp_library import generate_cpp_code
+from src.canlibrarygenerator.generate_functions.generate_c_library import generate_c_code
+from src.canlibrarygenerator.generate_functions.generate_cpp_library import generate_cpp_code
 
 # Define your app version
 __version__ = "dev"
