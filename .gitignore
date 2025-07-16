@@ -8,6 +8,7 @@ ico
 logs
 build
 docs.yml
+arm64-notfunctional.yml
 !src/canlibrarygenerator/generate_functions/generate_c_library.py
 !src/canlibrarygenerator/generate_functions/generate_cpp_library.py
 !src/canlibrarygenerator/ttkwidget/checkboxtreeview.py
