@@ -46,10 +46,7 @@ jobs:
           (Get-Content src/canlibrarygenerator/__main__.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content src/canlibrarygenerator/__main__.py
 
       - name: Inject version into pyproject.toml
-        shell: pwsh
-        run: |
-          (Get-Content pyproject.toml) -replace '(^version = ).*', "`$1`"${{ env.APP_VERSION }}"`" `
-            | Set-Content pyproject.toml
+        run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
       - name: Build Windows app with Briefcase
         run: |
@@ -87,9 +84,7 @@ jobs:
           sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
 
       - name: Inject version into pyproject.toml
-        run: |
-          sed -i '' '/\[project\]/,/^\[/{s/^version = .*/version = "${APP_VERSION}"/}' pyproject.toml
-          sed -i '' '/\[tool\.briefcase\]/,/^\[/{s/^version = .*/version = "${APP_VERSION}"/}' pyproject.toml
+        run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
       - name: Import Apple Code Signing Certificates
         uses: apple-actions/import-codesign-certs@v3
@@ -153,9 +148,7 @@ jobs:
           sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
 
       - name: Inject version into pyproject.toml
-        run: |
-          sed -i '/\[project\]/,/^\[/{s/^version = .*/version = "${APP_VERSION}"/}' pyproject.toml
-          sed -i '/\[tool\.briefcase\]/,/^\[/{s/^version = .*/version = "${APP_VERSION}"/}' pyproject.toml
+        run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
       - name: Build Linux app with Briefcase
         run: |
