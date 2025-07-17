@@ -1,24 +1,19 @@
-name: Build, Run and Release Python App
+name: Dev Build and Artifact Upload
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
 
 jobs:
   set_version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.extract.outputs.version }}
+      version: ${{ steps.generate_version.outputs.version }}
     steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: Extract version from tag
-        id: extract
+      - name: Generate dev version
+        id: generate_version
         run: |
-          VERSION=$(git describe --tags --abbrev=0)
+          VERSION="dev-${{ github.ref_name }}-${{ github.run_number }}"
+          echo "Generated dev version: $VERSION"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
   build-windows:
@@ -43,6 +38,7 @@ jobs:
       - name: Inject version into __main__.py
         shell: pwsh
         run: |
+          # Replaces the __version__ string in __main__.py with the generated dev version.
           (Get-Content src/canlibrarygenerator/__main__.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content src/canlibrarygenerator/__main__.py
 
       - name: Inject version into pyproject.toml
@@ -54,6 +50,7 @@ jobs:
       - name: Patch Product.wxs to add desktop shortcut
         shell: pwsh
         run: |
+          # Patches the WiX installer file to include a desktop shortcut.
           $productWxs = "build\canlibrarygenerator\windows\app\canlibrarygenerator.wxs"
     
           $desktopShortcutContent = @'
@@ -84,21 +81,22 @@ jobs:
           $newWxsContent = $newWxsContent -replace '</Feature>', "    <ComponentRef Id=`"DesktopShortcut`" />`n        </Feature>"
           $newWxsContent | Set-Content $productWxs
           
-          Write-Output "Soubor $productWxs byl upraven."
-          Write-Output "--- Obsah upraveného souboru $productWxs ---"
+          Write-Output "File $productWxs was edited."
+          Write-Output "--- Contents of edited file $productWxs ---"
           Get-Content $productWxs | Write-Output
 
 
       - name: Build and Package Windows app with briefcase
         run: |
+          # Builds and packages the Windows application. Ad-hoc signing is used for dev builds.
           briefcase build windows
           briefcase package windows --adhoc-sign
 
-      - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+      - name: Upload Windows app artifact
+        uses: actions/upload-artifact@v3
         with:
-          files: |
-            dist/*.msi
+          name: windows-canlibrarygenerator-${{ env.APP_VERSION }}
+          path: dist/*.msi
 
   build-macos:
     runs-on: macos-latest
@@ -121,43 +119,24 @@ jobs:
 
       - name: Inject version into __main__.py
         run: |
+          # Replaces the __version__ string in __main__.py with the generated dev version.
           sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
 
       - name: Inject version into pyproject.toml
         run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
-      - name: Import Apple Code Signing Certificates
-        uses: apple-actions/import-codesign-certs@v3
-        with:
-          p12-file-base64: ${{ secrets.APPSTORE_CERTIFICATES_FILE_BASE64 }}
-          p12-password: ${{ secrets.APPSTORE_CERTIFICATES_PASSWORD }}
-
       - name: Build macOS app with Briefcase
         run: |
+          # Builds and packages the macOS application. Ad-hoc signing is used for dev builds.
           briefcase create macOS
           briefcase build macOS
-          briefcase package macOS -i "Developer ID Application: Josef Drozd (${{ secrets.APPLE_TEAM_ID }})" --no-notarize
+          briefcase package macOS --adhoc-sign
 
-      - name: Notarize DMG with Apple
-        run: |
-          DMG_PATH=$(find dist -name "*.dmg" | head -n 1)
-          echo "Notarizing $DMG_PATH..."
-          xcrun notarytool submit "$DMG_PATH" \
-            --apple-id "${{ secrets.APPLE_ID }}" \
-            --password "${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}" \
-            --team-id "${{ secrets.APPLE_TEAM_ID }}" \
-            --wait
-
-      - name: Staple the notarization ticket to DMG
-        run: |
-          DMG_PATH=$(find dist -name "*.dmg" | head -n 1)
-          echo "Stapling $DMG_PATH..."
-          xcrun stapler staple "$DMG_PATH"
-
-      - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+      - name: Upload macOS app artifact
+        uses: actions/upload-artifact@v3
         with:
-          files: dist/*.dmg
+          name: macos-canlibrarygenerator-${{ env.APP_VERSION }}
+          path: dist/*.dmg
 
   build-linux:
     runs-on: ubuntu-latest
@@ -185,6 +164,7 @@ jobs:
 
       - name: Inject version into __main__.py
         run: |
+          # Replaces the __version__ string in __main__.py with the generated dev version.
           sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
 
       - name: Inject version into pyproject.toml
@@ -196,8 +176,8 @@ jobs:
           briefcase build linux
           briefcase package linux
 
-      - name: Upload release asset
-        uses: softprops/action-gh-release@v1
+      - name: Upload Linux app artifact
+        uses: actions/upload-artifact@v3
         with:
-          files: |
-            dist/*.deb
+          name: linux-canlibrarygenerator-${{ env.APP_VERSION }}
+          path: dist/*.deb

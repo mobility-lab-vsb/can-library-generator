@@ -29,9 +29,13 @@ Requires Python 3.10+ and `gcc` and `g++` installed in PATH.
 ## 🚀 Usage
 
 ## Generate a library from a DBC file:
+We recommend using official Release to run the program.
+
+**Or use this command tu run the App:**
 ```sh
-python main.py
+python -m src.canlibrarygenerator
 ```
+
 Follow the prompt to select `.dbc` file. The generated library will be saved in a folder of your choice.
 
 ## Generated Files
@@ -54,11 +58,11 @@ The pipeline will:
 Test data and messages are defined in `test_pipeline.py`.
 
 ## 🛠 Requirements
-- Python 3.10+
+- [`Python 3.10+`](https://www.python.org/)
 - [`cantools`](https://github.com/eerimoq/cantools)
 - [`darkdetect`](https://github.com/albertosottile/darkdetect)
-- [`sv_ttk`](https://github.com/rdbende/Sun-Valley-ttk-theme)
-- GCC or MinGW (for Windows)
+- [`PyQt6`](https://pypi.org/project/PyQt6/)
+- [`Pillow`](https://pypi.org/project/pillow/)
 
 ## 🧹 Cleaning Up
 All generated files are stored in the `temp/` directory and are automatically cleaned after testing.

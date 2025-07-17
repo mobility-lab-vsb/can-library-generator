@@ -2,6 +2,8 @@ name: Test CAN Library Generator and Generate Docs
 
 on:
   push:
+    branches:
+      - dev
 
 permissions:
   contents: write
