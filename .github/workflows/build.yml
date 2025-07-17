@@ -48,9 +48,45 @@ jobs:
       - name: Inject version into pyproject.toml
         run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
-      - name: Build Windows app with Briefcase
+      - name: Create Windows app with Briefcase
+        run: briefcase create windows
+
+      - name: Patch Product.wxs to add desktop shortcut
+        shell: pwsh
         run: |
-          briefcase create windows
+          $productWxs = "src\canlibrarygenerator\windows\CANLibraryGenerator\installer\canlibrarygenerator.wxs"
+          
+          (Get-Content $productWxs) -replace '(<StandardDirectory Id="ProgramMenuFolder">)', '<StandardDirectory Id="DesktopFolder" />`r`n$1' | Set-Content $productWxs
+          
+          $desktopShortcut = @'
+          <StandardDirectory Id="DesktopFolder">
+              <Component Id="DesktopShortcut" Guid="d2073d69-1a26-4d98-accc-99ebeb3c8547">
+                  <Shortcut
+                      Id="DesktopShortcutId"
+                      Name="CANLibraryGenerator"
+                      Icon="ProductIcon"
+                      Description="GUI tool for generating C/C++ libraries from DBC files"
+                      Target="[INSTALLFOLDER]CANLibraryGenerator.exe"
+                      WorkingDirectory="INSTALLFOLDER" />
+                  <RemoveFolder Id="DesktopFolder" On="uninstall" />
+                  <RegistryValue
+                      Root="HKCU"
+                      Key="Software\Adam Rychtar\CANLibraryGenerator"
+                      Name="DesktopShortcutInstalled"
+                      Type="integer"
+                      Value="1"
+                      KeyPath="yes" />
+              </Component>
+          </StandardDirectory>
+          '@
+
+          (Get-Content $productWxs) -replace '(?s)</StandardDirectory>.*?<Feature', "$desktopShortcut`r`n<Feature" | Set-Content $productWxs
+      
+          (Get-Content $productWxs) -replace '(?s)(<Feature[^>]*>.*?)</Feature>', '$1<ComponentRef Id="DesktopShortcut" /></Feature>' | Set-Content $productWxs
+
+
+      - name: Build and Package Windows app with briefcase
+        run: |
           briefcase build windows
           briefcase package windows --adhoc-sign
 
