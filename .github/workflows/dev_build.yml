@@ -96,7 +96,7 @@ jobs:
           briefcase package windows --adhoc-sign
 
       - name: Upload Windows app artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-canlibrarygenerator-${{ env.APP_VERSION }}
           path: dist/*.msi
@@ -136,7 +136,7 @@ jobs:
           briefcase package macOS --adhoc-sign
 
       - name: Upload macOS app artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-canlibrarygenerator-${{ env.APP_VERSION }}
           path: dist/*.dmg
@@ -180,7 +180,7 @@ jobs:
           briefcase package linux
 
       - name: Upload Linux app artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-canlibrarygenerator-${{ env.APP_VERSION }}
           path: dist/*.deb
