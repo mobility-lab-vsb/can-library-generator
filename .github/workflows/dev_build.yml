@@ -44,9 +44,6 @@ jobs:
           # Replaces the __version__ string in __main__.py with the generated dev version.
           (Get-Content src/canlibrarygenerator/__main__.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content src/canlibrarygenerator/__main__.py
 
-      - name: Inject version into pyproject.toml
-        run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
-
       - name: Create Windows app with Briefcase
         run: briefcase create windows
 
@@ -88,7 +85,6 @@ jobs:
           Write-Output "--- Contents of edited file $productWxs ---"
           Get-Content $productWxs | Write-Output
 
-
       - name: Build and Package Windows app with briefcase
         run: |
           # Builds and packages the Windows application. Ad-hoc signing is used for dev builds.
@@ -124,9 +120,6 @@ jobs:
         run: |
           # Replaces the __version__ string in __main__.py with the generated dev version.
           sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
-
-      - name: Inject version into pyproject.toml
-        run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
       - name: Build macOS app with Briefcase
         run: |
@@ -169,9 +162,6 @@ jobs:
         run: |
           # Replaces the __version__ string in __main__.py with the generated dev version.
           sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
-
-      - name: Inject version into pyproject.toml
-        run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
       - name: Build Linux app with Briefcase
         run: |
