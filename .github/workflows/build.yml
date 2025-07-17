@@ -55,35 +55,36 @@ jobs:
         shell: pwsh
         run: |
           $productWxs = "build\canlibrarygenerator\windows\app\canlibrarygenerator.wxs"
-          
-          $desktopShortcut = @'
-          <StandardDirectory Id="DesktopFolder">
-              <Component Id="DesktopShortcut" Guid="d2073d69-1a26-4d98-accc-99ebeb3c8547">
-                  <Shortcut
-                      Id="DesktopShortcutId"
-                      Name="CANLibraryGenerator"
-                      Icon="ProductIcon"
-                      Description="GUI tool for generating C/C++ libraries from DBC files"
-                      Target="[INSTALLFOLDER]CANLibraryGenerator.exe"
-                      WorkingDirectory="INSTALLFOLDER" />
-                  <RemoveFolder Id="DesktopFolder" On="uninstall" />
-                  <RegistryValue
-                      Root="HKCU"
-                      Key="Software\Adam Rychtar\CANLibraryGenerator"
-                      Name="DesktopShortcutInstalled"
-                      Type="integer"
-                      Value="1"
-                      KeyPath="yes" />
-              </Component>
-          </StandardDirectory>
-          
+    
+          $desktopShortcutContent = @'
+              <StandardDirectory Id="DesktopFolder">
+                  <Component Id="DesktopShortcut" Guid="d2073d69-1a26-4d98-accc-99ebeb3c8547">
+                      <Shortcut
+                          Id="DesktopShortcutId"
+                          Name="CANLibraryGenerator"
+                          Icon="ProductIcon"
+                          Description="GUI tool for generating C/C++ libraries from DBC files"
+                          Target="[INSTALLFOLDER]CANLibraryGenerator.exe"
+                          WorkingDirectory="INSTALLFOLDER" />
+                      <RemoveFolder Id="DesktopFolder" On="uninstall" />
+                      <RegistryValue
+                          Root="HKCU"
+                          Key="Software\Adam Rychtar\CANLibraryGenerator"
+                          Name="DesktopShortcutInstalled"
+                          Type="integer"
+                          Value="1"
+                          KeyPath="yes" />
+                  </Component>
+              </StandardDirectory>
           '@
           
-          (Get-Content $productWxs) -replace '(<StandardDirectory Id="ProgramMenuFolder">)', '<StandardDirectory Id="DesktopFolder" />`r`n$1' | Set-Content $productWxs
-          (Get-Content $productWxs) -replace '</Feature>', "    <ComponentRef Id=`"DesktopShortcut`" />`r`n        </Feature>" | Set-Content $productWxs
+          $newWxsContent = $wxsContent -replace '(<StandardDirectory Id="ProgramMenuFolder">)', "$($desktopShortcutContent)`n`$1"
+          $newWxsContent = $newWxsContent -replace '</Feature>', "    <ComponentRef Id=`"DesktopShortcut`" />`n        </Feature>"
+          $newWxsContent | Set-Content $productWxs
           
-          Write-Output $desktopShortcut
-          Write-Output $productWxs
+          Write-Output "Soubor $productWxs byl upraven."
+          Write-Output "--- Obsah upraveného souboru $productWxs ---"
+          Get-Content $productWxs | Write-Output
 
 
       - name: Build and Package Windows app with briefcase
