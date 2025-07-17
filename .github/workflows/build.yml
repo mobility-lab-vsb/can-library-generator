@@ -54,7 +54,7 @@ jobs:
       - name: Patch Product.wxs to add desktop shortcut
         shell: pwsh
         run: |
-          $productWxs = "src\canlibrarygenerator\windows\CANLibraryGenerator\installer\canlibrarygenerator.wxs"
+          $productWxs = "build\canlibrarygenerator\windows\app\canlibrarygenerator.wxs"
           
           (Get-Content $productWxs) -replace '(<StandardDirectory Id="ProgramMenuFolder">)', '<StandardDirectory Id="DesktopFolder" />`r`n$1' | Set-Content $productWxs
           
