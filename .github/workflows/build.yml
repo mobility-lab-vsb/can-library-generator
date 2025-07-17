@@ -78,6 +78,8 @@ jobs:
               </StandardDirectory>
           '@
           
+          $wxsContent = Get-Content $productWxs -Raw
+          
           $newWxsContent = $wxsContent -replace '(<StandardDirectory Id="ProgramMenuFolder">)', "$($desktopShortcutContent)`n`$1"
           $newWxsContent = $newWxsContent -replace '</Feature>', "    <ComponentRef Id=`"DesktopShortcut`" />`n        </Feature>"
           $newWxsContent | Set-Content $productWxs
