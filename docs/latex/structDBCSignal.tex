@@ -1,0 +1,129 @@
+\doxysubsection{DBCSignal Struct Reference}
+\hypertarget{structDBCSignal}{}\label{structDBCSignal}\index{DBCSignal@{DBCSignal}}
+
+
+Structure for signal representation.  
+
+
+
+
+{\ttfamily \#include $<$dbc\+\_\+library\+\_\+test.\+h$>$}
+
+\doxysubsubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{structDBCSignal_ab9cf6d8f6160d31b06e75568416a29a2}{name}}
+\item 
+int \mbox{\hyperlink{structDBCSignal_aada94957b5796c183be2ec74468259dd}{start\+Bit}}
+\item 
+int \mbox{\hyperlink{structDBCSignal_a6262a2b5c3772d395e24ddb5cd4038e8}{length}}
+\item 
+const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{structDBCSignal_a0886bcf6718f057f70f9a083a4ba998b}{byte\+Order}}
+\item 
+char \mbox{\hyperlink{structDBCSignal_a9bb389d42a8438b20a90de60370fca1f}{value\+Type}}
+\item 
+double \mbox{\hyperlink{structDBCSignal_a91672bbec716776cd995f205350c0236}{factor}}
+\item 
+double \mbox{\hyperlink{structDBCSignal_a0b1468f1fa0d253cea88c246645d3574}{offset}}
+\item 
+double \mbox{\hyperlink{structDBCSignal_af2d48d84821fdedeabddca6a6e12b290}{min}}
+\item 
+double \mbox{\hyperlink{structDBCSignal_aa84f2ffee3996b68a11543c90951ed5c}{max}}
+\item 
+const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{structDBCSignal_ac4c3fb8c020dbea1abefd8932e341b8e}{unit}}
+\item 
+const char \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{structDBCSignal_afcb5414786d18893c04139ea55ef2f7d}{receiver}}
+\item 
+uint32\+\_\+t \mbox{\hyperlink{structDBCSignal_a1cac80fee812b8cf52701652be276cc1}{raw\+\_\+value}}
+\item 
+double \mbox{\hyperlink{structDBCSignal_ad537a800a92601f3b22d4c8c86535e94}{value}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Structure for signal representation. 
+
+\doxysubsubsection{Member Data Documentation}
+\Hypertarget{structDBCSignal_a0886bcf6718f057f70f9a083a4ba998b}\label{structDBCSignal_a0886bcf6718f057f70f9a083a4ba998b} 
+\index{DBCSignal@{DBCSignal}!byteOrder@{byteOrder}}
+\index{byteOrder@{byteOrder}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{byteOrder}{byteOrder}}
+{\footnotesize\ttfamily const char\texorpdfstring{$\ast$}{*} DBCSignal\+::byte\+Order}
+
+Byte order (little\+\_\+endian/big\+\_\+endian). \Hypertarget{structDBCSignal_a91672bbec716776cd995f205350c0236}\label{structDBCSignal_a91672bbec716776cd995f205350c0236} 
+\index{DBCSignal@{DBCSignal}!factor@{factor}}
+\index{factor@{factor}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{factor}{factor}}
+{\footnotesize\ttfamily double DBCSignal\+::factor}
+
+Factor for conversion to physical value. \Hypertarget{structDBCSignal_a6262a2b5c3772d395e24ddb5cd4038e8}\label{structDBCSignal_a6262a2b5c3772d395e24ddb5cd4038e8} 
+\index{DBCSignal@{DBCSignal}!length@{length}}
+\index{length@{length}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{length}{length}}
+{\footnotesize\ttfamily int DBCSignal\+::length}
+
+Length of the signal in bits. \Hypertarget{structDBCSignal_aa84f2ffee3996b68a11543c90951ed5c}\label{structDBCSignal_aa84f2ffee3996b68a11543c90951ed5c} 
+\index{DBCSignal@{DBCSignal}!max@{max}}
+\index{max@{max}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{max}{max}}
+{\footnotesize\ttfamily double DBCSignal\+::max}
+
+Maximum physical value. \Hypertarget{structDBCSignal_af2d48d84821fdedeabddca6a6e12b290}\label{structDBCSignal_af2d48d84821fdedeabddca6a6e12b290} 
+\index{DBCSignal@{DBCSignal}!min@{min}}
+\index{min@{min}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{min}{min}}
+{\footnotesize\ttfamily double DBCSignal\+::min}
+
+Minimum physical value. \Hypertarget{structDBCSignal_ab9cf6d8f6160d31b06e75568416a29a2}\label{structDBCSignal_ab9cf6d8f6160d31b06e75568416a29a2} 
+\index{DBCSignal@{DBCSignal}!name@{name}}
+\index{name@{name}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{name}{name}}
+{\footnotesize\ttfamily const char\texorpdfstring{$\ast$}{*} DBCSignal\+::name}
+
+Name of the signal. \Hypertarget{structDBCSignal_a0b1468f1fa0d253cea88c246645d3574}\label{structDBCSignal_a0b1468f1fa0d253cea88c246645d3574} 
+\index{DBCSignal@{DBCSignal}!offset@{offset}}
+\index{offset@{offset}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{offset}{offset}}
+{\footnotesize\ttfamily double DBCSignal\+::offset}
+
+Offset for conversion to physical value. \Hypertarget{structDBCSignal_a1cac80fee812b8cf52701652be276cc1}\label{structDBCSignal_a1cac80fee812b8cf52701652be276cc1} 
+\index{DBCSignal@{DBCSignal}!raw\_value@{raw\_value}}
+\index{raw\_value@{raw\_value}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{raw\_value}{raw\_value}}
+{\footnotesize\ttfamily uint32\+\_\+t DBCSignal\+::raw\+\_\+value}
+
+Current raw value of the signal. \Hypertarget{structDBCSignal_afcb5414786d18893c04139ea55ef2f7d}\label{structDBCSignal_afcb5414786d18893c04139ea55ef2f7d} 
+\index{DBCSignal@{DBCSignal}!receiver@{receiver}}
+\index{receiver@{receiver}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{receiver}{receiver}}
+{\footnotesize\ttfamily const char\texorpdfstring{$\ast$}{*} DBCSignal\+::receiver}
+
+Receiver of the signal. \Hypertarget{structDBCSignal_aada94957b5796c183be2ec74468259dd}\label{structDBCSignal_aada94957b5796c183be2ec74468259dd} 
+\index{DBCSignal@{DBCSignal}!startBit@{startBit}}
+\index{startBit@{startBit}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{startBit}{startBit}}
+{\footnotesize\ttfamily int DBCSignal\+::start\+Bit}
+
+Start bit of the signal. \Hypertarget{structDBCSignal_ac4c3fb8c020dbea1abefd8932e341b8e}\label{structDBCSignal_ac4c3fb8c020dbea1abefd8932e341b8e} 
+\index{DBCSignal@{DBCSignal}!unit@{unit}}
+\index{unit@{unit}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{unit}{unit}}
+{\footnotesize\ttfamily const char\texorpdfstring{$\ast$}{*} DBCSignal\+::unit}
+
+Unit of the signal. \Hypertarget{structDBCSignal_ad537a800a92601f3b22d4c8c86535e94}\label{structDBCSignal_ad537a800a92601f3b22d4c8c86535e94} 
+\index{DBCSignal@{DBCSignal}!value@{value}}
+\index{value@{value}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{value}{value}}
+{\footnotesize\ttfamily double DBCSignal\+::value}
+
+Current physical value of the signal. \Hypertarget{structDBCSignal_a9bb389d42a8438b20a90de60370fca1f}\label{structDBCSignal_a9bb389d42a8438b20a90de60370fca1f} 
+\index{DBCSignal@{DBCSignal}!valueType@{valueType}}
+\index{valueType@{valueType}!DBCSignal@{DBCSignal}}
+\doxyparagraph{\texorpdfstring{valueType}{valueType}}
+{\footnotesize\ttfamily char DBCSignal\+::value\+Type}
+
+Value type (\textquotesingle{}s\textquotesingle{} for signed, \textquotesingle{}u\textquotesingle{} for unsigned). 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/canlibrarygenerator/temp/\mbox{\hyperlink{dbc__library__test_8h}{dbc\+\_\+library\+\_\+test.\+h}}\end{DoxyCompactItemize}

@@ -1,0 +1,146 @@
+\doxysubsection{src/canlibrarygenerator/temp/dbc\+\_\+library\+\_\+test.c File Reference}
+\hypertarget{dbc__library__test_8c}{}\label{dbc__library__test_8c}\index{src/canlibrarygenerator/temp/dbc\_library\_test.c@{src/canlibrarygenerator/temp/dbc\_library\_test.c}}
+
+
+Defines the core structures and functions for CAN communication.  
+
+
+{\ttfamily \#include "{}dbc\+\_\+library\+\_\+test.\+h"{}}\newline
+Include dependency graph for dbc\+\_\+library\+\_\+test.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=347pt]{dbc__library__test_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{structDBCMessageBase}{DBCMessage\+Base}} \texorpdfstring{$\ast$}{*} \mbox{\hyperlink{dbc__library__test_8c_a93f860af5436a1baa92c642cd1f118ac}{dbc\+\_\+find\+\_\+message\+\_\+by\+\_\+id}} (uint32\+\_\+t can\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Finds a CAN message in the registry by its ID. \end{DoxyCompactList}\item 
+uint32\+\_\+t \mbox{\hyperlink{dbc__library__test_8c_a85b62afa9d35477fe3380cbc0926a237}{dbc\+\_\+parse\+\_\+signal}} (const uint8\+\_\+t \texorpdfstring{$\ast$}{*}data, uint16\+\_\+t start\+Bit, uint8\+\_\+t length, const char \texorpdfstring{$\ast$}{*}byte\+Order)
+\begin{DoxyCompactList}\small\item\em Parses the raw signal value from CAN data. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{dbc__library__test_8c_ad5d1b0e96ea4a6c6701ba92827052d73}{dbc\+\_\+unpackage\+\_\+message}} (uint32\+\_\+t can\+\_\+id, uint8\+\_\+t dlc, const uint8\+\_\+t \texorpdfstring{$\ast$}{*}data)
+\begin{DoxyCompactList}\small\item\em Unpackages a received CAN message and updates signal values. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{dbc__library__test_8c_a832dacead39069687be0a98da376243f}{dbc\+\_\+insert\+\_\+signal}} (uint8\+\_\+t \texorpdfstring{$\ast$}{*}data, uint32\+\_\+t raw\+\_\+value, int start\+\_\+bit, int length, const char \texorpdfstring{$\ast$}{*}byte\+Order)
+\begin{DoxyCompactList}\small\item\em Inserts the raw signal value into a CAN data byte array. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{dbc__library__test_8c_ac26a663ed76135fdcc19f69e2d2a4726}{dbc\+\_\+package\+\_\+message}} (uint32\+\_\+t can\+\_\+id, uint8\+\_\+t dlc, const uint8\+\_\+t \texorpdfstring{$\ast$}{*}data)
+\begin{DoxyCompactList}\small\item\em Packages CAN message signals into a data array for transmission. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsubsection{Detailed Description}
+Defines the core structures and functions for CAN communication. 
+
+
+
+\doxysubsubsection{Function Documentation}
+\Hypertarget{dbc__library__test_8c_a93f860af5436a1baa92c642cd1f118ac}\label{dbc__library__test_8c_a93f860af5436a1baa92c642cd1f118ac} 
+\index{dbc\_library\_test.c@{dbc\_library\_test.c}!dbc\_find\_message\_by\_id@{dbc\_find\_message\_by\_id}}
+\index{dbc\_find\_message\_by\_id@{dbc\_find\_message\_by\_id}!dbc\_library\_test.c@{dbc\_library\_test.c}}
+\doxyparagraph{\texorpdfstring{dbc\_find\_message\_by\_id()}{dbc\_find\_message\_by\_id()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{structDBCMessageBase}{DBCMessage\+Base}} \texorpdfstring{$\ast$}{*} dbc\+\_\+find\+\_\+message\+\_\+by\+\_\+id (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{can\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Finds a CAN message in the registry by its ID. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em can\+\_\+id} & The CAN ID of the message to find. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+DBCMessage\+Base\texorpdfstring{$\ast$}{*} Returns a pointer to the found message or NULL if the message was not found. 
+\end{DoxyReturn}
+\Hypertarget{dbc__library__test_8c_a832dacead39069687be0a98da376243f}\label{dbc__library__test_8c_a832dacead39069687be0a98da376243f} 
+\index{dbc\_library\_test.c@{dbc\_library\_test.c}!dbc\_insert\_signal@{dbc\_insert\_signal}}
+\index{dbc\_insert\_signal@{dbc\_insert\_signal}!dbc\_library\_test.c@{dbc\_library\_test.c}}
+\doxyparagraph{\texorpdfstring{dbc\_insert\_signal()}{dbc\_insert\_signal()}}
+{\footnotesize\ttfamily void dbc\+\_\+insert\+\_\+signal (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{data,  }\item[{uint32\+\_\+t}]{raw\+\_\+value,  }\item[{int}]{start\+\_\+bit,  }\item[{int}]{length,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{byte\+Order }\end{DoxyParamCaption})}
+
+
+
+Inserts the raw signal value into a CAN data byte array. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & Pointer to the byte array where the signal should be inserted. \\
+\hline
+{\em raw\+\_\+value} & Raw signal value to insert. \\
+\hline
+{\em start\+\_\+bit} & Start bit of the signal. \\
+\hline
+{\em length} & Length of the signal in bits. \\
+\hline
+{\em byte\+Order} & String specifying byte order ("{}little\+\_\+endian"{} or "{}big\+\_\+endian"{}).\\
+\hline
+\end{DoxyParams}
+Writes the bits of the raw signal value into the data array according to the specified start bit, length, and byte order. \Hypertarget{dbc__library__test_8c_ac26a663ed76135fdcc19f69e2d2a4726}\label{dbc__library__test_8c_ac26a663ed76135fdcc19f69e2d2a4726} 
+\index{dbc\_library\_test.c@{dbc\_library\_test.c}!dbc\_package\_message@{dbc\_package\_message}}
+\index{dbc\_package\_message@{dbc\_package\_message}!dbc\_library\_test.c@{dbc\_library\_test.c}}
+\doxyparagraph{\texorpdfstring{dbc\_package\_message()}{dbc\_package\_message()}}
+{\footnotesize\ttfamily int dbc\+\_\+package\+\_\+message (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{can\+\_\+id,  }\item[{uint8\+\_\+t}]{dlc,  }\item[{const uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{data }\end{DoxyParamCaption})}
+
+
+
+Packages CAN message signals into a data array for transmission. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em can\+\_\+id} & CAN ID of the message to package. \\
+\hline
+{\em dlc} & Data Length Code (DLC) of the message to package. \\
+\hline
+{\em data} & Pointer to the byte array where message signals should be packaged. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Finds the message by ID, checks DLC, and inserts raw signal values into the data array. Returns 0 on success, -\/1 on error. 
+\end{DoxyReturn}
+\Hypertarget{dbc__library__test_8c_a85b62afa9d35477fe3380cbc0926a237}\label{dbc__library__test_8c_a85b62afa9d35477fe3380cbc0926a237} 
+\index{dbc\_library\_test.c@{dbc\_library\_test.c}!dbc\_parse\_signal@{dbc\_parse\_signal}}
+\index{dbc\_parse\_signal@{dbc\_parse\_signal}!dbc\_library\_test.c@{dbc\_library\_test.c}}
+\doxyparagraph{\texorpdfstring{dbc\_parse\_signal()}{dbc\_parse\_signal()}}
+{\footnotesize\ttfamily uint32\+\_\+t dbc\+\_\+parse\+\_\+signal (\begin{DoxyParamCaption}\item[{const uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{data,  }\item[{uint16\+\_\+t}]{start\+Bit,  }\item[{uint8\+\_\+t}]{length,  }\item[{const char \texorpdfstring{$\ast$}{*}}]{byte\+Order }\end{DoxyParamCaption})}
+
+
+
+Parses the raw signal value from CAN data. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & Pointer to the array of CAN data bytes. \\
+\hline
+{\em start\+Bit} & Start bit of the signal. \\
+\hline
+{\em length} & Length of the signal in bits. \\
+\hline
+{\em byte\+Order} & String specifying byte order ("{}little\+\_\+endian"{} or "{}big\+\_\+endian"{}). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+uint32\+\_\+t Extracts signal bits from the data array according to the specified start bit, length and byte order. 
+\end{DoxyReturn}
+\Hypertarget{dbc__library__test_8c_ad5d1b0e96ea4a6c6701ba92827052d73}\label{dbc__library__test_8c_ad5d1b0e96ea4a6c6701ba92827052d73} 
+\index{dbc\_library\_test.c@{dbc\_library\_test.c}!dbc\_unpackage\_message@{dbc\_unpackage\_message}}
+\index{dbc\_unpackage\_message@{dbc\_unpackage\_message}!dbc\_library\_test.c@{dbc\_library\_test.c}}
+\doxyparagraph{\texorpdfstring{dbc\_unpackage\_message()}{dbc\_unpackage\_message()}}
+{\footnotesize\ttfamily int dbc\+\_\+unpackage\+\_\+message (\begin{DoxyParamCaption}\item[{uint32\+\_\+t}]{can\+\_\+id,  }\item[{uint8\+\_\+t}]{dlc,  }\item[{const uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{data }\end{DoxyParamCaption})}
+
+
+
+Unpackages a received CAN message and updates signal values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em can\+\_\+id} & CAN ID of the received message. \\
+\hline
+{\em dlc} & Data Length Code (DLC) of the received message. \\
+\hline
+{\em data} & Pointer to the array of received CAN data bytes. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Finds the message by ID, checks DLC, parses raw signal values, and converts them to physical values. Returns 0 on success, -\/1 on error (message not found or DLC mismatch). 
+\end{DoxyReturn}

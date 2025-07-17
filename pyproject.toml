@@ -1,0 +1,56 @@
+[build-system]
+requires = ["briefcase"]
+build-backend = "briefcase.build_system"
+
+[project]
+name = "canlibrarygenerator"
+version = "0.0.0"
+description = "GUI tool for generating C/C++ libraries from DBC files"
+readme = "README.md"
+requires-python = ">=3.10"
+license.file = "LICENSE"
+authors = [
+    { name = "Adam Rychtar", email = "rychtar.adam@email.cz" }
+]
+
+dependencies = [
+    "bitstruct==8.21.0",
+    "cantools==40.2.1",
+    "crccheck==1.3.0",
+    "darkdetect==0.8.0",
+    "pillow==10.4.0",
+    "PyQt6==6.9.1",
+    "PyQt6-Qt6==6.9.1",
+    "PyQt6_sip==13.10.2"
+]
+
+[tool.briefcase]
+project_name = "CAN_Library_Generator"
+bundle = "cz.adamrychtar"
+version = "0.0.0"
+url = "https://github.com/mobility-lab-vsb/can-library-generator"
+author = "Adam Rychtar"
+author_email = "rychtar.adam@email.cz"
+
+[tool.briefcase.app.canlibrarygenerator]
+formal_name = "CANLibraryGenerator"
+app_name = "canlibrarygenerator"
+description = "GUI tool for generating C/C++ libraries from DBC files"
+long_description = "Generate C/C++ code from CAN DBC files via a GUI interface."
+sources = ["src/canlibrarygenerator"]
+entry_point = "canlibrarygenerator.__main__:main"
+
+requires = [
+    "bitstruct==8.21.0",
+    "cantools==40.2.1",
+    "crccheck==1.3.0",
+    "darkdetect==0.8.0",
+    "pillow==10.4.0",
+    "PyQt6==6.9.1",
+    "PyQt6-Qt6==6.9.1",
+    "PyQt6_sip==13.10.2",
+    "python-can==4.5.0",
+]
+
+[tool.briefcase.app.canlibrarygenerator.macOS]
+universal_build = true

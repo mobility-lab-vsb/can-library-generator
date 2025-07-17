@@ -1,0 +1,176 @@
+name: Dev Build and Artifact Upload
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  set_version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.generate_version.outputs.version }}
+    steps:
+      - name: Generate dev version
+        id: generate_version
+        run: |
+          VERSION="dev-${{ github.ref_name }}-${{ github.run_number }}"
+          echo "Generated dev version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+  build-windows:
+    runs-on: windows-latest
+    needs: set_version
+    env:
+      APP_VERSION: ${{ needs.set_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Briefcase and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install briefcase
+          pip install -r requirements.txt
+
+      - name: Inject version into __main__.py
+        shell: pwsh
+        run: |
+          # Replaces the __version__ string in __main__.py with the generated dev version.
+          (Get-Content src/canlibrarygenerator/__main__.py) -replace '__version__ = .*', '__version__ = "${{ env.APP_VERSION }}"' | Set-Content src/canlibrarygenerator/__main__.py
+
+      - name: Create Windows app with Briefcase
+        run: briefcase create windows
+
+      - name: Patch Product.wxs to add desktop shortcut
+        shell: pwsh
+        run: |
+          # Patches the WiX installer file to include a desktop shortcut.
+          $productWxs = "build\canlibrarygenerator\windows\app\canlibrarygenerator.wxs"
+    
+          $desktopShortcutContent = @'
+              <StandardDirectory Id="DesktopFolder">
+                  <Component Id="DesktopShortcut" Guid="d2073d69-1a26-4d98-accc-99ebeb3c8547">
+                      <Shortcut
+                          Id="DesktopShortcutId"
+                          Name="CANLibraryGenerator"
+                          Icon="ProductIcon"
+                          Description="GUI tool for generating C/C++ libraries from DBC files"
+                          Target="[INSTALLFOLDER]CANLibraryGenerator.exe"
+                          WorkingDirectory="INSTALLFOLDER" />
+                      <RemoveFolder Id="DesktopFolder" On="uninstall" />
+                      <RegistryValue
+                          Root="HKCU"
+                          Key="Software\Adam Rychtar\CANLibraryGenerator"
+                          Name="DesktopShortcutInstalled"
+                          Type="integer"
+                          Value="1"
+                          KeyPath="yes" />
+                  </Component>
+              </StandardDirectory>
+          '@
+          
+          $wxsContent = Get-Content $productWxs -Raw
+          
+          $newWxsContent = $wxsContent -replace '(<StandardDirectory Id="ProgramMenuFolder">)', "$($desktopShortcutContent)`n`$1"
+          $newWxsContent = $newWxsContent -replace '</Feature>', "    <ComponentRef Id=`"DesktopShortcut`" />`n        </Feature>"
+          $newWxsContent | Set-Content $productWxs
+          
+          Write-Output "File $productWxs was edited."
+          Write-Output "--- Contents of edited file $productWxs ---"
+          Get-Content $productWxs | Write-Output
+
+      - name: Build and Package Windows app with briefcase
+        run: |
+          # Builds and packages the Windows application. Ad-hoc signing is used for dev builds.
+          briefcase build windows
+          briefcase package windows --adhoc-sign
+
+      - name: Upload Windows app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-canlibrarygenerator-${{ env.APP_VERSION }}
+          path: dist/*.msi
+
+  build-macos:
+    runs-on: macos-latest
+    needs: set_version
+    env:
+      APP_VERSION: ${{ needs.set_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Briefcase and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install briefcase
+          pip install -r requirements.txt
+
+      - name: Inject version into __main__.py
+        run: |
+          # Replaces the __version__ string in __main__.py with the generated dev version.
+          sed -i '' "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
+
+      - name: Build macOS app with Briefcase
+        run: |
+          # Builds and packages the macOS application. Ad-hoc signing is used for dev builds.
+          briefcase create macOS
+          briefcase build macOS
+          briefcase package macOS --adhoc-sign
+
+      - name: Upload macOS app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-canlibrarygenerator-${{ env.APP_VERSION }}
+          path: dist/*.dmg
+
+  build-linux:
+    runs-on: ubuntu-latest
+    needs: set_version
+    env:
+      APP_VERSION: ${{ needs.set_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdk-pixbuf2.0-0 libglib2.0-0 libxkbcommon-x11-0
+
+      - name: Install Briefcase and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install briefcase
+          pip install -r requirements.txt
+
+      - name: Inject version into __main__.py
+        run: |
+          # Replaces the __version__ string in __main__.py with the generated dev version.
+          sed -i "s/^__version__ = .*/__version__ = \"${APP_VERSION}\"/" src/canlibrarygenerator/__main__.py
+
+      - name: Build Linux app with Briefcase
+        run: |
+          briefcase create linux
+          briefcase build linux
+          briefcase package linux
+
+      - name: Upload Linux app artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-canlibrarygenerator-${{ env.APP_VERSION }}
+          path: dist/*.deb

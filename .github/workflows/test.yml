@@ -1,0 +1,46 @@
+name: Test CAN Library Generator and Generate Docs
+
+on:
+  push:
+    branches:
+      - dev
+
+permissions:
+  contents: write
+
+jobs:
+  test_and_deploy_docs:
+    runs-on: ubuntu-latest
+
+    env:
+      CFLAGS: "-Wall -Werror"
+      CXXFLAGS: "-Wall -Werror"
+      GENERATED_LIBS_DIR: ${{ github.workspace }}/src/canlibrarygenerator/temp
+      DOXYGEN_TEMP_OUTPUT_DIR: _site
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc g++ make
+          pip install -r requirements.txt
+
+      - name: Run test pipeline script
+        env:
+          GITHUB_WORKSPACE: ${{ github.workspace }}
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          rm -rf ${{ env.GENERATED_LIBS_DIR }}
+          mkdir -p ${{ env.GENERATED_LIBS_DIR }}
+          python3 src/canlibrarygenerator/test/test_pipeline.py
