@@ -65,27 +65,32 @@ All generated files are stored in the `temp/` directory and are automatically cl
 
 ## 📁 Project structure
 ```graphql
+├── docs/                           # Documentation files
 ├── src/                            # Source files
-|   ├── dbc/                           # DBC files
-|   |   └── CAN_example.dbc
-|   ├── generate_functions/            # Scripts for generating libraries
-|   |   ├── generate_c_library.py
-|   |   └── generate_cpp_library.py
-|   ├── png/                           # Images
-|   |   ├── checked.png
-|   |   ├── tristate.png
-|   |   ├── unchecked.png
-|   |   └── VSB-TUO_logo.png
-|   ├── test/                          # Test applications
-|   |   ├── test_c.c
-|   |   ├── test_cpp.cpp
-|   |   └── test_pipeline.py
-|   └── ttkwidget/                     # CheckboxTreeview class
-|       └── checkboxtreeview.py
-├── main.py                         # DBC to code generator
+|   ├── canlibrarygenerator/           # Main project folder
+|   |   ├── dbc/                           # DBC files
+|   |   |   └── CAN_example.dbc
+|   |   ├── generate_functions/            # Scripts for generating libraries
+|   |   |   ├── generate_c_library.py
+|   |   |   └── generate_cpp_library.py
+|   |   ├── png/                           # Images
+|   |   |   ├── checked.png
+|   |   |   ├── tristate.png
+|   |   |   ├── unchecked.png
+|   |   |   └── VSB-TUO_logo.png
+|   |   ├── scripts/                       # Additional scripts
+|   |   |   └── inject_version.py
+|   |   ├── test/                          # Test applications
+|   |   |   ├── test_c.c
+|   |   |   ├── test_cpp.cpp
+|   |   |   └── test_pipeline.py
+|   |   ├── __init__.py
+|   |   └── __main__.py                    # DBC to code generator
+├── CHANGELOG.md
+├── LICENSE
+├── pyproject.toml
 ├── README.md
-├── requirements.txt
-└── setup.py
+└── requirements.txt
 ```
 
 ## 📝 License
