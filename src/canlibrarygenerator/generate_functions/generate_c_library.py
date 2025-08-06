@@ -62,9 +62,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += f"#ifndef {library_name.upper()}_H\n"
     h_code += f"#define {library_name.upper()}_H\n\n"
     h_code += "#include <stdint.h>\n"
-    h_code += "#include <string.h>\n"
     h_code += "#include <stdio.h>\n"
-    h_code += "#include <stddef.h>\n\n"
 
     # Define the DBCSignal structure
     h_code += "/**\n * @brief   Structure for signal representation.\n */\n"

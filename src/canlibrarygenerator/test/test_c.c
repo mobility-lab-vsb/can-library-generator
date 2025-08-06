@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "../temp/dbc_library_test.hpp"
+#include "../temp/dbc_library_test.h"
 
 int compare_data(const uint8_t* a, const uint8_t* b, const size_t len) {
     for (size_t i = 0; i < len; i++) {

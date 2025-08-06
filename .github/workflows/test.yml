@@ -10,7 +10,7 @@ permissions:
   contents: write
 
 jobs:
-  test_and_deploy_docs:
+  test_generator:
     runs-on: ubuntu-latest
 
     env:
