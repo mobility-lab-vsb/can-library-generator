@@ -339,12 +339,12 @@ int dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
     
     if (!msg || msg->dlc != dlc) {
-        printf("Message with ID 0x%X not found or DLC mismatch! Expected DLC: %d, Received DLC: %d\n",
+        printf("Message with ID 0x%X not found or DLC mismatch! Expected DLC: %d, Received DLC: %d\\n",
             can_id, msg ? msg->dlc : 0, dlc);
         return -1;
     }
 
-    printf("Message found: ID 0x%X, DLC %d\n", can_id, dlc);
+    printf("Message found: ID 0x%X, DLC %d\\n", can_id, dlc);
     memcpy(msg->data, data, dlc);
 
     for (size_t i = 0; i < msg->num_signals; i++) {
@@ -354,7 +354,7 @@ int dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint
 
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
 
-        printf("Signal %s: raw_value=%llu, factor=%.7f, offset=%.1f, value=%.7f\n",
+        printf("Signal %s: raw_value=%llu, factor=%.7f, offset=%.1f, value=%.7f\\n",
             sig->name, sig->raw_value, sig->factor, sig->offset, sig->value);
     }
 
@@ -400,7 +400,7 @@ void dbc_insert_signal(uint8_t* data, const uint8_t dlc, const uint32_t raw_valu
 int dbc_package_message(const uint32_t can_id) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
 
-    printf("Message found!\n");
+    printf("Message found!\\n");
     memset(msg->data, 0, msg->dlc);
 
     for (size_t i = 0; i < msg->num_signals; i++) {
