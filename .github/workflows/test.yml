@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - feat/canfd
 
 permissions:
   contents: write
