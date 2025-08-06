@@ -45,7 +45,11 @@ selected_items = [
     SelectedItem("Signal", "sigMO_EngineSpeed", "msgMotor_01"),
     SelectedItem("Signal", "sigMO_EngineTorque", "msgMotor_01"),
     SelectedItem("Signal", "sigMO_Oil_Temperature", "msgMotor_01"),
-    SelectedItem("Signal", "sigMO_Oil_pressure", "msgMotor_01")
+    SelectedItem("Signal", "sigMO_Oil_pressure", "msgMotor_01"),
+    SelectedItem("Message", "msgVD_GNSS_precision_position", None),
+    SelectedItem("Signal", "sigVD_GNSS_LatitudeDegree", "msgVD_GNSS_precision_position"),
+    SelectedItem("Signal", "sigVD_GNSS_LongitudeDegree", "msgVD_GNSS_precision_position"),
+    SelectedItem("Signal", "sigVD_GNSS_heading", "msgVD_GNSS_precision_position")
 ]
 
 # Mock tree
