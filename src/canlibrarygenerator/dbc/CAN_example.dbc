@@ -33,57 +33,14 @@ NS_ :
 
 BS_:
 
-BU_: GW TCU
-VAL_TABLE_ GW_ECU_StationID 7 "STATION_6" 6 "STATION_5" 5 "STATION_4" 4 "STATION_3" 3 "STATION_2" 2 "STATION_1" 1 "STATION_0" 0 "N_A" ;
-VAL_TABLE_ StationID 6 "STATION_6" 5 "STATION_5" 4 "STATION_4" 3 "STATION_3" 2 "STATION_2" 1 "STATION_1" 0 "STATION_0" ;
-VAL_TABLE_ Mech_SimulationStatus 3 "SIM_MATLAB" 2 "SIM_CANoe" 1 "REAL_PART" 0 "N_A" ;
-VAL_TABLE_ ECU_SimulationStatus 3 "Sim_ECUdeveloper" 2 "Sim_ECUstandard" 1 "Real_ECUdeveloper" 0 "Real_ECUstandard" ;
-VAL_TABLE_ GearRatio 7 "REVERSE" 6 "GEAR_6" 5 "GEAR_5" 4 "GEAR_4" 3 "GEAR_3" 2 "GEAR_2" 1 "GEAR_1" 0 "INACTIVE" ;
-VAL_TABLE_ SL_Possition 9 "ERROR" 8 "MANUAL" 7 "S" 6 "TIPP_MINUS" 5 "TIPP_PLUS" 4 "P" 3 "R" 2 "N" 1 "D" 0 "INIT" ;
-VAL_TABLE_ AT_TransmissionMode 9 "AT_ERROR" 8 "AT_POSITION_MANUAL" 7 "AT_POSITION_S" 6 "AT_POSITION_TIPP_MINUS" 5 "AT_POSITION_TIPP_PLUS" 4 "AT_POSITION_P" 3 "AT_POSITION_R" 2 "AT_POSITION_N" 1 "AT_POSITION_D" 0 "AT_INIT" ;
+BU_: CAEB TCU GW
 VAL_TABLE_ MotorRunningStatus 1 "MOTOR_RUNNING" 0 "MOTOR_OFF" ;
-VAL_TABLE_ IgnitionState 5 "IGNITION_ERROR" 4 "IGNITION_START" 3 "IGNITION_ON" 2 "IGNITION_ACCESSORIES" 1 "IGNITION_OFF" 0 "IGNITION_LOCK" ;
-VAL_TABLE_ Inactive_Active 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_TABLE_ VIN_MUX 2 "PART_3" 1 "PART_2" 0 "PART_1" ;
-VAL_TABLE_ Relevant_Data 1 "OLD" 0 "ACTUAL" ;
-VAL_TABLE_ GW_ECU_SimulationStatus 4 "Sim_ECU_DEVELOPER" 3 "Sim_ECU_STANDART" 2 "Real_ECU_DEVELOPER" 1 "Real_ECU_STANDART" 0 "N_A" ;
-VAL_TABLE_ Vehicle_Mileage 1048575 "MILEAGE_IERROR" 1048574 "MILEAGE_INIT" ;
-VAL_TABLE_ Bus_Simulated 1 "SIMULATED_BUS" 0 "REAL_BUS" ;
-VAL_TABLE_ Bus_Status 1 "BUS_ACTIVE" 0 "BUS_SLEEP" ;
-VAL_TABLE_ Bus_Identification 4 "CAN_DIAG" 3 "CAN_COMFORT" 2 "CAN_BODY" 1 "CAN_CHASSIS" 0 "CAN_MOTOR" ;
 
 
-BO_ 515 msgESP_03: 8 TCU
- SG_ sigESP_RR_Wheel_pulse : 38|13@1+ (1,0) [0|4095] ""  GW,TCU
- SG_ sigESP_RL_Wheel_pulse : 51|13@1+ (1,0) [0|4095] ""  GW,TCU
- SG_ sigESP_FR_Wheel_pulse : 25|13@1+ (1,0) [0|4095] ""  GW,TCU
- SG_ sigESP_FL_Wheel_pulse : 12|13@1+ (1,0) [0|8191] ""  GW,TCU
- SG_ sigESP03_CTR : 8|4@1+ (1,0) [0|15] ""  GW,TCU
- SG_ sigESP03_CRC : 0|8@1+ (1,0) [0|255] ""  GW,TCU
-
-BO_ 514 msgESP_02: 8 TCU
- SG_ sigESP_RR_Wheel_speed : 38|13@1+ (0.08,0) [0|655.28] ""  GW,TCU
- SG_ sigESP_RL_Wheel_speed : 51|13@1+ (0.08,0) [0|655.28] ""  GW,TCU
- SG_ sigESP_FR_Wheel_speed : 25|13@1+ (0.08,0) [0|655.28] ""  GW,TCU
- SG_ sigESP_FL_Wheel_speed : 12|13@1+ (0.08,0) [0|655.28] ""  GW,TCU
- SG_ sigESP02_CTR : 8|4@1+ (1,0) [0|15] ""  GW,TCU
- SG_ sigESP02_CRC : 0|8@1+ (1,0) [0|255] ""  GW,TCU
-
-BO_ 321 msgShiftLever_01: 8 Vector__XXX
- SG_ sigSL_GearRatio : 16|3@1+ (1,0) [0|7] ""  GW,TCU
- SG_ sigSL_Possition : 12|4@1+ (1,0) [0|15] ""  GW,TCU
- SG_ sigSL_CTR : 8|4@1+ (1,0) [0|15] ""  GW,TCU
- SG_ sigSL_CRC : 0|8@1+ (1,0) [0|255] ""  GW,TCU
-
-BO_ 305 msgAT_01: 8 Vector__XXX
- SG_ sigAT_GearRatio : 19|5@1+ (1,0) [0|15] "" Vector__XXX
- SG_ sigAT_OilTemperature : 50|14@1+ (0.01,-30) [-30|133.83] "°C"  GW
- SG_ sigAT_OutputShaftSpeed : 37|13@1+ (1,0) [0|8191] ""  GW
- SG_ sigAT_IputShaftSpeed : 24|13@1+ (1,0) [0|8191] ""  GW
- SG_ sigAT_GearAct : 16|3@1+ (1,0) [0|7] ""  GW
- SG_ sigAT_TransmissionModeAct : 12|4@1+ (1,0) [0|15] ""  GW
- SG_ sigAT01_CTR : 8|4@1+ (1,0) [0|0] ""  GW
- SG_ sigAT01_CRC : 0|8@1+ (1,0) [0|255] ""  GW
+BO_ 2147536897 msgVD_GNSS_precision_position: 16 CAEB
+ SG_ sigVD_GNSS_LatitudeDegree : 4|32@1+ (1E-07,0) [0|134.217727] "DegOfArc" Vector__XXX
+ SG_ sigVD_GNSS_LongitudeDegree : 36|32@1+ (1E-07,0) [0|268.435455] "DegOfArc" Vector__XXX
+ SG_ sigVD_GNSS_heading : 68|12@1+ (0.1,0) [0|360.1] "" Vector__XXX
 
 BO_ 289 msgMotor_01: 8 Vector__XXX
  SG_ sigMO_Oil_pressure : 56|8@1+ (1,0) [0|255] "" Vector__XXX
@@ -95,199 +52,45 @@ BO_ 289 msgMotor_01: 8 Vector__XXX
  SG_ sigMO_CTR : 8|4@1+ (1,0) [0|15] ""  TCU,GW
  SG_ sigMO_CRC : 0|8@1+ (1,0) [0|255] ""  TCU,GW
 
-BO_ 1066 msgClampStatus: 8 GW
- SG_ sigBCM_ClampStart : 19|1@1+ (1,0) [0|1] ""  TCU
- SG_ sigBCM_SW_KL15 : 18|1@1+ (1,0) [0|1] ""  TCU
- SG_ sigBCM_Clamp15 : 17|1@1+ (1,0) [0|1] ""  TCU
- SG_ sigBCM_ClampAccesories : 16|1@1+ (1,0) [0|1] ""  TCU
- SG_ sigBCM_IgnitionLock : 15|1@1+ (1,0) [0|1] ""  TCU
- SG_ sigBCM_IgnitionState : 12|3@1+ (1,0) [0|7] ""  TCU
- SG_ sigBCM_ClampStatus_CTR : 8|4@1+ (1,0) [0|15] ""  TCU
- SG_ sigBCM_ClampStatus_CRC : 0|8@1+ (1,0) [0|255] ""  TCU
-
-BO_ 513 msgESP_01: 8 TCU
- SG_ sigESP_DriverBrakes : 28|1@1+ (1,0) [0|1] ""  GW,TCU
- SG_ sigESP_VehicleSpeedAct : 12|16@1+ (0.01,0) [0|655] "kmph"  GW,TCU
- SG_ sigESP01_CTR : 8|4@1+ (1,0) [0|15] ""  GW,TCU
- SG_ sigESP01_CRC : 0|8@1+ (1,0) [0|255] ""  GW,TCU
-
-BO_ 1025 msgVIN: 8 GW
- SG_ sigVIN_Number_17 m2 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_16 m2 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_15 m2 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_14 m1 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_13 m1 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_12 m1 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_11 m1 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_10 m1 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_09 m1 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_08 m1 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_07 m0 : 56|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_06 m0 : 48|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_05 m0 : 40|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_04 m0 : 32|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_03 m0 : 24|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_02 m0 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_Number_01 m0 : 8|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ sigVIN_PacketCounter : 4|4@1+ (1,0) [0|15] "" Vector__XXX
- SG_ sigVIN_MUX M : 0|2@1+ (1,0) [0|3] "" Vector__XXX
-
-BO_ 1537 msgSystemInfo: 8 GW
- SG_ sigSI_Second : 47|6@1+ (1,0) [0|59] "Second"  TCU
- SG_ sigSI_Minute : 41|6@1+ (1,0) [0|59] "Minute"  TCU
- SG_ sigSI_Hour : 36|5@1+ (1,0) [0|23] "Hour"  TCU
- SG_ sigSI_Day : 31|5@1+ (1,0) [1|31] "Day"  TCU
- SG_ sigSI_Month : 27|4@1+ (1,0) [1|12] "Month"  TCU
- SG_ sigSI_Year : 20|7@1+ (1,2000) [2000|2127] "Year"  TCU
- SG_ sigSI_VehicleMileage : 0|20@1+ (1,0) [0|1048575] "Km"  TCU
 
 
-
-CM_ SG_ 515 sigESP03_CTR "4-bit message counter";
-CM_ SG_ 515 sigESP03_CRC "8-bit message checksum";
-CM_ SG_ 514 sigESP02_CTR "4-bit message counter";
-CM_ SG_ 514 sigESP02_CRC "8-bit message checksum";
-CM_ SG_ 321 sigSL_GearRatio "Selected gear of automatic transmission";
-CM_ SG_ 321 sigSL_Possition "Possition of shift lever";
-CM_ SG_ 321 sigSL_CTR "4-bit message counter";
-CM_ SG_ 321 sigSL_CRC "8-bit message checksum";
-CM_ SG_ 305 sigAT_OilTemperature "Actual temperature of oil";
-CM_ SG_ 305 sigAT_OutputShaftSpeed "Actual speed of output shaft";
-CM_ SG_ 305 sigAT_IputShaftSpeed "Actual speed of input shaft";
-CM_ SG_ 305 sigAT_GearAct "Actual gear of automatic transmission";
-CM_ SG_ 305 sigAT_TransmissionModeAct "Actual mode of automatic transmission";
-CM_ SG_ 305 sigAT01_CTR "4-bit message counter";
-CM_ SG_ 305 sigAT01_CRC "8-bit message checksum";
+CM_ SG_ 2147536897 sigVD_GNSS_LatitudeDegree "Latitude (north-south value)";
+CM_ SG_ 2147536897 sigVD_GNSS_LongitudeDegree "Longitude (east-west value)\n";
 CM_ SG_ 289 sigMO_EngineTorque "Actual state of engine torque";
 CM_ SG_ 289 sigMO_EngineSpeed "Actual speed of engine shaft";
 CM_ SG_ 289 sigMO_PedalPosition "Actual possition of gas pedal";
 CM_ SG_ 289 sigMO_MotorRunningStatus "Actual state of diesel engine";
 CM_ SG_ 289 sigMO_CTR "4-bit message counter";
 CM_ SG_ 289 sigMO_CRC "8-bit message checksum";
-CM_ SG_ 1066 sigBCM_SW_KL15 "Actual state of SW-KL15 (shall be same as KL15)";
-CM_ SG_ 1066 sigBCM_Clamp15 "Actual state of clamp 15";
-CM_ SG_ 1066 sigBCM_ClampAccesories "Actual state of clamp status";
-CM_ SG_ 1066 sigBCM_IgnitionLock "Actual state of ignition lock";
-CM_ SG_ 1066 sigBCM_IgnitionState "Actual state of ignition";
-CM_ SG_ 1066 sigBCM_ClampStatus_CTR "4-bit message counter";
-CM_ SG_ 1066 sigBCM_ClampStatus_CRC "8-bit message checksum";
-CM_ SG_ 513 sigESP_DriverBrakes "Actual state of brake pedal";
-CM_ SG_ 513 sigESP_VehicleSpeedAct "Actual vehicle speed";
-CM_ SG_ 513 sigESP01_CTR "4-bit message counter";
-CM_ SG_ 513 sigESP01_CRC "8-bit message checksum";
-CM_ SG_ 1025 sigVIN_Number_17 "Seventeenth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_16 "Sixteenth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_15 "Fifteenth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_14 "Fourteenth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_13 "Thirteenth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_12 "Twelfth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_11 "Eleventh digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_10 "Tenth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_09 "Nineth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_08 "Eighth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_07 "Seventh digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_06 "Sixth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_05 "Fifth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_04 "Fourth digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_03 "Third digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_02 "Second digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_Number_01 "First digit of vehicle identification number";
-CM_ SG_ 1025 sigVIN_PacketCounter "4-bit message counter";
-CM_ SG_ 1025 sigVIN_MUX "Message multiplexer";
-CM_ SG_ 1537 sigSI_Second "Actual date";
-CM_ SG_ 1537 sigSI_Minute "Actual date";
-CM_ SG_ 1537 sigSI_Hour "Actual date";
-CM_ SG_ 1537 sigSI_Day "Actual date";
-CM_ SG_ 1537 sigSI_Month "Actual date";
-CM_ SG_ 1537 sigSI_Year "Actual date";
-CM_ SG_ 1537 sigSI_VehicleMileage "Actual mileage of the vehicle";
-BA_DEF_  "Manufacturer" STRING ;
-BA_DEF_ BU_  "NodeLayerModules" STRING ;
+BA_DEF_ BO_  "VFrameFormat" ENUM  "StandardCAN","ExtendedCAN","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","reserved","StandardCAN_FD","ExtendedCAN_FD";
 BA_DEF_ BO_  "GenMsgStartDelayTime" INT 0 65535;
-BA_DEF_ SG_  "NWM-WakeupAllowed" ENUM  "No","Yes";
-BA_DEF_ BO_  "NmMessage" ENUM  "no","yes";
-BA_DEF_ BO_  "GenMsgILSupport" ENUM  "No","Yes";
-BA_DEF_ BU_  "NmNode" ENUM  "no","yes";
-BA_DEF_ BU_  "NmStationAddress" INT 0 63;
-BA_DEF_ BO_  "GenMsgCycleTimeFast" INT 0 50000;
-BA_DEF_  "BusType" STRING ;
-BA_DEF_ BO_  "GenMsgCycleTime" INT 0 50000;
-BA_DEF_ BO_  "GenMsgDelayTime" INT 0 1000;
-BA_DEF_ BO_  "GenMsgNrOfRepetition" INT 0 999999;
 BA_DEF_ BO_  "GenMsgSendType" ENUM  "Cyclic","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed","IfActive","NoMsgSendType","NotUsed","vector_leerstring";
-BA_DEF_ SG_  "GenSigInactiveValue" INT 0 100000;
+BA_DEF_ BO_  "GenMsgCycleTime" INT 0 50000;
 BA_DEF_ SG_  "GenSigSendType" ENUM  "Cyclic","OnWrite","OnWriteWithRepetition","OnChange","OnChangeWithRepetition","IfActive","IfActiveWithRepetition","NoSigSendType","NotUsed","NotUsed","NotUsed","NotUsed","NotUsed";
 BA_DEF_ SG_  "GenSigStartValue" FLOAT 0 100000000000;
-BA_DEF_DEF_  "Manufacturer" "VSB";
-BA_DEF_DEF_  "NodeLayerModules" "CANoeILNLVector.dll";
+BA_DEF_DEF_  "VFrameFormat" "ExtendedCAN_FD";
 BA_DEF_DEF_  "GenMsgStartDelayTime" 0;
-BA_DEF_DEF_  "NWM-WakeupAllowed" "";
-BA_DEF_DEF_  "NmMessage" "no";
-BA_DEF_DEF_  "GenMsgILSupport" "Yes";
-BA_DEF_DEF_  "NmNode" "no";
-BA_DEF_DEF_  "NmStationAddress" 0;
-BA_DEF_DEF_  "GenMsgCycleTimeFast" 0;
-BA_DEF_DEF_  "BusType" "";
-BA_DEF_DEF_  "GenMsgCycleTime" 0;
-BA_DEF_DEF_  "GenMsgDelayTime" 0;
-BA_DEF_DEF_  "GenMsgNrOfRepetition" 0;
 BA_DEF_DEF_  "GenMsgSendType" "NoMsgSendType";
-BA_DEF_DEF_  "GenSigInactiveValue" 0;
+BA_DEF_DEF_  "GenMsgCycleTime" 0;
 BA_DEF_DEF_  "GenSigSendType" "Cyclic";
 BA_DEF_DEF_  "GenSigStartValue" 0;
-BA_ "BusType" "CAN";
-BA_ "Manufacturer" "Vector";
-BA_ "NodeLayerModules" BU_ GW "CANoeILNLVector.dll";
-BA_ "NodeLayerModules" BU_ TCU "CANoeILNLVector.dll";
-BA_ "GenMsgStartDelayTime" BO_ 321 100;
-BA_ "GenMsgSendType" BO_ 321 0;
-BA_ "GenMsgCycleTime" BO_ 321 100;
-BA_ "GenMsgSendType" BO_ 305 0;
-BA_ "GenMsgStartDelayTime" BO_ 305 100;
-BA_ "GenMsgCycleTime" BO_ 305 100;
-BA_ "GenMsgSendType" BO_ 289 0;
-BA_ "GenMsgStartDelayTime" BO_ 289 100;
+BA_ "GenMsgSendType" BO_ 2147536897 7;
+BA_ "GenMsgStartDelayTime" BO_ 2147536897 1;
+BA_ "VFrameFormat" BO_ 2147536897 15;
+BA_ "VFrameFormat" BO_ 289 0;
 BA_ "GenMsgCycleTime" BO_ 289 100;
-BA_ "GenMsgCycleTime" BO_ 1066 10;
-BA_ "GenMsgSendType" BO_ 1066 0;
-BA_ "GenMsgCycleTime" BO_ 513 100;
-BA_ "GenMsgSendType" BO_ 513 0;
-BA_ "GenMsgCycleTime" BO_ 1025 200;
-BA_ "GenMsgSendType" BO_ 1025 0;
-BA_ "GenMsgCycleTime" BO_ 1537 100;
-BA_ "GenMsgSendType" BO_ 1537 0;
-BA_ "GenSigStartValue" SG_ 515 sigESP_RR_Wheel_pulse 0;
-BA_ "GenSigStartValue" SG_ 515 sigESP_RL_Wheel_pulse 0;
-BA_ "GenSigStartValue" SG_ 515 sigESP_FR_Wheel_pulse 0;
-BA_ "GenSigStartValue" SG_ 515 sigESP_FL_Wheel_pulse 0;
-BA_ "GenSigStartValue" SG_ 514 sigESP_RR_Wheel_speed 0;
-BA_ "GenSigStartValue" SG_ 514 sigESP_RL_Wheel_speed 0;
-BA_ "GenSigStartValue" SG_ 514 sigESP_FR_Wheel_speed 0;
-BA_ "GenSigStartValue" SG_ 514 sigESP_FL_Wheel_speed 0;
-BA_ "GenSigStartValue" SG_ 305 sigAT_OilTemperature 16383;
+BA_ "GenMsgStartDelayTime" BO_ 289 100;
+BA_ "GenMsgSendType" BO_ 289 0;
+BA_ "GenSigStartValue" SG_ 2147536897 sigVD_GNSS_LatitudeDegree 1342177260;
+BA_ "GenSigSendType" SG_ 2147536897 sigVD_GNSS_LatitudeDegree 7;
+BA_ "GenSigStartValue" SG_ 2147536897 sigVD_GNSS_LongitudeDegree 2684354540;
+BA_ "GenSigSendType" SG_ 2147536897 sigVD_GNSS_LongitudeDegree 7;
+BA_ "GenSigStartValue" SG_ 2147536897 sigVD_GNSS_heading 3601;
+BA_ "GenSigSendType" SG_ 2147536897 sigVD_GNSS_heading 7;
 BA_ "GenSigStartValue" SG_ 289 sigMO_Oil_pressure 0;
 BA_ "GenSigStartValue" SG_ 289 sigMO_Oil_Temperature 750;
 BA_ "GenSigSendType" SG_ 289 sigMO_MotorRunningStatus 7;
 BA_ "GenSigSendType" SG_ 289 sigMO_CTR 7;
 BA_ "GenSigSendType" SG_ 289 sigMO_CRC 7;
-BA_ "GenSigStartValue" SG_ 1537 sigSI_Second 0;
-BA_ "GenSigStartValue" SG_ 1537 sigSI_Minute 0;
-BA_ "GenSigStartValue" SG_ 1537 sigSI_Hour 0;
-BA_ "GenSigStartValue" SG_ 1537 sigSI_Day 1;
-BA_ "GenSigStartValue" SG_ 1537 sigSI_Month 1;
-BA_ "GenSigStartValue" SG_ 1537 sigSI_VehicleMileage 1048574;
-VAL_ 321 sigSL_GearRatio 7 "REVERSE" 6 "GEAR_6" 5 "GEAR_5" 4 "GEAR_4" 3 "GEAR_3" 2 "GEAR_2" 1 "GEAR_1" 0 "INACTIVE" ;
-VAL_ 321 sigSL_Possition 9 "SL_ERROR" 8 "SL_POSITION_MANUAL" 7 "SL_POSITION_S" 6 "SL_POSITION_TIPP_MINUS" 5 "SL_POSITION_TIPP_PLUS" 4 "SL_POSITION_P" 3 "SL_POSITION_R" 2 "SL_POSITION_N" 1 "SL_POSITION_D" 0 "SL_INIT" ;
-VAL_ 305 sigAT_GearAct 7 "REVERSE" 6 "GEAR_6" 5 "GEAR_5" 4 "GEAR_4" 3 "GEAR_3" 2 "GEAR_2" 1 "GEAR_1" 0 "INACTIVE" ;
-VAL_ 305 sigAT_TransmissionModeAct 9 "ERROR" 8 "MANUAL" 7 "S" 6 "TIPP_MINUS" 5 "TIPP_PLUS" 4 "P" 3 "R" 2 "N" 1 "D" 0 "INIT" ;
 VAL_ 289 sigMO_MotorRunningStatus 1 "MOTOR_RUNNING" 0 "MOTOR_OFF" ;
-VAL_ 1066 sigBCM_ClampStart 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_ 1066 sigBCM_SW_KL15 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_ 1066 sigBCM_Clamp15 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_ 1066 sigBCM_ClampAccesories 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_ 1066 sigBCM_IgnitionLock 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_ 1066 sigBCM_IgnitionState 5 "IGNITION_ERROR" 4 "IGNITION_START" 3 "IGNITION_ON" 2 "IGNITION_ACCESSORIES" 1 "IGNITION_OFF" 0 "IGNITION_LOCK" ;
-VAL_ 513 sigESP_DriverBrakes 1 "ACTIVE" 0 "INACTIVE" ;
-VAL_ 1025 sigVIN_MUX 2 "PART_3" 1 "PART_2" 0 "PART_1" ;
-VAL_ 1537 sigSI_VehicleMileage 1048575 "MILEAGE_IERROR" 1048574 "MILEAGE_INIT" ;
 

@@ -79,18 +79,18 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     # Define the DBCSignal structure
     hpp_code += "/**\n * @brief   Structure representing a CAN signal.\n */\n"
     hpp_code += "struct DBCSignal {\n"
-    hpp_code += "    std::string name;\n"
-    hpp_code += "    int startBit;\n"
-    hpp_code += "    int length;\n"
-    hpp_code += "    std::string byteOrder;\n"
+    hpp_code += "    const std::string name;\n"
+    hpp_code += "    uint16_t startBit;\n"
+    hpp_code += "    uint8_t length;\n"
+    hpp_code += "    const std::string byteOrder;\n"
     hpp_code += "    char valueType;\n"
     hpp_code += "    double factor;\n"
     hpp_code += "    double offset;\n"
     hpp_code += "    double min;\n"
     hpp_code += "    double max;\n"
-    hpp_code += "    std::string unit;\n"
-    hpp_code += "    std::string receiver;\n"
-    hpp_code += "    uint32_t raw_value = 0;\n"
+    hpp_code += "    const std::string unit;\n"
+    hpp_code += "    const std::string receiver;\n"
+    hpp_code += "    uint64_t raw_value = 0;\n"
     hpp_code += "    double value = 0.0;\n"
     hpp_code += "\n"
     hpp_code += "    /**\n     * @brief   Constructor for initializing a DBCSignal.\n"
@@ -107,7 +107,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code += "     * @param   unit Unit of the signal (default empty string).\n"
     hpp_code += "     * @param   receiver Receiver of the signal (default empty string).\n"
     hpp_code += "     */\n"
-    hpp_code += "    DBCSignal(std::string n, int start, int len, std::string byteOrder, char valueType, "
+    hpp_code += "    DBCSignal(std::string n, uint16_t start, uint8_t len, std::string byteOrder, char valueType, "
     hpp_code += "double factor, double offset, double min = 0.0, double max = 0.0, "
     hpp_code += "std::string unit = \"\", std::string receiver = \"\")\n"
     hpp_code += "        : name(n), startBit(start), length(len), byteOrder(byteOrder), valueType(valueType), "
@@ -117,10 +117,12 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     # Define the DBCMessageBase structure
     hpp_code += "/**\n * @brief   Base structure for a CAN message.\n */\n"
     hpp_code += "struct DBCMessageBase {\n"
-    hpp_code += "    int id;\n"
-    hpp_code += "    std::string name;\n"
-    hpp_code += "    int dlc;\n"
-    hpp_code += "    std::string sender;\n"
+    hpp_code += "    uint32_t id;\n"
+    hpp_code += "    const std::string name;\n"
+    hpp_code += "    uint8_t dlc;\n"
+    hpp_code += "    const std::string sender;\n"
+    hpp_code += "    uint8_t data[64]{};\n"
+    hpp_code += "    bool is_fd;\n"
     hpp_code += "    std::vector<DBCSignal*> signals;\n"
     hpp_code += "};\n\n"
 
@@ -172,49 +174,49 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     hpp_code += _generate_function_doxygen_comment(
         "dbc_parse_signal",
         [("data", "Pointer to the array of CAN data bytes."),
+         ("dlc", "Data Length Code (DLC) of the received message."),
          ("startBit", "Start bit of the signal."),
          ("length", "Length of the signal in bits."),
          ("byteOrder", "String specifying byte order (\"little_endian\" or \"big_endian\").")],
-        "uint32_t",
+        "uint64_t",
         brief="Parses the raw signal value from CAN data.",
         details="Extracts signal bits from the data array according to the specified start bit, length, and byte order."
     )
-    hpp_code += "uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder);\n"
+    hpp_code += "uint64_t dbc_parse_signal(const uint8_t* data, uint8_t dlc, uint16_t startBit, uint8_t length, std::string byteOrder);\n"
 
     hpp_code += _generate_function_doxygen_comment(
         "dbc_unpackage_message",
         [("can_id", "CAN ID of the received message."),
-         ("dlc", "Data Length Code (DLC) of the received message."),
-         ("data", "Pointer to the array of received CAN data bytes.")],
+         ("data", "Pointer to the array of received CAN data bytes."),
+         ("dlc", "Data Length Code (DLC) of the received message.")],
         "bool",
         brief="Unpackages a received CAN message and updates signal values.",
         details={"true": "Message was successfully unpackaged.", "false": "Message not found or DLC mismatch."}
     )
-    hpp_code += "bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data);\n"
+    hpp_code += "bool dbc_unpackage_message(uint32_t can_id, const uint8_t* data, uint8_t dlc);\n"
 
     hpp_code += _generate_function_doxygen_comment(
         "dbc_insert_signal",
         [("data", "Pointer to the byte array where the signal should be inserted."),
+         ("dlc", "Data Length Code (DLC) of the received message."),
          ("raw_value", "Raw signal value to insert."),
-         ("start_bit", "Start bit of the signal."),
+         ("startBit", "Start bit of the signal."),
          ("length", "Length of the signal in bits."),
          ("byteOrder", "String specifying byte order (\"little_endian\" or \"big_endian\").")],
         "void",
         brief="Inserts the raw signal value into a CAN data byte array.",
         details="Writes the bits of the raw signal value into the data array according to the specified start bit, length, and byte order."
     )
-    hpp_code += "void dbc_insert_signal(uint8_t* data, uint32_t raw_value, uint16_t start_bit, uint8_t length, std::string byteOrder);\n"
+    hpp_code += "void dbc_insert_signal(uint8_t* data, uint8_t dlc, uint32_t raw_value, uint16_t startBit, uint8_t length, std::string byteOrder);\n"
 
     hpp_code += _generate_function_doxygen_comment(
         "dbc_package_message",
-        [("can_id", "CAN ID of the message to package."),
-         ("dlc", "Data Length Code (DLC) of the message to package."),
-         ("data", "Pointer to the byte array where message signals should be packaged.")],
+        [("can_id", "CAN ID of the message to package.")],
         "bool",
         brief="Packages CAN message signals into a data array for transmission.",
         details={"true": "Message was successfully packaged.", "false": "Message not found or DLC mismatch."}
     )
-    hpp_code += "bool dbc_package_message(uint32_t can_id, uint8_t dlc, uint8_t* data);\n"
+    hpp_code += "bool dbc_package_message(uint32_t can_id);\n"
 
     hpp_code += f"\n#endif // {library_name.upper()}_HPP\n"
 
@@ -257,6 +259,7 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
         cpp_code += "// ---------------- Message definitions ----------------\n\n"
 
         struct_name = f"DBCMessage_{message_name.replace(' ', '')}"
+        is_fd = "true" if message.is_fd else "false"
         cpp_code += f"// Message {message_name}\n"
 
         cpp_code += f"{struct_name} {message.name} = {{\n"
@@ -265,6 +268,8 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
         cpp_code += f"        \"{message.name}\",\n"
         cpp_code += f"        {message.length},\n"
         cpp_code += f"        \"{message.senders[0] if message.senders else ''}\",\n"
+        cpp_code += "        {0},\n"
+        cpp_code += f"        {is_fd},\n"
         cpp_code += "        {\n"
 
         for signal in message.signals:
@@ -288,9 +293,9 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
     # Functions
     cpp_code += "// ---------------- Functions ----------------\n\n"
     # Find a message by ID function
-    cpp_code += """DBCMessageBase* dbc_find_message_by_id(uint32_t can_id) {
+    cpp_code += """DBCMessageBase* dbc_find_message_by_id(const uint32_t can_id) {
     for (auto* msg : dbc_all_messages) {
-        if (msg->id == static_cast<int>(can_id)) {
+        if (msg->id == can_id) {
             return msg;
         }
     }
@@ -299,50 +304,64 @@ def generate_cpp_code(selected_items, library_name, dbs, tree):
 
     # Parse signal function
     cpp_code += """// Parse signal function
-uint32_t dbc_parse_signal(const uint8_t* data, uint16_t startBit, uint8_t length, std::string byteOrder) {
-    uint64_t raw = 0;
-
-    for (int i = 0; i < 8; ++i) {
-        raw |= (static_cast<uint64_t>(data[i]) << (i * 8));
-    }
-
+uint64_t dbc_parse_signal(const uint8_t* data, const uint8_t dlc, const uint16_t startBit, const uint8_t length, const std::string byteOrder) {
+    uint64_t result = 0;
+    
     if (byteOrder == "little_endian") {
-        return static_cast<uint32_t>((raw >> startBit) & ((1ULL << length) - 1));
-    }
-    else {
-        // Big endian bit parsing – adjust for your actual use
-        uint64_t result = 0;
-        for (int i = 0; i < length; ++i) {
-            int src_bit = startBit + i;
-            int byte_index = 7 - (src_bit / 8);
-            int bit_index = src_bit % 8;
-            int bit_value = (data[byte_index] >> bit_index) & 0x1;
-            result |= (bit_value << (length - 1 - i));
+        int byteIndex = startBit / 8;
+        int bitIndex = startBit % 8;
+        int bitsLeft = length;
+        int shift = 0;
+        
+        while (bitsLeft > 0 && byteIndex < dlc) {
+            uint8_t byte = data[byteIndex];
+            int bitsInThisByte = std::min(bitsLeft, 8 - bitIndex);
+            uint8_t mask = ((1 << bitsInThisByte) - 1) << bitIndex;
+            uint8_t bits = (byte & mask) >> bitIndex;
+            result |= (bits << shift);
+            
+            bitsLeft -= bitsInThisByte;
+            shift += bitsInThisByte;
+            byteIndex++;
+            bitIndex = 0;
         }
-        return static_cast<uint32_t>(result);
+    } else {
+        for (int i = 0; i < length; ++i) {
+            int bitPos = startBit - i;
+            int byteIndex = bitPos / 8;
+            int bitIndex = bitPos % 8;
+            if (byteIndex >= dlc) continue;
+            uint8_t bit = (data[byteIndex] >> (7 - bitIndex)) & 0x1;
+            result = (result << 1) | bit;
+        }
     }
+    
+    return result;
 }\n\n"""
 
     # Unpackage message function
     cpp_code += """// Unpackage message function
-bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
+bool dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint8_t dlc) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
+    
     if (!msg || msg->dlc != dlc) {
         std::cout << "Message not found or DLC mismatch!" << std::endl;
         return false;
     }
+    
     std::cout << "Message found!" << std::endl;
+    std::memcpy(msg->data, data, msg->dlc);
 
-    for (DBCSignal* sig : msg->signals) {
-        uint32_t raw = dbc_parse_signal(data, sig->startBit, sig->length, sig->byteOrder.c_str());
+    for (auto* sig : msg->signals) {
+        uint64_t raw = dbc_parse_signal(msg->data, msg->dlc, sig->startBit, sig->length, sig->byteOrder);
         sig->raw_value = raw;
+        
         if (sig->valueType == 's') {
-            int64_t signed_val = static_cast<int64_t>(raw);
+            auto signed_val = static_cast<int64_t>(raw);
             int shift = 64 - sig->length;
             signed_val = (signed_val << shift) >> shift;  // sign-extend
             sig->value = signed_val * sig->factor + sig->offset;
-        }
-        else {
+        } else {
             sig->value = raw * sig->factor + sig->offset;
         }
     }
@@ -352,52 +371,46 @@ bool dbc_unpackage_message(uint32_t can_id, uint8_t dlc, const uint8_t* data) {
 
     # Insert signal data function
     cpp_code += """// Insert signal data function
-void dbc_insert_signal(uint8_t* data, uint32_t raw_value, uint16_t startBit, uint8_t length, std::string byteOrder) {
-    for (int i = 0; i < length; i++) {
-        uint8_t bitIndex;
-
-        if (byteOrder == "little_endian") {
-            // Intel (little endian)
-            bitIndex = static_cast<uint8_t>(startBit + i);
+void dbc_insert_signal(uint8_t* data, const uint8_t dlc, const uint32_t raw_value, const uint16_t startBit, const uint8_t length, const std::string byteOrder) {
+    if (byteOrder == "little_endian") {
+        for(int i = 0; i < length; ++i) {
+            int bitIndex = startBit + i;
+            int byteIndex = bitIndex / 8;
+            int bit_in_byte = bitIndex % 8;
+            if (byteIndex >= dlc) continue;
+            
+            if ((raw_value >> i) & 1) {
+                data[byteIndex] |= (1 << bit_in_byte);
+            } else {
+                data[byteIndex] &= ~(1 << bit_in_byte);
+            }
         }
-
-        else {
-            // Motorola (big endian)
-            uint8_t byteIndex = startBit / 8;
-            uint8_t bit_in_byte = 7 - (startBit % 8);
-            uint8_t abs_bit = byteIndex * 8 + bit_in_byte;
-
-            int bit_offset = i;
-            int current_bit = abs_bit - bit_offset;
-
-            bitIndex = static_cast<uint8_t>(current_bit);
-        }
-
-        uint8_t byteIndex = bitIndex / 8;
-        uint8_t bit_in_byte = bitIndex % 8;
-
-        if ((raw_value >> i) & 1) {
-            data[byteIndex] |= (1 << bit_in_byte);
-        }
-
-        else {
-            data[byteIndex] & ~(1 << bit_in_byte);
+    } else {
+        for (int i = 0; i < length; ++i) {
+            int bitPos = startBit - i;
+            int byteIndex = bitPos / 8;
+            int bitIndex = bitPos % 8;
+            if (byteIndex >= dlc) continue;
+            
+            if ((raw_value >> i) & 1) {
+                data[byteIndex] |= (1 << (7 - bitIndex));
+            } else {
+                data[byteIndex] &= ~(1 << (7 - bitIndex));
+            }
         }
     }
 }\n\n"""
 
     # Package message function
     cpp_code += """// Package message function
-bool dbc_package_message(uint32_t can_id, uint8_t dlc, uint8_t* data) {
+bool dbc_package_message(const uint32_t can_id) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
-    if (!msg || msg->dlc != dlc) {
-        std::cout << "Message not found or DLC mismatch!" << std::endl;
-        return false;
-    }
+    
     std::cout << "Message found!" << std::endl;
+    std::memset(msg->data, 0, msg->dlc);
 
-    for (DBCSignal* sig : msg->signals) {
-        dbc_insert_signal(data, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
+    for (auto* sig : msg->signals) {
+        dbc_insert_signal(msg->data, msg->dlc, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
     }
 
     return true;
