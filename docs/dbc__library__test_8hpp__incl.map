@@ -1,0 +1,11 @@
+<map id="src/canlibrarygenerator/temp/dbc_library_test.hpp" name="src/canlibrarygenerator/temp/dbc_library_test.hpp">
+<area shape="rect" id="Node000001" title="Defines the core structures and functions for CAN communication." alt="" coords="74,5,270,45"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,93,72,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,48,71,89,69,84,139,43"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="97,93,159,119"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="164,47,144,83,139,80,159,44"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="184,93,251,119"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="185,44,206,80,201,83,181,47"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="275,93,355,119"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="207,43,283,84,281,89,205,48"/>
+</map>

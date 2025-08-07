@@ -1,0 +1,13 @@
+<map id="src/canlibrarygenerator/temp/dbc_library_test.c" name="src/canlibrarygenerator/temp/dbc_library_test.c">
+<area shape="rect" id="Node000001" title="Defines the core structures and functions for CAN communication." alt="" coords="93,5,271,45"/>
+<area shape="rect" id="Node000002" href="$dbc__library__test_8h.html" title="Defines the core structures and functions for CAN communication." alt="" coords="113,93,251,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,46,185,79,179,79,179,46"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,167,76,192"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="160,121,77,163,75,158,158,116"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="100,167,171,192"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="177,120,153,157,148,154,172,118"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="195,167,262,192"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="192,118,216,154,211,157,187,120"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="286,167,361,192"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="206,116,289,158,287,163,204,121"/>
+</map>

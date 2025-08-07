@@ -1,0 +1,5 @@
+<map id="DBCMessageBase" name="DBCMessageBase">
+<area shape="rect" id="Node000001" title="Base structure for CAN message." alt="" coords="5,93,145,119"/>
+<area shape="rect" id="Node000002" href="$structDBCSignal.html" title="Structure for signal representation." alt="" coords="30,5,121,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,45,78,93,73,93,73,45"/>
+</map>
