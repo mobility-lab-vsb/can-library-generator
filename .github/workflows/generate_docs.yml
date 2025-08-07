@@ -2,9 +2,6 @@ name: Generate Doxygen Documentation
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feat/canfd
 
 jobs:
   build:
