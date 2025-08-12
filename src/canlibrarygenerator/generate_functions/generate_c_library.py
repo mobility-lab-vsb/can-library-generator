@@ -248,7 +248,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         # Define message struct
         senders = ', '.join(message.senders)
         sender_value = f"\"{senders}\"" if message.senders else "\"\""
-        signals_array = f"{message.name}_signals" if num_signals > 0 else "\"\""
+        signals_array = f"{message.name}_signals" if num_signals > 0 else "NULL"
         is_fd = 1 if message.is_fd else 0
 
         c_code += f"{struct_name} {message.name} = {{\n"
@@ -354,7 +354,7 @@ int dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint
 
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
 
-        printf("Signal %s: raw_value=%llu, factor=%.7f, offset=%.1f, value=%.7f\\n",
+        printf("Signal %s: raw_value=%lu, factor=%.7f, offset=%.1f, value=%.7f\\n",
             sig->name, sig->raw_value, sig->factor, sig->offset, sig->value);
     }
 
