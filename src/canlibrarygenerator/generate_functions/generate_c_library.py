@@ -130,7 +130,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "    uint32_t id;           /**< CAN ID of the message. */\n"
     h_code += "    const char *name;      /**< Name of the message. */\n"
     h_code += "    uint8_t dlc;           /**< Data Length Code (DLC) of the message. */\n"
-    h_code += "    uint8_t length         /**< Byte length of the message. */\n"
+    h_code += "    uint8_t length;        /**< Byte length of the message. */\n"
     h_code += "    const char *sender;    /**< Sender of the message. */\n"
     h_code += "    size_t num_signals;    /**< Number of signals in the message. */\n"
     h_code += "    uint8_t data[64];      /**< Data of the message. */\n"
