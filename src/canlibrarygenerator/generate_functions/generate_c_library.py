@@ -387,7 +387,7 @@ int dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint
         return -1;
     }
 
-    printf("Message found: ID 0x%X, message length %d\\n", can_id, msg_length);
+    //printf("Message found: ID 0x%X, message length %d\\n", can_id, msg_length);
     memcpy(msg->data, data, msg_length);
 
     for (size_t i = 0; i < msg->num_signals; i++) {
@@ -397,8 +397,8 @@ int dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint
 
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
 
-        printf("Signal %s: raw_value=%lu, factor=%.7f, offset=%.1f, value=%.7f\\n",
-            sig->name, sig->raw_value, sig->factor, sig->offset, sig->value);
+        /*printf("Signal %s: raw_value=%lu, factor=%.7f, offset=%.1f, value=%.7f\\n",
+            sig->name, sig->raw_value, sig->factor, sig->offset, sig->value);*/
     }
 
     return 0;
@@ -443,7 +443,7 @@ void dbc_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t r
 int dbc_package_message(const uint32_t can_id) {
     DBCMessageBase* msg = dbc_find_message_by_id(can_id);
 
-    printf("Message found!\\n");
+    //printf("Message found!\\n");
     memset(msg->data, 0, msg->length);
 
     for (size_t i = 0; i < msg->num_signals; i++) {
