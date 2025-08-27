@@ -28,10 +28,10 @@ void run_can_test() {
     const uint32_t can_message_id = 289;
     const uint8_t can_message_data[8] = { 0x0C, 0xB5, 0x01, 0x6E, 0xC4, 0xD0, 0xB6, 0x01 };
     const double expected_values[8] = { 12, 5, 1, 5.2, 880, 49, 87, 1 };
-    const uint8_t dlc = sizeof(can_message_data);
+    const uint8_t message_length = sizeof(can_message_data);
 
     printf("Attempting to decode message with ID 0x%X...\n", can_message_id);
-    if (dbc_unpackage_message(can_message_id, can_message_data, dlc) == 0) {
+    if (dbc_unpackage_message(can_message_id, can_message_data, message_length) == 0) {
         printf("Decoding successfull.\n");
 
         printf("Verifying decoded signal values...\n");
