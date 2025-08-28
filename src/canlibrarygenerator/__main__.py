@@ -14,6 +14,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 
+from pathlib import Path
+
 from .generate_functions.generate_c_library import generate_c_code
 from .generate_functions.generate_cpp_library import generate_cpp_code
 
@@ -228,6 +230,16 @@ class DBCLibraryGenerator(QMainWindow):
         """
         Applies a dark or light theme using QSS, mimicking sv_ttk.
         """
+        checked_path = "src/canlibrarygenerator/png/checked.png"
+        unchecked_path = "src/canlibrarygenerator/png/unchecked.png"
+
+        # Převod na absolutní cestu
+        checked_abs = os.path.abspath(checked_path)
+        unchecked_abs = os.path.abspath(unchecked_path)
+
+        # Pro Windows je potřeba převod lomítek
+        checked_abs = checked_abs.replace('\\', '/')
+        unchecked_abs = unchecked_abs.replace('\\', '/')
         # Common styles for both themes
         common_qss = """
         QGroupBox {
@@ -309,6 +321,7 @@ class DBCLibraryGenerator(QMainWindow):
         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
             background: none;
         }
+        
         """
 
         if darkdetect.isDark():
@@ -381,20 +394,14 @@ class DBCLibraryGenerator(QMainWindow):
             theme_qss = """
             QMainWindow {
                 background-color: #F0F0F0; /* sv_ttk light background */
-                color: #333333; /* sv_ttk text color */
             }
             QGroupBox {
                 background-color: #FFFFFF; /* sv_ttk frame background */
-                color: #333333;
                 border-color: #CCCCCC; /* sv_ttk border color */
-            }
-            QGroupBox::title {
-                color: #333333;
             }
             QPushButton {
                 background-color: #EEEEEE; /* sv_ttk button background */
                 border-color: #BBBBBB; /* sv_ttk button border */
-                color: #333333;
             }
             QPushButton:hover {
                 background-color: #DDDDDD; /* Slightly darker on hover */
@@ -424,7 +431,6 @@ class DBCLibraryGenerator(QMainWindow):
                 color: #333333;
             }
             QTreeWidget {
-                background-color: #FFFFFF; /* sv_ttk treeview background */
                 color: #333333;
                 border-color: #BBBBBB; /* sv_ttk treeview border */
                 alternate-background-color: #F8F8F8; /* For alternating row colors */
