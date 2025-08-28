@@ -2,7 +2,7 @@
 #include <cmath>
 #include <vector>
 #include <iomanip>
-#include "../temp/dbc_library_test.hpp"
+#include "../temp/cangen.hpp"
 
 bool compare_data(const std::vector<uint8_t>& a, const std::vector<uint8_t>& b) {
     if (a.size() != b.size()) {

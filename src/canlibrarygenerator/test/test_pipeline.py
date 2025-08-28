@@ -10,7 +10,7 @@ from collections import namedtuple
 # Configuration
 dbc_path = os.path.join(os.path.dirname(__file__), '..', 'dbc', 'CAN_example.dbc')
 dbc_path = os.path.abspath(dbc_path)
-library_name = "dbc_library_test"
+library_name = "cangen"
 output_dir = os.path.join(os.path.dirname(__file__), '..', 'temp')
 if os.path.exists(output_dir):
     shutil.rmtree(output_dir)

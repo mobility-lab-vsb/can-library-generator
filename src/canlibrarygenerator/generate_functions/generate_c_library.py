@@ -68,6 +68,7 @@ def _generate_function_doxygen_comment(function_name, params, return_type, brief
 
 def generate_c_code(selected_items, library_name, dbs, tree):
     """Generate C code for selected messages and signals."""
+    library_prefix = library_name
     # Group selected messages and signals
     selected_messages = defaultdict(list)
     for item in selected_items:
@@ -104,7 +105,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
             continue  # Skip if the message is not found
 
         hex_frame_id = hex(message.frame_id)
-        h_code += f"#define {message.name.upper()}_ID {hex_frame_id}\n"
+        h_code += f"#define {library_prefix.upper()}_{message.name.upper()}_ID {hex_frame_id}\n"
 
     # Define the DBCSignal structure
     h_code += "\n/**\n * @brief   Structure for signal representation.\n */\n"
@@ -166,26 +167,26 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "// Declaration of global CAN message instances.\n"
     for message_name in selected_messages:
         struct_name = f"DBCMessage_{message_name.replace(' ', '')}"
-        h_code += f"extern {struct_name} {message_name};\n"
+        h_code += f"extern {struct_name} {library_prefix}_{message_name};\n"
 
     # Message registry
     h_code += "// Global registry of all defined CAN messages.\n"
-    h_code += "extern DBCMessageBase* const dbc_all_messages[];\n"
-    h_code += "// Number of messages in the dbc_all_messages registry.\n"
-    h_code += "extern const size_t dbc_all_messages_count;\n\n"
+    h_code += f"extern DBCMessageBase* const {library_prefix}_all_messages[];\n"
+    h_code += f"// Number of messages in the {library_prefix}_all_messages registry.\n"
+    h_code += f"extern const size_t {library_prefix}_all_messages_count;\n\n"
 
     # Function declarations with Doxygen comments
     h_code += _generate_function_doxygen_comment(
-        "dbc_find_message_by_id",
+        f"{library_prefix}_find_message_by_id",
         [("can_id", "The CAN ID of the message to find.")],
         "DBCMessageBase*",
         brief="Finds a CAN message in the registry by its ID.",
         details="Returns a pointer to the found message or NULL if the message was not found."
     )
-    h_code += "DBCMessageBase* dbc_find_message_by_id(uint32_t can_id);\n"
+    h_code += f"DBCMessageBase* {library_prefix}_find_message_by_id(uint32_t can_id);\n"
 
     h_code += _generate_function_doxygen_comment(
-        "dbc_parse_signal",
+        f"{library_prefix}_parse_signal",
         [("data", "Pointer to the array of CAN data bytes."),
          ("msg_length", "Byte length of the message."),
          ("startBit", "Start bit of the signal."),
@@ -195,10 +196,10 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         brief="Parses the raw signal value from CAN data.",
         details="Extracts signal bits from the data array according to the specified start bit, length and byte order."
     )
-    h_code += "uint64_t dbc_parse_signal(const uint8_t* data, uint8_t msg_length, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
+    h_code += f"uint64_t {library_prefix}_parse_signal(const uint8_t* data, uint8_t msg_length, uint16_t startBit, uint8_t length, const char* byteOrder);\n"
 
     h_code += _generate_function_doxygen_comment(
-        "dbc_unpackage_message",
+        f"{library_prefix}_unpackage_message",
         [("can_id", "CAN ID of the received message."),
          ("data", "Pointer to the array of received CAN data bytes."),
          ("msg_length", "Byte length of the message.")],
@@ -206,10 +207,10 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         brief="Unpackages a received CAN message and updates signal values.",
         details="Finds the message by ID, checks DLC, parses raw signal values, and converts them to physical values. Returns 0 on success, -1 on error (message not found or DLC mismatch)."
     )
-    h_code += "int dbc_unpackage_message(uint32_t can_id, const uint8_t* data, uint8_t msg_length);\n"
+    h_code += f"int {library_prefix}_unpackage_message(uint32_t can_id, const uint8_t* data, uint8_t msg_length);\n"
 
     h_code += _generate_function_doxygen_comment(
-        "dbc_insert_signal",
+        f"{library_prefix}_insert_signal",
         [("data", "Pointer to the byte array where the signal should be inserted."),
          ("msg_length", "Byte length of the message."),
          ("raw_value", "Raw signal value to insert."),
@@ -220,16 +221,16 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         brief="Inserts the raw signal value into a CAN data byte array.",
         details="Writes the bits of the raw signal value into the data array according to the specified start bit, length, and byte order."
     )
-    h_code += "void dbc_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, const char* byteOrder);\n"
+    h_code += f"void {library_prefix}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, const char* byteOrder);\n"
 
     h_code += _generate_function_doxygen_comment(
-        "dbc_package_message",
+        f"{library_prefix}_package_message",
         [("can_id", "CAN ID of the message to package.")],
         "int",
         brief="Packages CAN message signals into a data array for transmission.",
         details="Finds the message by ID, checks DLC, and inserts raw signal values into the data array. Returns 0 on success, -1 on error."
     )
-    h_code += "int dbc_package_message(uint32_t can_id);\n\n"
+    h_code += f"int {library_prefix}_package_message(uint32_t can_id);\n\n"
 
     h_code += f"#endif // {library_name.upper()}_H\n"
 
@@ -293,7 +294,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         is_fd = 1 if message.is_fd else 0
         dlc = get_dlc_from_data_length(message.length)
 
-        c_code += f"{struct_name} {message.name} = {{\n"
+        c_code += f"{struct_name} {library_prefix}_{message.name} = {{\n"
         c_code += f"    .base = {{\n"
         c_code += f"        .id = {message.frame_id},\n"
         c_code += f"        .name = \"{message.name}\",\n"
@@ -312,39 +313,39 @@ def generate_c_code(selected_items, library_name, dbs, tree):
                 c_code += f"    .{signal.name} = &{message.name}_signals[{i}],\n"
 
         c_code += "};\n\n"
-        message_definitions.append(f"(DBCMessageBase*)&{message.name}")
+        message_definitions.append(f"(DBCMessageBase*)&{library_prefix}_{message.name}")
 
     # Message registry
     c_code += "// Message registry\n"
-    c_code += f"DBCMessageBase* const dbc_all_messages[] = {{\n    "
+    c_code += f"DBCMessageBase* const {library_prefix}_all_messages[] = {{\n    "
     c_code += ",\n    ".join(message_definitions)
     c_code += "\n};\n\n"
-    c_code += f"const size_t dbc_all_messages_count = {len(message_definitions)};\n"
+    c_code += f"const size_t {library_prefix}_all_messages_count = {len(message_definitions)};\n"
 
     # Find message function
-    c_code += """// Find message by ID function
-DBCMessageBase* dbc_find_message_by_id(const uint32_t can_id) {
-    for (size_t i = 0; i < dbc_all_messages_count; i++) {
-        if (dbc_all_messages[i]->id == can_id) {
-            return dbc_all_messages[i];
-        }
-    }
+    c_code += f"""// Find message by ID function
+DBCMessageBase* {library_prefix}_find_message_by_id(const uint32_t can_id) {{
+    for (size_t i = 0; i < {library_prefix}_all_messages_count; i++) {{
+        if ({library_prefix}_all_messages[i]->id == can_id) {{
+            return {library_prefix}_all_messages[i];
+        }}
+    }}
     return NULL;
-}
+}}
 \n"""
 
     # Parse signal function
-    c_code +="""// Parse signal function
-uint64_t dbc_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t startBit, const uint8_t length, const char* byteOrder) {
+    c_code +=f"""// Parse signal function
+uint64_t {library_prefix}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t startBit, const uint8_t length, const char* byteOrder) {{
     uint64_t result = 0;
 
-    if (strcmp(byteOrder, "little_endian") == 0) {
+    if (strcmp(byteOrder, "little_endian") == 0) {{
         // Intel (little endian)
         uint8_t byte = startBit / 8;
         uint8_t bit = startBit % 8;
         uint8_t bitsRead = 0;
 
-        while (bitsRead < length) {
+        while (bitsRead < length) {{
             uint8_t remainingBitsInByte = 8 - bit;
             uint8_t bitsToRead = (length - bitsRead < remainingBitsInByte) ? (length - bitsRead) : remainingBitsInByte;
 
@@ -356,102 +357,102 @@ uint64_t dbc_parse_signal(const uint8_t* data, const uint8_t msg_length, const u
             bitsRead += bitsToRead;
             bit = 0;
             byte++;
-        }
-    }
-    else {
+        }}
+    }}
+    else {{
         // Motorola (big-endian / @0+)
-        for (uint8_t i = 0; i < length; i++) {
+        for (uint8_t i = 0; i < length; i++) {{
             uint16_t bitOffset = startBit - i;
             uint8_t byteIndex = bitOffset / 8;
             uint8_t bitInByte = 7 - (bitOffset % 8);
 
-            if (byteIndex < msg_length) {
+            if (byteIndex < msg_length) {{
                 uint8_t bit = (data[byteIndex] >> bitInByte) & 0x1;
                 result |= ((uint64_t)bit << i);
-            }
-        }
-    }
+            }}
+        }}
+    }}
 
     return result;
-}
+}}
 \n"""
 
     # Unpackage message function
-    c_code += """// Unpackage message function
-int dbc_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint8_t msg_length) {
-    DBCMessageBase* msg = dbc_find_message_by_id(can_id);
+    c_code += f"""// Unpackage message function
+int {library_prefix}_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint8_t msg_length) {{
+    DBCMessageBase* msg = {library_prefix}_find_message_by_id(can_id);
     
-    if (!msg || msg->length != msg_length) {
+    if (!msg || msg->length != msg_length) {{
         printf("Message with ID 0x%X not found or message length mismatch! Expected message length: %d, Received message_length: %d\\n",
             can_id, msg ? msg->length : 0, msg_length);
         return -1;
-    }
+    }}
 
     //printf("Message found: ID 0x%X, message length %d\\n", can_id, msg_length);
     memcpy(msg->data, data, msg_length);
 
-    for (size_t i = 0; i < msg->num_signals; i++) {
+    for (size_t i = 0; i < msg->num_signals; i++) {{
         DBCSignal* sig = &msg->signals[i];
 
-        sig->raw_value = dbc_parse_signal(msg->data, msg->length, sig->startBit, sig->length, sig->byteOrder);
+        sig->raw_value = {library_prefix}_parse_signal(msg->data, msg->length, sig->startBit, sig->length, sig->byteOrder);
 
         sig->value = (sig->raw_value * sig->factor) + sig->offset;
 
         /*printf("Signal %s: raw_value=%lu, factor=%.7f, offset=%.1f, value=%.7f\\n",
             sig->name, sig->raw_value, sig->factor, sig->offset, sig->value);*/
-    }
+    }}
 
     return 0;
-}
+}}
 \n"""
 
     # Insert signal data function
-    c_code += """// Insert signal data function
-void dbc_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const char* byteOrder) {
-    if (strcmp(byteOrder, "little_endian") == 0) {
-        for (int i = 0; i < length; i++) {
+    c_code += f"""// Insert signal data function
+void {library_prefix}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const char* byteOrder) {{
+    if (strcmp(byteOrder, "little_endian") == 0) {{
+        for (int i = 0; i < length; i++) {{
             int bitIndex = start_bit + i;
             int byteIndex = bitIndex / 8;
             int bit_in_byte = bitIndex % 8;
             if (byteIndex >= msg_length) continue;
             
-            if ((raw_value >> i) & 1) {
+            if ((raw_value >> i) & 1) {{
                 data[byteIndex] |= (1 << bit_in_byte);
-            } else {
+            }} else {{
                 data[byteIndex] &= ~(1 << bit_in_byte);
-            }   
-        }
-    } else {
-        for (int i = 0; i < length; i++) {
+            }}   
+        }}
+    }} else {{
+        for (int i = 0; i < length; i++) {{
             int bitPos = start_bit - i;
             int byteIndex = bitPos / 8;
             int bitIndex = bitPos % 8;
             if (byteIndex >= msg_length) continue;
             
-            if ((raw_value >> i) & 1) {
+            if ((raw_value >> i) & 1) {{
                 data[byteIndex] |= (1 << (7 - bitIndex));
-            } else {
+            }} else {{
                 data[byteIndex] &= ~(1 << (7 - bitIndex));
-            }
-        }
-    }
-}
+            }}
+        }}
+    }}
+}}
 \n"""
 
     # Package message function
-    c_code += """// Package message function
-int dbc_package_message(const uint32_t can_id) {
-    DBCMessageBase* msg = dbc_find_message_by_id(can_id);
+    c_code += f"""// Package message function
+int {library_prefix}_package_message(const uint32_t can_id) {{
+    DBCMessageBase* msg = {library_prefix}_find_message_by_id(can_id);
 
     //printf("Message found!\\n");
     memset(msg->data, 0, msg->length);
 
-    for (size_t i = 0; i < msg->num_signals; i++) {
+    for (size_t i = 0; i < msg->num_signals; i++) {{
         const DBCSignal* sig = &msg->signals[i];
-        dbc_insert_signal(msg->data, msg->length, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
-    }
+        {library_prefix}_insert_signal(msg->data, msg->length, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
+    }}
 
     return 0;
-}
+}}
 \n"""
     return h_code, c_code

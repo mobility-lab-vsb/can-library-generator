@@ -14,8 +14,6 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QPixmap, QIcon
 from PyQt6.QtCore import Qt, QSize
 
-from pathlib import Path
-
 from .generate_functions.generate_c_library import generate_c_code
 from .generate_functions.generate_cpp_library import generate_cpp_code
 
@@ -528,9 +526,9 @@ class DBCLibraryGenerator(QMainWindow):
         controls_layout.setSpacing(10)  # Spacing between widgets in this layout
 
         # Library name entry
-        controls_layout.addWidget(QLabel("Library Name:"), 0, 0, Qt.AlignmentFlag.AlignLeft)
-        self.library_name_entry = QLineEdit("dbc_library")
-        controls_layout.addWidget(self.library_name_entry, 0, 1, 1, 2)  # Span 2 columns
+        controls_layout.addWidget(QLabel("Library Name/Prefix:"), 0, 0, Qt.AlignmentFlag.AlignLeft)
+        self.library_name_entry = QLineEdit("cangen")
+        controls_layout.addWidget(self.library_name_entry, 0, 1, 1, 2)
 
         # Language selections
         controls_layout.addWidget(QLabel("Language:"), 0, 3,
@@ -658,7 +656,7 @@ class DBCLibraryGenerator(QMainWindow):
 
         library_name = self.library_name_entry.text().strip()
         if not library_name:
-            library_name = "dbc_library"
+            library_name = "cangen"
 
         directory = QFileDialog.getExistingDirectory(
             self,
