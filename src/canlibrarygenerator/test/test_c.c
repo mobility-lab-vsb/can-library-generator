@@ -8,9 +8,9 @@ int compare_data(const uint8_t* a, const uint8_t* b, const size_t len) {
         if (a[i] != b[i]) {
             printf("DEBUG: Data mismatch at index %zu: 0x%X != 0x%X\n", i, a[i], b[i]);
             return 0;
-        }
-
-        //printf("DEBUG: Data match at index %zu: %u == %u\n", i, a[i], b[i]);
+        } /*else {
+            printf("DEBUG: Data match at index %zu: 0x%X == 0x%X\n", i, a[i], b[i]);
+        }*/
     }
 
     return 1;
@@ -37,36 +37,36 @@ void run_can_test() {
         printf("Verifying decoded signal values...\n");
         bool all_signals_ok = true;
 
-        if (cangen_msgMotor_01.base.signals[0].value != expected_values[0]) {
-            printf("  - ERROR: sigMO_CRC mismatch. Expected %u, got %u\n", (uint8_t)expected_values[0], (uint8_t)cangen_msgMotor_01.base.signals[0].value);
+        if (cangen_msgMotor_01.base.signals[0].phys_value != expected_values[0]) {
+            printf("  - ERROR: sigMO_CRC mismatch. Expected %u, got %u\n", (uint8_t)expected_values[0], (uint8_t)cangen_msgMotor_01.base.signals[0].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[1].value != expected_values[1]) {
-            printf("  - ERROR: sigMO_CTR mismatch. Expected %u, got %u\n", (uint8_t)expected_values[1], (uint8_t)cangen_msgMotor_01.base.signals[1].value);
+        if (cangen_msgMotor_01.base.signals[1].phys_value != expected_values[1]) {
+            printf("  - ERROR: sigMO_CTR mismatch. Expected %u, got %u\n", (uint8_t)expected_values[1], (uint8_t)cangen_msgMotor_01.base.signals[1].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[2].value != expected_values[2]) {
-            printf("  - ERROR: sigMO_MotorRunningStatus mismatch. Expected %u, got %u\n", (bool)expected_values[2], (bool)cangen_msgMotor_01.base.signals[2].value);
+        if (cangen_msgMotor_01.base.signals[2].phys_value != expected_values[2]) {
+            printf("  - ERROR: sigMO_MotorRunningStatus mismatch. Expected %u, got %u\n", (bool)expected_values[2], (bool)cangen_msgMotor_01.base.signals[2].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[3].value != expected_values[3]) {
-            printf("  - ERROR: sigMO_PedalPosition mismatch. Expected %f, got %f\n", expected_values[3], cangen_msgMotor_01.base.signals[3].value);
+        if (cangen_msgMotor_01.base.signals[3].phys_value != expected_values[3]) {
+            printf("  - ERROR: sigMO_PedalPosition mismatch. Expected %f, got %f\n", expected_values[3], cangen_msgMotor_01.base.signals[3].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[4].value != expected_values[4]) {
-            printf("  - ERROR: sigMO_EngineSpeed mismatch. Expected %u, got %u\n", (uint16_t)expected_values[4], (uint16_t)cangen_msgMotor_01.base.signals[4].value);
+        if (cangen_msgMotor_01.base.signals[4].phys_value != expected_values[4]) {
+            printf("  - ERROR: sigMO_EngineSpeed mismatch. Expected %u, got %u\n", (uint16_t)expected_values[4], (uint16_t)cangen_msgMotor_01.base.signals[4].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[5].value != expected_values[5]) {
-            printf("  - ERROR: sigMO_EngineTorque mismatch. Expected %d, got %d\n", (int)expected_values[5], (int)cangen_msgMotor_01.base.signals[5].value);
+        if (cangen_msgMotor_01.base.signals[5].phys_value != expected_values[5]) {
+            printf("  - ERROR: sigMO_EngineTorque mismatch. Expected %d, got %d\n", (int)expected_values[5], (int)cangen_msgMotor_01.base.signals[5].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[6].value != expected_values[6]) {
-            printf("  - ERROR: sigMO_Oil_Temperature mismatch. Expected %d, got %d\n", (int)expected_values[6], (int)cangen_msgMotor_01.base.signals[6].value);
+        if (cangen_msgMotor_01.base.signals[6].phys_value != expected_values[6]) {
+            printf("  - ERROR: sigMO_Oil_Temperature mismatch. Expected %d, got %d\n", (int)expected_values[6], (int)cangen_msgMotor_01.base.signals[6].phys_value);
             all_signals_ok = false;
         }
-        if (cangen_msgMotor_01.base.signals[7].value != expected_values[7]) {
-            printf("  - ERROR: sigMO_Oil_pressure mismatch. Expected %f, got %f\n", expected_values[7], cangen_msgMotor_01.base.signals[7].value);
+        if (cangen_msgMotor_01.base.signals[7].phys_value != expected_values[7]) {
+            printf("  - ERROR: sigMO_Oil_pressure mismatch. Expected %f, got %f\n", expected_values[7], cangen_msgMotor_01.base.signals[7].phys_value);
             all_signals_ok = false;
         }
 
@@ -119,16 +119,16 @@ void run_canfd_test() {
         printf("\nVerifying decoded signal values...\n");
         bool all_signals_ok = true;
 
-        if (are_equal(expected_canfd_values[0], cangen_msgVD_GNSS_precision_position.base.signals[0].value, 1E-6) == 0) {
-            printf("  - ERROR: %s mismatch. Expected %f, got %f\n", cangen_msgVD_GNSS_precision_position.base.signals[0].name, expected_canfd_values[0], cangen_msgVD_GNSS_precision_position.base.signals[0].value);
+        if (are_equal(expected_canfd_values[0], cangen_msgVD_GNSS_precision_position.base.signals[0].phys_value, 1E-6) == 0) {
+            printf("  - ERROR: %s mismatch. Expected %f, got %f\n", cangen_msgVD_GNSS_precision_position.base.signals[0].name, expected_canfd_values[0], cangen_msgVD_GNSS_precision_position.base.signals[0].phys_value);
             all_signals_ok = false;
         }
-        if (are_equal(expected_canfd_values[1], cangen_msgVD_GNSS_precision_position.base.signals[1].value, 1E-6) == 0) {
-            printf("  - ERROR: %s mismatch. Expected %f, got %f\n", cangen_msgVD_GNSS_precision_position.base.signals[1].name, expected_canfd_values[1], cangen_msgVD_GNSS_precision_position.base.signals[1].value);
+        if (are_equal(expected_canfd_values[1], cangen_msgVD_GNSS_precision_position.base.signals[1].phys_value, 1E-6) == 0) {
+            printf("  - ERROR: %s mismatch. Expected %f, got %f\n", cangen_msgVD_GNSS_precision_position.base.signals[1].name, expected_canfd_values[1], cangen_msgVD_GNSS_precision_position.base.signals[1].phys_value);
             all_signals_ok = false;
         }
-        if (are_equal(expected_canfd_values[2], cangen_msgVD_GNSS_precision_position.base.signals[2].value, 1E-6) == 0) {
-            printf("  - ERROR: %s mismatch. Expected %f, got %f\n", cangen_msgVD_GNSS_precision_position.base.signals[2].name, expected_canfd_values[2], cangen_msgVD_GNSS_precision_position.base.signals[2].value);
+        if (are_equal(expected_canfd_values[2], cangen_msgVD_GNSS_precision_position.base.signals[2].phys_value, 1E-6) == 0) {
+            printf("  - ERROR: %s mismatch. Expected %f, got %f\n", cangen_msgVD_GNSS_precision_position.base.signals[2].name, expected_canfd_values[2], cangen_msgVD_GNSS_precision_position.base.signals[2].phys_value);
             all_signals_ok = false;
         }
 
