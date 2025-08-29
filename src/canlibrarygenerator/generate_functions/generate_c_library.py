@@ -89,7 +89,8 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "#include <stdint.h>\n"
     h_code += "#include <string.h>\n"
     h_code += "#include <stdio.h>\n"
-    h_code += "#include <stddef.h>\n\n"
+    h_code += "#include <stddef.h>\n"
+    h_code += "#include <math.h>\n\n"
 
 
     for message_name, signal_name in selected_messages.items():
@@ -122,13 +123,13 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "    const char *unit;      /**< Unit of the signal. */\n"
     h_code += "    const char *receiver;  /**< Receiver of the signal. */\n"
     h_code += "    uint64_t raw_value;    /**< Current raw value of the signal. */\n"
-    h_code += "    double value;          /**< Current physical value of the signal. */\n"
+    h_code += "    double phys_value;     /**< Current physical value of the signal. */\n"
     h_code += "} DBCSignal;\n\n"
 
     # Base message structure
     h_code += "/**\n * @brief   Base structure for CAN message.\n */\n"
     h_code += "typedef struct {\n"
-    h_code += "    uint32_t id;           /**< CAN ID of the message. */\n"
+    h_code += "    const uint32_t id;     /**< CAN ID of the message. */\n"
     h_code += "    const char *name;      /**< Name of the message. */\n"
     h_code += "    uint8_t dlc;           /**< Data Length Code (DLC) of the message. */\n"
     h_code += "    uint8_t length;        /**< Byte length of the message. */\n"
@@ -136,6 +137,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
     h_code += "    size_t num_signals;    /**< Number of signals in the message. */\n"
     h_code += "    uint8_t data[64];      /**< Data of the message. */\n"
     h_code += "    int is_fd;             /**< Boolean flag (fd / not fd). */\n"
+    h_code += "    uint32_t cycle_time;   /**< Cycle time of the message. */\n"
     h_code += "    DBCSignal *signals;    /**< Pointer to the array of the message signals. */\n"
     h_code += "} DBCMessageBase;\n\n"
 
@@ -278,7 +280,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
                     c_code += f"        .unit = {unit_value},\n"
                     c_code += f"        .receiver = {receiver_value},\n"
                     c_code += f"        .raw_value = 0,\n"
-                    c_code += f"        .value = 0.0\n"
+                    c_code += f"        .phys_value = 0.0\n"
                     c_code += "    },\n"
             c_code += "};\n\n"
 
@@ -293,6 +295,7 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         signals_array = f"{message.name}_signals" if num_signals > 0 else "NULL"
         is_fd = 1 if message.is_fd else 0
         dlc = get_dlc_from_data_length(message.length)
+        cycle_time = message.cycle_time if message.cycle_time else 0
 
         c_code += f"{struct_name} {library_prefix}_{message.name} = {{\n"
         c_code += f"    .base = {{\n"
@@ -302,8 +305,9 @@ def generate_c_code(selected_items, library_name, dbs, tree):
         c_code += f"        .length = {message.length},\n"
         c_code += f"        .sender = {sender_value},\n"
         c_code += f"        .num_signals = {num_signals},\n"
-        c_code += f"        .is_fd = {is_fd},\n"
         c_code +=  "        .data = {0},\n"
+        c_code += f"        .is_fd = {is_fd},\n"
+        c_code += f"        .cycle_time = {cycle_time},\n"
         c_code += f"        .signals = {signals_array}\n"
         c_code += f"    }},\n"
 
@@ -396,10 +400,10 @@ int {library_prefix}_unpackage_message(const uint32_t can_id, const uint8_t* dat
 
         sig->raw_value = {library_prefix}_parse_signal(msg->data, msg->length, sig->startBit, sig->length, sig->byteOrder);
 
-        sig->value = (sig->raw_value * sig->factor) + sig->offset;
+        sig->phys_value = (sig->raw_value * sig->factor) + sig->offset;
 
         /*printf("Signal %s: raw_value=%lu, factor=%.7f, offset=%.1f, value=%.7f\\n",
-            sig->name, sig->raw_value, sig->factor, sig->offset, sig->value);*/
+            sig->name, sig->raw_value, sig->factor, sig->offset, sig->phys_value);*/
     }}
 
     return 0;
@@ -448,7 +452,11 @@ int {library_prefix}_package_message(const uint32_t can_id) {{
     memset(msg->data, 0, msg->length);
 
     for (size_t i = 0; i < msg->num_signals; i++) {{
-        const DBCSignal* sig = &msg->signals[i];
+        DBCSignal* sig = &msg->signals[i];
+        //printf("Old RAW: %u\\n", sig->raw_value);
+        //printf("RAW: %u = (PHYS: %f - OFFSET: %.9f) / FACTOR: %.9f\\n", sig->raw_value, sig->phys_value, sig->offset, sig->factor);
+        sig->raw_value = (int)llround((sig->phys_value - sig->offset) / sig->factor);
+        //printf("New RAW: %u\\n", sig->raw_value);
         {library_prefix}_insert_signal(msg->data, msg->length, sig->raw_value, sig->startBit, sig->length, sig->byteOrder);
     }}
 
