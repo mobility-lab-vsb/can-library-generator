@@ -182,6 +182,16 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
             h_code += f"void {library_prefix}_{message_name}_input_processing(void);\n"
             pass
 
+    h_code += "\n"
+    h_code += _generate_function_doxygen_comment(
+        f"{library_prefix}_init",
+        [("msg", "Pointer to the byte array where the message should be initialised."),],
+        "void",
+        brief="Sets the CAN message signals data to initial.",
+        details="Sets the CAN message signals data to initial.",
+    )
+    h_code += f"void {library_prefix}_init(DBCMessageBase* msg);\n\n"
+
     h_code += f"\n#endif // {library_name.upper()}_H\n"
 
     # Generate C implementation file (.c)
@@ -327,6 +337,16 @@ int {library_prefix}_package_message(const uint32_t can_id) {{
 }}
 \n"""
 
+    # Set message to Init values
+    c_code += """// Set message to Init values
+void {library_prefix}_init(DBCMessageBase* msg) {
+    for (size_t i = 0; i < msg->num_signals; i++) {
+        msg->signals[i].raw_value = msg->signals[i].raw_init;
+        msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
+    } 
+}
+\n"""
+
     for msg_id in message_modes:
         flags = message_modes.get(msg_id, {"rx": False, "tx": False})
 
@@ -352,8 +372,7 @@ int {library_prefix}_package_message(const uint32_t can_id) {{
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 1:
                         c_code += f"    // Increment message counter\n"
-                        c_code += f"    {message.name}.{signal.name}->raw_value += 0x1u;\n"
-                        c_code += f"    {message.name}.{signal.name}->phys_value = ({message.name}.{signal.name}->raw_value * {message.name}.{signal.name}->factor) + {message.name}.{signal.name}->offset;\n\n"
+                        c_code += f"    {message.name}.{signal.name}->phys_value += 0x1u;\n\n"
 
                 c_code += f"    // Package all signals to message\n"
                 c_code += f"    (void){library_prefix}_package_message({message.name}.base.id);\n\n"
@@ -440,6 +459,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
     h_code += "    const char *receiver;  /**< Receiver of the signal. */\n"
     h_code += "    uint64_t raw_value;    /**< Current raw value of the signal. */\n"
     h_code += "    double phys_value;     /**< Current physical value of the signal. */\n"
+    h_code += "    double raw_init;       /**< Init raw value. */\n"
     h_code += "} DBCSignal;\n\n"
 
     # Base message structure
@@ -543,6 +563,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
                     c_code += f"        .receiver = {receiver_value},\n"
                     c_code += f"        .raw_value = {raw_init},\n"
                     c_code += f"        .phys_value = {phys_init}\n"
+                    c_code += f"        .raw_init = {raw_init},\n"
                     c_code += "    },\n"
             c_code += "};\n\n"
 

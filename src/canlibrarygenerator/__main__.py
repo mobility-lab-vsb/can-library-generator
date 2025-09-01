@@ -975,22 +975,23 @@ class DBCLibraryGenerator(QMainWindow):
             if language == "c":
                 struct_h, struct_c, function_h, function_c = generate_c_code(selected_items_ids, library_name, self.dbs, self.tree, message_modes=message_modes)
 
-                os.makedirs(os.path.join(directory, "includes"), exist_ok=True)
-                os.makedirs(os.path.join(directory, "src"), exist_ok=True)
+                os.makedirs(os.path.join(directory, f"{library_name}"), exist_ok=True)
+                os.makedirs(os.path.join(directory, f"{library_name}" , "inc"), exist_ok=True)
+                os.makedirs(os.path.join(directory, f"{library_name}", "src"), exist_ok=True)
 
-                h_file_path = os.path.join(directory, "includes", f"{library_name}_db.h")
+                h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_db.h")
                 with open(h_file_path, "w") as h_file:
                     h_file.write(struct_h)
 
-                c_file_path = os.path.join(directory, "src", f"{library_name}_db.c")
+                c_file_path = os.path.join(directory, f"{library_name}", "src", f"{library_name}_db.c")
                 with open(c_file_path, "w") as c_file:
                     c_file.write(struct_c)
 
-                h_file_path = os.path.join(directory, "includes", f"{library_name}_interface.h")
+                h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_interface.h")
                 with open(h_file_path, "w") as h_file:
                     h_file.write(function_h)
 
-                c_file_path = os.path.join(directory, "src", f"{library_name}_interface.c")
+                c_file_path = os.path.join(directory, f"{library_name}", "src", f"{library_name}_interface.c")
                 with open(c_file_path, "w") as c_file:
                     c_file.write(function_c)
 
