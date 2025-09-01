@@ -338,13 +338,13 @@ int {library_prefix}_package_message(const uint32_t can_id) {{
 \n"""
 
     # Set message to Init values
-    c_code += """// Set message to Init values
-void {library_prefix}_init(DBCMessageBase* msg) {
-    for (size_t i = 0; i < msg->num_signals; i++) {
+    c_code += f"""// Set message to Init values
+void {library_prefix}_init(DBCMessageBase* msg) {{
+    for (size_t i = 0; i < msg->num_signals; i++) {{
         msg->signals[i].raw_value = msg->signals[i].raw_init;
         msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
-    } 
-}
+    }} 
+}}
 \n"""
 
     for msg_id in message_modes:
