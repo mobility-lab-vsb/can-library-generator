@@ -562,8 +562,8 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
                     c_code += f"        .unit = {unit_value},\n"
                     c_code += f"        .receiver = {receiver_value},\n"
                     c_code += f"        .raw_value = {raw_init},\n"
-                    c_code += f"        .phys_value = {phys_init}\n"
-                    c_code += f"        .raw_init = {raw_init},\n"
+                    c_code += f"        .phys_value = {phys_init},\n"
+                    c_code += f"        .raw_init = {raw_init}\n"
                     c_code += "    },\n"
             c_code += "};\n\n"
 
