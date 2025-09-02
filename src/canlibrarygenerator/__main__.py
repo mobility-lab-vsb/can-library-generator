@@ -999,7 +999,7 @@ class DBCLibraryGenerator(QMainWindow):
                                         f"Generated {library_name}_db.c and {library_name}_interface.c \n "
                                         f"files in {directory}/src\n"
                                         f"Generated {library_name}_db.h and {library_name}_interface.c \n "
-                                        f"files in {directory}/includes\n")
+                                        f"files in {directory}/inc\n")
             else:  # language == "cpp"
                 hpp_code, cpp_code = generate_cpp_code(selected_items_ids, library_name, self.dbs, self.tree)
 
