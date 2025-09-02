@@ -372,18 +372,18 @@ void {library_prefix}_init(DBCMessageBase* msg) {{
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 1:
                         c_code += f"    // Increment message counter\n"
-                        c_code += f"    {message.name}.{signal.name}->phys_value += 0x1u;\n\n"
+                        c_code += f"    {library_prefix}_{message.name}.{signal.name}->phys_value += 0x1u;\n\n"
 
                 c_code += f"    // Package all signals to message\n"
-                c_code += f"    (void){library_prefix}_package_message({message.name}.base.id);\n\n"
+                c_code += f"    (void){library_prefix}_package_message({library_prefix}_{message.name}.base.id);\n\n"
 
                 for signal in message.signals:
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 2:
                         c_code += f"    // Calculate app crc value for tx message\n"
-                        c_code += f"    {message.name}.base.data[0] = calculate_crc({message.name}.base.data, dlc_table[{message.name}.base.dlc], 0x00u);\n\n"
+                        c_code += f"    {library_prefix}_{message.name}.base.data[0] = calculate_crc({library_prefix}_{message.name}.base.data, dlc_table[{library_prefix}_{message.name}.base.dlc], 0x00u);\n\n"
 
-                c_code += f"    (void){library_prefix}_msg_send(&{message.name}.base);\n\n"
+                c_code += f"    (void){library_prefix}_msg_send(&{library_prefix}_{message.name}.base);\n\n"
 
             c_code += "}\n\n"
 
@@ -392,7 +392,7 @@ void {library_prefix}_init(DBCMessageBase* msg) {{
             message_name = tree.item(msg_id, "text")
             c_code += f"""void {library_prefix}_{message_name}_input_processing(void)
 {{
-    (void){library_prefix}_unpackage_message({message_name}.base.id, {message_name}.base.data, {message_name}.base.length);
+    (void){library_prefix}_unpackage_message({library_prefix}_{message_name}.base.id, {library_prefix}_{message_name}.base.data, {library_prefix}_{message_name}.base.length);
 }}
 \n"""
             pass
@@ -518,7 +518,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
 
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_db.c", "Implementation of structures for messages and signals")
-    c_code += f'#include "../includes/{library_name}_db.h"\n\n'
+    c_code += f'#include "../inc/{library_name}_db.h"\n\n'
 
     # Define messages and signals
     message_definitions = []
