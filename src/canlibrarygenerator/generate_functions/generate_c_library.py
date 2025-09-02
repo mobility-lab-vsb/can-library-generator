@@ -94,7 +94,7 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
     h_code += "#include <stdio.h>\n"
     h_code += "#include <stddef.h>\n"
     h_code += "#include <math.h>\n\n"
-    h_code += f'#include "../includes/{library_name}_db.h"\n\n'
+    h_code += f'#include "../inc/{library_name}_db.h"\n\n'
 
     # Function declarations with Doxygen comments
     h_code += _generate_function_doxygen_comment(
@@ -197,7 +197,7 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_interface.c",
                                            "Implementation of functions for CAN communication")
-    c_code += f'#include "../includes/{library_name}_interface.h"\n\n'
+    c_code += f'#include "../inc/{library_name}_interface.h"\n\n'
 
     # Find message function
     c_code += f"""// Find message by ID function
