@@ -66,6 +66,51 @@ def _generate_function_doxygen_comment(function_name, params, return_type, brief
     comment += f" */\n"
     return comment
 
+def generate_init_struct(selected_items, library_name, dbs, tree):
+    h_code = _generate_file_header_comment(f"{library_name}_init.h",
+                                           "Definitions of structures for CAN messages and signals")
+    h_code += f"#ifndef {library_name.upper()}_INIT_H\n"
+    h_code += f"#define {library_name.upper()}_INIT_H\n\n"
+    # Define the DBCSignal structure
+    h_code += "\n/**\n * @brief   Structure for signal representation.\n */\n"
+    h_code += "typedef struct DBCSignal {\n"
+    h_code += "    const char *name;      /**< Name of the signal. */\n"
+    h_code += "    int startBit;          /**< Start bit of the signal. */\n"
+    h_code += "    int length;            /**< Length of the signal in bits. */\n"
+    h_code += "    const char *byteOrder; /**< Byte order (little_endian/big_endian). */\n"
+    h_code += "    char valueType;        /**< Value type ('s' for signed, 'u' for unsigned). */\n"
+    h_code += "    double factor;         /**< Factor for conversion to physical value. */\n"
+    h_code += "    double offset;         /**< Offset for conversion to physical value. */\n"
+    h_code += "    double min;            /**< Minimum physical value. */\n"
+    h_code += "    double max;            /**< Maximum physical value. */\n"
+    h_code += "    const char *unit;      /**< Unit of the signal. */\n"
+    h_code += "    const char *receiver;  /**< Receiver of the signal. */\n"
+    h_code += "    uint64_t raw_value;    /**< Current raw value of the signal. */\n"
+    h_code += "    double phys_value;     /**< Current physical value of the signal. */\n"
+    h_code += "    double raw_init;       /**< Init raw value. */\n"
+    h_code += "} DBCSignal;\n\n"
+
+    # Base message structure
+    h_code += "/**\n * @brief   Base structure for CAN message.\n */\n"
+    h_code += "typedef struct DBCMessageBase {\n"
+    h_code += "    const uint32_t id;     /**< CAN ID of the message. */\n"
+    h_code += "    const char *name;      /**< Name of the message. */\n"
+    h_code += "    uint8_t dlc;           /**< Data Length Code (DLC) of the message. */\n"
+    h_code += "    uint8_t length;        /**< Byte length of the message. */\n"
+    h_code += "    const char *senders;   /**< Senders of the message. */\n"
+    h_code += "    const char *receivers; /**< Receivers of the message. */\n"
+    h_code += "    size_t num_signals;    /**< Number of signals in the message. */\n"
+    h_code += "    uint8_t data[64];      /**< Data of the message. */\n"
+    h_code += "    int is_fd;             /**< Boolean flag (fd / not fd). */\n"
+    h_code += "    int frame_type;        /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */\n"
+    h_code += "    uint32_t cycle_time;   /**< Cycle time of the message (ms). */\n"
+    h_code += "    DBCSignal *signals;    /**< Pointer to the array of the message signals. */\n"
+    h_code += "} DBCMessageBase;\n\n"
+
+    h_code += f"#endif // {library_name.upper()}_INIT_H\n"
+
+    return h_code
+
 def generate_functions(selected_items, library_name, dbs, tree, message_modes=None):
     """Generate functions to operate with messages/signals"""
     library_prefix = library_name
@@ -174,12 +219,12 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
             message_name = tree.item(msg_id, "text")
             h_code += _generate_function_doxygen_comment(
                 f"{library_prefix}_{message_name}_input_processing",
-                [],
+                [("can_db_rx_msg", "Pointer to message for input process.")],
                 "void",
                 brief="Processes CAN messages to be able to work with it.",
                 details="Takes the CAN message and unpacks its data to each signals and converts raw values to physical values.",
             )
-            h_code += f"void {library_prefix}_{message_name}_input_processing(void);\n"
+            h_code += f"void {library_prefix}_{message_name}_input_processing(const DBCMessageBase* can_db_rx_msg);\n"
             pass
 
     h_code += "\n"
@@ -192,7 +237,7 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
     )
     h_code += f"void {library_prefix}_init(DBCMessageBase* msg);\n\n"
 
-    h_code += f"\n#endif // {library_name.upper()}_H\n"
+    h_code += f"\n#endif // {library_name.upper()}_INTERFACE_H\n"
 
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_interface.c",
@@ -390,9 +435,9 @@ void {library_prefix}_init(DBCMessageBase* msg) {{
             pass
         if is_rx:
             message_name = tree.item(msg_id, "text")
-            c_code += f"""void {library_prefix}_{message_name}_input_processing(void)
+            c_code += f"""void {library_prefix}_{message_name}_input_processing(const DBCMessageBase* can_db_rx_msg)
 {{
-    (void){library_prefix}_unpackage_message({library_prefix}_{message_name}.base.id, {library_prefix}_{message_name}.base.data, {library_prefix}_{message_name}.base.length);
+    (void){library_prefix}_unpackage_message(can_db_rx_msg.base.id, can_db_rx_msg.base.data, can_db_rx_msg.base.length);
 }}
 \n"""
             pass
@@ -419,7 +464,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
 
     # Generate C header file (.h)
     h_code = _generate_file_header_comment(f"{library_name}_db.h",
-                                           "Definitions of structures for CAN messages and signals")
+                                           "Definitions of specific structures for CAN messages and signals")
     h_code += f"#ifndef {library_name.upper()}_DB_H\n"
     h_code += f"#define {library_name.upper()}_DB_H\n\n"
     h_code += "#include <stdint.h>\n"
@@ -427,6 +472,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
     h_code += "#include <stdio.h>\n"
     h_code += "#include <stddef.h>\n"
     h_code += "#include <math.h>\n\n"
+    h_code += f'#include "{library_name}_init.h"\n'
 
     for message_name, signal_name in selected_messages.items():
         # Find the message in the loaded databases
@@ -442,41 +488,6 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
 
         hex_frame_id = hex(message.frame_id)
         h_code += f"#define {library_prefix.upper()}_{message.name.upper()}_ID {hex_frame_id}\n"
-
-    # Define the DBCSignal structure
-    h_code += "\n/**\n * @brief   Structure for signal representation.\n */\n"
-    h_code += "typedef struct DBCSignal {\n"
-    h_code += "    const char *name;      /**< Name of the signal. */\n"
-    h_code += "    int startBit;          /**< Start bit of the signal. */\n"
-    h_code += "    int length;            /**< Length of the signal in bits. */\n"
-    h_code += "    const char *byteOrder; /**< Byte order (little_endian/big_endian). */\n"
-    h_code += "    char valueType;        /**< Value type ('s' for signed, 'u' for unsigned). */\n"
-    h_code += "    double factor;         /**< Factor for conversion to physical value. */\n"
-    h_code += "    double offset;         /**< Offset for conversion to physical value. */\n"
-    h_code += "    double min;            /**< Minimum physical value. */\n"
-    h_code += "    double max;            /**< Maximum physical value. */\n"
-    h_code += "    const char *unit;      /**< Unit of the signal. */\n"
-    h_code += "    const char *receiver;  /**< Receiver of the signal. */\n"
-    h_code += "    uint64_t raw_value;    /**< Current raw value of the signal. */\n"
-    h_code += "    double phys_value;     /**< Current physical value of the signal. */\n"
-    h_code += "    double raw_init;       /**< Init raw value. */\n"
-    h_code += "} DBCSignal;\n\n"
-
-    # Base message structure
-    h_code += "/**\n * @brief   Base structure for CAN message.\n */\n"
-    h_code += "typedef struct DBCMessageBase {\n"
-    h_code += "    const uint32_t id;     /**< CAN ID of the message. */\n"
-    h_code += "    const char *name;      /**< Name of the message. */\n"
-    h_code += "    uint8_t dlc;           /**< Data Length Code (DLC) of the message. */\n"
-    h_code += "    uint8_t length;        /**< Byte length of the message. */\n"
-    h_code += "    const char *senders;   /**< Senders of the message. */\n"
-    h_code += "    const char *receivers; /**< Receivers of the message. */\n"
-    h_code += "    size_t num_signals;    /**< Number of signals in the message. */\n"
-    h_code += "    uint8_t data[64];      /**< Data of the message. */\n"
-    h_code += "    int is_fd;             /**< Boolean flag (fd / not fd). */\n"
-    h_code += "    uint32_t cycle_time;   /**< Cycle time of the message. */\n"
-    h_code += "    DBCSignal *signals;    /**< Pointer to the array of the message signals. */\n"
-    h_code += "} DBCMessageBase;\n\n"
 
     # Generate unique struct for each message
     for message_name, signal_names in selected_messages.items():
@@ -508,13 +519,17 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
         struct_name = f"DBCMessage_{message_name.replace(' ', '')}"
         h_code += f"extern {struct_name} {library_prefix}_{message_name};\n"
 
+    # Universal structure for incoming messages
+    h_code += "\n // Universal structure for incoming messages.\n"
+    h_code += f"extern DBCMessageBase {library_prefix}_rx_msg;\n\n"
+
     # Message registry
     h_code += "// Global registry of all defined CAN messages.\n"
-    h_code += f"extern DBCMessageBase* const {library_prefix}_all_messages[];\n"
+    h_code += f"extern DBCMessageBase* const {library_prefix}_all_messages[];\n\n"
     h_code += f"// Number of messages in the {library_prefix}_all_messages registry.\n"
     h_code += f"extern const size_t {library_prefix}_all_messages_count;\n\n"
 
-    h_code += f"#endif // {library_name.upper()}_H\n"
+    h_code += f"#endif // {library_name.upper()}_DB_H\n"
 
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_db.c", "Implementation of structures for messages and signals")
@@ -547,7 +562,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
                     unit_value = f"\"{signal.unit}\"" if signal.unit else "\"\""
                     receiver_value = f"\"{', '.join(signal.receivers)}\"" if signal.receivers else "\"\""
                     raw_init = signal.raw_initial if signal.raw_initial else 0
-                    phys_init = signal.initial if signal.initial else 0
+                    phys_init = (raw_init * signal.scale) - signal.offset
 
                     c_code += "    {\n"
                     c_code += f"        .name = \"{signal.name}\",\n"
@@ -578,7 +593,6 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
         receivers = ', '.join(message.receivers)
         receiver_value = f"\"{receivers}\"" if message.receivers else "\"\""
         signals_array = f"{message.name}_signals" if num_signals > 0 else "NULL"
-        is_fd = 1 if message.is_fd else 0
         dlc = get_dlc_from_data_length(message.length)
         cycle_time = message.cycle_time if message.cycle_time else 0
 
@@ -591,8 +605,9 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
         c_code += f"        .senders = {sender_value},\n"
         c_code += f"        .receivers = {receiver_value},\n"
         c_code += f"        .num_signals = {num_signals},\n"
-        c_code += "        .data = {0},\n"
-        c_code += f"        .is_fd = {is_fd},\n"
+        c_code += "         .data = {0},\n"
+        c_code += f"        .is_fd = {int(message.is_fd)},\n"
+        c_code += f"        .frame_type = {int(message.is_extended_frame)},\n"
         c_code += f"        .cycle_time = {cycle_time},\n"
         c_code += f"        .signals = {signals_array}\n"
         c_code += f"    }},\n"
@@ -616,7 +631,8 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
 
 def generate_c_code(selected_items, library_name, dbs, tree, message_modes=None):
     """Generate libraries for selected messages and signals"""
+    init_h = generate_init_struct(selected_items, library_name, dbs, tree)
     struct_h, struct_c = generate_structures(selected_items,library_name, dbs, tree)
     function_h, function_c = generate_functions(selected_items, library_name, dbs, tree, message_modes=message_modes)
 
-    return struct_h, struct_c, function_h, function_c
+    return init_h, struct_h, struct_c, function_h, function_c

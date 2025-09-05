@@ -973,11 +973,15 @@ class DBCLibraryGenerator(QMainWindow):
 
         try:
             if language == "c":
-                struct_h, struct_c, function_h, function_c = generate_c_code(selected_items_ids, library_name, self.dbs, self.tree, message_modes=message_modes)
+                init_h, struct_h, struct_c, function_h, function_c = generate_c_code(selected_items_ids, library_name, self.dbs, self.tree, message_modes=message_modes)
 
                 os.makedirs(os.path.join(directory, f"{library_name}"), exist_ok=True)
-                os.makedirs(os.path.join(directory, f"{library_name}" , "inc"), exist_ok=True)
+                os.makedirs(os.path.join(directory, f"{library_name}", "inc"), exist_ok=True)
                 os.makedirs(os.path.join(directory, f"{library_name}", "src"), exist_ok=True)
+
+                h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_init.h")
+                with open(h_file_path, "w") as h_file:
+                    h_file.write(init_h)
 
                 h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_db.h")
                 with open(h_file_path, "w") as h_file:
