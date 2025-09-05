@@ -112,7 +112,7 @@ if shutil.which("g++") is None:
 print("Compiling and testing C files...")
 c_test_file = os.path.join(test_dir, "test_c.c")
 c_exec = os.path.join(output_dir, "test_c.exe")
-c_result = subprocess.run(["gcc", c_test_file, f"{output_dir}/cangen/src/{library_name}_interface.c", f"{output_dir}/cangen/src/{library_name}_db.c", "-I", output_dir, "-o", c_exec], capture_output=True, text=True)
+c_result = subprocess.run(["gcc", c_test_file, f"{output_dir}/cangen/src/{library_name}_interface.c", f"{output_dir}/cangen/src/{library_name}_db.c", "-I", output_dir, "-o", c_exec, "-lm"], capture_output=True, text=True)
 if c_result.returncode == 0:
     c_run = subprocess.run([c_exec], capture_output=True, text=True)
     print("Program output:\n", c_run.stdout)
