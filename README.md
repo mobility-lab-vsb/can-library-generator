@@ -5,10 +5,13 @@ This project is a Python-based tool that parses DBC (CAN database) files and gen
 ## ✨ Features
 
 - Parses DBC files using the [`cantools`](https://github.com/eerimoq/cantools) library.
-- Generates type-safe and structured in C or C++.
+- Generates type-safe and structured in C or C++ (**Deprecated**).
 - Supports signal decoding/encoding, raw values, scaling and offset.
 - Provides a test pipeline for verifying generated libraries.
 - Cross-platform support (Windows, Linux, macOS via GCC/MinGW)
+
+## 🛠 Requirements
+- [`Python 3.13+`](https://www.python.org/)
 
 ## 📦 Installation
 
@@ -24,7 +27,6 @@ cd <repository-name>
 ```sh
 pip install -r requirements.txt
 ```
-Requires Python 3.10+ and `gcc` and `g++` installed in PATH.
 
 ## 🚀 Usage
 
@@ -40,10 +42,18 @@ Follow the prompt to select `.dbc` file. The generated library will be saved in 
 
 ## Generated Files
 The script creates the following:
+```graphql
+├── <prefix>/                   # Root folder for generated libraries
+    ├── inc/                        # Folder with header files
+    |   ├── <prefix>_db.h               # Header file with Messages and Signals structures
+    |   ├── <prefix>_init.h             # Header file with base Message/Signal structure (use only once in whole project)
+    |   └── <prefix>_interface.h        # Header file with functions for unpackage/package and input/output process
+    └── src/                        # Folder with source files
+        ├── <prefix>_db.c               # Source file with declaration of Messages and Signals
+        └── <prefix>_interface.c        # Source file with declaration of  functions for unpackage/package and input/output process
+```
 
-- `your_library.h` - Header file with `DBCMessage` and `DBCSignal` structures.
-- `your_library.c` - Implementation for decoding and parsing CAN message.
-- *(if using C++ mode)* `your_library.hpp` and `your_library.cpp` with moder classes and vector support.
+- *(if using C++ mode)* `<prefix>.hpp` and `<prefix>.cpp` with moder classes and vector support.
 
 ## 🧪 Test Pipeline (Automatic after every commit)
 ```sh
@@ -52,17 +62,7 @@ python test_pipeline.py
 The pipeline will:
 - Compile the generated code.
 - Run example test applications.
-- Check that unpacking and packing (e.g. `dbc_unpackage_message()`, `dbc_package_message()`) works correctly.
-- Clean up temporary files in the `temp/` directory.
-
-Test data and messages are defined in `test_pipeline.py`.
-
-## 🛠 Requirements
-- [`Python 3.10+`](https://www.python.org/)
-- [`cantools`](https://github.com/eerimoq/cantools)
-- [`darkdetect`](https://github.com/albertosottile/darkdetect)
-- [`PyQt6`](https://pypi.org/project/PyQt6/)
-- [`Pillow`](https://pypi.org/project/pillow/)
+- Check that unpacking and packing (e.g. `<prefix>_unpackage_message()`, `<prefix>_package_message()`) works correctly.
 
 ## 🧹 Cleaning Up
 All generated files are stored in the `temp/` directory and are automatically cleaned after testing.
@@ -78,11 +78,15 @@ All generated files are stored in the `temp/` directory and are automatically cl
 |   |   |   ├── generate_c_library.py
 |   |   |   └── generate_cpp_library.py
 |   |   ├── png/                           # Images
-|   |   |   ├── checked.png
-|   |   |   ├── tristate.png
-|   |   |   ├── unchecked.png
 |   |   |   └── VSB-TUO_logo.png
+|   |   ├── resources/                     # Folder with resources for building project
+|   |   |   └── icon/                          # Folder with icon images
+|   |   |       |   icon.icns
+|   |   |       |   icon.ico
+|   |   |       └── icon-64.png
 |   |   ├── scripts/                       # Additional scripts
+|   |   |   |   delete_temp_files.py
+|   |   |   |   generate_source_files.py
 |   |   |   └── inject_version.py
 |   |   ├── test/                          # Test applications
 |   |   |   ├── test_c.c
