@@ -53,7 +53,7 @@ The script creates the following:
         └── <prefix>_interface.c        # Source file with declaration of  functions for unpackage/package and input/output process
 ```
 
-- *(if using C++ mode)* `<prefix>.hpp` and `<prefix>.cpp` with moder classes and vector support.
+- *(if using C++ mode)* `<prefix>.hpp` and `<prefix>.cpp` with modern classes and vector support.
 
 ## 🧪 Test Pipeline (Automatic after every commit)
 ```sh
