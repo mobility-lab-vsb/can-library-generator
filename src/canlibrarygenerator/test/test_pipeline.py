@@ -76,7 +76,7 @@ os.makedirs(output_dir, exist_ok=True)
 os.makedirs(os.path.join(output_dir, "cangen"), exist_ok=True)
 os.makedirs(os.path.join(output_dir, "cangen", "src"), exist_ok=True)
 os.makedirs(os.path.join(output_dir, "cangen", "inc"), exist_ok=True)
-with open(f"{output_dir}/cangen/inc/{library_name}_init.h", "w") as f:
+with open(f"{output_dir}/cangen/inc/can_db_def.h", "w") as f:
     f.write(h_init)
 with open(f"{output_dir}/cangen/inc/{library_name}_db.h", "w") as f:
     f.write(h_code)

@@ -979,7 +979,7 @@ class DBCLibraryGenerator(QMainWindow):
                 os.makedirs(os.path.join(directory, f"{library_name}", "inc"), exist_ok=True)
                 os.makedirs(os.path.join(directory, f"{library_name}", "src"), exist_ok=True)
 
-                h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_init.h")
+                h_file_path = os.path.join(directory, f"{library_name}", "inc", "can_db_def.h")
                 with open(h_file_path, "w") as h_file:
                     h_file.write(init_h)
 
