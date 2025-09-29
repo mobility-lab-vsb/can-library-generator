@@ -26,7 +26,7 @@ os.makedirs(output_dir, exist_ok=True)
 dbc_dbs = []
 
 try:
-    db = cantools.db.load_file(dbc_path)
+    db = cantools.database.load_file(dbc_path)
     dbc_dbs.append(db)
 except Exception as e:
     print("Error", f"Can't read DBC file {dbc_path}: {e}")
@@ -67,16 +67,25 @@ tree = MockTree()
 
 # Generate C library
 try:
-    h_code, c_code = generate_c_code(selected_items, library_name, dbc_dbs, tree)
+    h_init, h_code, c_code, func_h, func_c = generate_c_code(selected_items, library_name, dbc_dbs, tree)
 except Exception as e:
     print(f"Error during C code generation: {e}")
     sys.exit(1)
 
 os.makedirs(output_dir, exist_ok=True)
-with open(f"{output_dir}/{library_name}.h", "w") as f:
+os.makedirs(os.path.join(output_dir, "cangen"), exist_ok=True)
+os.makedirs(os.path.join(output_dir, "cangen", "src"), exist_ok=True)
+os.makedirs(os.path.join(output_dir, "cangen", "inc"), exist_ok=True)
+with open(f"{output_dir}/cangen/inc/can_db_def.h", "w") as f:
+    f.write(h_init)
+with open(f"{output_dir}/cangen/inc/{library_name}_db.h", "w") as f:
     f.write(h_code)
-with open(f"{output_dir}/{library_name}.c", "w") as f:
+with open(f"{output_dir}/cangen/src/{library_name}_db.c", "w") as f:
     f.write(c_code)
+with open(f"{output_dir}/cangen/inc/{library_name}_interface.h", "w") as f:
+    f.write(func_h)
+with open(f"{output_dir}/cangen/src/{library_name}_interface.c", "w") as f:
+    f.write(func_c)
 
 # Generate C++ library
 try:
@@ -103,7 +112,7 @@ if shutil.which("g++") is None:
 print("Compiling and testing C files...")
 c_test_file = os.path.join(test_dir, "test_c.c")
 c_exec = os.path.join(output_dir, "test_c.exe")
-c_result = subprocess.run(["gcc", c_test_file, f"{output_dir}/{library_name}.c", "-I", output_dir, "-o", c_exec], capture_output=True, text=True)
+c_result = subprocess.run(["gcc", c_test_file, f"{output_dir}/cangen/src/{library_name}_interface.c", f"{output_dir}/cangen/src/{library_name}_db.c", "-I", output_dir, "-o", c_exec, "-lm"], capture_output=True, text=True)
 if c_result.returncode == 0:
     c_run = subprocess.run([c_exec], capture_output=True, text=True)
     print("Program output:\n", c_run.stdout)

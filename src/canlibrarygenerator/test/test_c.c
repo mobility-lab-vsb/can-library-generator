@@ -1,7 +1,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "../temp/cangen.h"
+#include "../temp/cangen/inc/cangen_interface.h"
+#include "../temp/cangen/inc/cangen_db.h"
 
 int compare_data(const uint8_t* a, const uint8_t* b, const size_t len) {
     for (size_t i = 0; i < len; i++) {
