@@ -45,8 +45,8 @@ The script creates the following:
 ```graphql
 ├── <prefix>/                   # Root folder for generated libraries
     ├── inc/                        # Folder with header files
+    |   ├── can_db_def.h                # Header file with base Message/Signal structure (use only once in whole project)
     |   ├── <prefix>_db.h               # Header file with Messages and Signals structures
-    |   ├── <prefix>_init.h             # Header file with base Message/Signal structure (use only once in whole project)
     |   └── <prefix>_interface.h        # Header file with functions for unpackage/package and input/output process
     └── src/                        # Folder with source files
         ├── <prefix>_db.c               # Source file with declaration of Messages and Signals
