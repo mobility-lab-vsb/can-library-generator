@@ -1002,7 +1002,7 @@ class DBCLibraryGenerator(QMainWindow):
                 QMessageBox.information(self, "Success",
                                         f"Generated {library_name}_db.c and {library_name}_interface.c \n "
                                         f"files in {directory}/{library_name}/src\n"
-                                        f"Generated {library_name}_db.h and {library_name}_interface.c \n "
+                                        f"Generated {library_name}_db.h, {library_name}_interface.h and can_db_def.h \n "
                                         f"files in {directory}/{library_name}/inc\n")
             else:  # language == "cpp"
                 hpp_code, cpp_code = generate_cpp_code(selected_items_ids, library_name, self.dbs, self.tree)

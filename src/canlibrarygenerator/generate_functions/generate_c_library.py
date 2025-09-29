@@ -242,7 +242,8 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
 
     # Find message function
     c_code += f"""// Find message by ID function
-can_db_msg_t* {library_prefix}_find_message_by_id(const uint32_t can_id) {{
+can_db_msg_t* {library_prefix}_find_message_by_id(const uint32_t can_id)
+{{
     for (size_t i = 0; i < {library_prefix}_all_messages_count; i++) {{
         if ({library_prefix}_all_messages[i]->id == can_id) {{
             return {library_prefix}_all_messages[i];
@@ -254,7 +255,8 @@ can_db_msg_t* {library_prefix}_find_message_by_id(const uint32_t can_id) {{
 
     # Parse signal function
     c_code += f"""// Parse signal function
-uint64_t {library_prefix}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, const char* byte_order) {{
+uint64_t {library_prefix}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, const char* byte_order)
+{{
     uint64_t result = 0;
 
     if (strcmp(byte_order, "little_endian") == 0) {{
@@ -297,7 +299,8 @@ uint64_t {library_prefix}_parse_signal(const uint8_t* data, const uint8_t msg_le
 
     # Unpackage message function
     c_code += f"""// Unpackage message function
-int {library_prefix}_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint8_t msg_length) {{
+int {library_prefix}_unpackage_message(const uint32_t can_id, const uint8_t* data, const uint8_t msg_length)
+{{
     can_db_msg_t* msg = {library_prefix}_find_message_by_id(can_id);
 
     if (!msg || msg->length != msg_length) {{
@@ -326,7 +329,8 @@ int {library_prefix}_unpackage_message(const uint32_t can_id, const uint8_t* dat
 
     # Insert signal data function
     c_code += f"""// Insert signal data function
-void {library_prefix}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const char* byte_order) {{
+void {library_prefix}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const char* byte_order)
+{{
     if (strcmp(byte_order, "little_endian") == 0) {{
         for (int i = 0; i < length; i++) {{
             int bitIndex = start_bit + i;
@@ -359,7 +363,8 @@ void {library_prefix}_insert_signal(uint8_t* data, const uint8_t msg_length, con
 
     # Package message function
     c_code += f"""// Package message function
-int {library_prefix}_package_message(const uint32_t can_id) {{
+int {library_prefix}_package_message(const uint32_t can_id)
+{{
     can_db_msg_t* msg = {library_prefix}_find_message_by_id(can_id);
 
     //printf("Message found!\\n");
@@ -380,7 +385,8 @@ int {library_prefix}_package_message(const uint32_t can_id) {{
 
     # Set message to Init values
     c_code += f"""// Set message to Init values
-void {library_prefix}_init(can_db_msg_t* msg) {{
+void {library_prefix}_init(can_db_msg_t* msg) 
+{{
     for (size_t i = 0; i < msg->num_signals; i++) {{
         msg->signals[i].raw_value = msg->signals[i].raw_init;
         msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
@@ -433,7 +439,7 @@ void {library_prefix}_init(can_db_msg_t* msg) {{
             message_name = tree.item(msg_id, "text")
             c_code += f"""void {library_prefix}_{message_name}_input_processing(const can_db_msg_t* can_db_rx_msg)
 {{
-    (void){library_prefix}_unpackage_message(can_db_rx_msg.base.id, can_db_rx_msg.base.data, can_db_rx_msg.base.length);
+    (void){library_prefix}_unpackage_message(can_db_rx_msg->id, can_db_rx_msg->data, can_db_rx_msg->length);
 }}
 \n"""
             pass
