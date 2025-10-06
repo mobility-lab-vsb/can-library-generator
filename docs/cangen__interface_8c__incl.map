@@ -1,0 +1,24 @@
+<map id="src/canlibrarygenerator/temp/cangen/cangen_interface.c" name="src/canlibrarygenerator/temp/cangen/cangen_interface.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="153,5,392,45"/>
+<area shape="rect" id="Node000002" href="$cangen__interface_8h.html" title=" " alt="" coords="199,93,346,119"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="275,46,275,79,270,79,270,46"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,240,76,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="255,121,73,235,70,230,253,117"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="100,240,171,265"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="263,121,158,232,154,228,259,117"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="195,240,262,265"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="272,119,257,167,238,228,233,226,251,166,266,118"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="417,240,491,265"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="301,116,342,137,384,165,415,196,440,227,436,230,411,199,380,169,339,141,299,121"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="516,240,584,265"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="305,116,357,137,415,164,474,198,524,230,521,234,471,202,413,169,355,142,303,121"/>
+<area shape="rect" id="Node000008" href="$cangen__db_8h.html" title=" " alt="" coords="266,167,370,192"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="282,118,306,154,301,157,278,120"/>
+<area shape="poly" id="edge8_Node000008_Node000003" title=" " alt="" coords="274,195,90,241,89,236,273,189"/>
+<area shape="poly" id="edge9_Node000008_Node000004" title=" " alt="" coords="290,195,179,237,177,232,288,190"/>
+<area shape="poly" id="edge10_Node000008_Node000005" title=" " alt="" coords="305,194,256,233,252,229,302,190"/>
+<area shape="poly" id="edge11_Node000008_Node000006" title=" " alt="" coords="341,190,421,231,419,236,339,194"/>
+<area shape="poly" id="edge12_Node000008_Node000007" title=" " alt="" coords="356,189,504,234,502,240,354,195"/>
+<area shape="rect" id="Node000009" href="$can__db__def_8h.html" title=" " alt="" coords="286,240,393,265"/>
+<area shape="poly" id="edge13_Node000008_Node000009" title=" " alt="" coords="324,192,335,226,329,228,319,193"/>
+</map>

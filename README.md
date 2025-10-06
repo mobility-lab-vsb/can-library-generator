@@ -85,6 +85,7 @@ All generated files are stored in the `temp/` directory and are automatically cl
 |   |   |       |   icon.ico
 |   |   |       └── icon-64.png
 |   |   ├── scripts/                       # Additional scripts
+|   |   |   |   codegen_utils.py
 |   |   |   |   delete_temp_files.py
 |   |   |   |   generate_source_files.py
 |   |   |   └── inject_version.py
