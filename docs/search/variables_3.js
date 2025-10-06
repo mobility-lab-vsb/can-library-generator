@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['id_0',['id',['../structDBCMessageBase.html#a77742d0a7348ede1dcedf034875066ea',1,'DBCMessageBase']]],
-  ['is_5ffd_1',['is_fd',['../structDBCMessageBase.html#abd1b535d4a0b93aa34cafad2718d0e79',1,'DBCMessageBase::is_fd'],['../structDBCMessageBase.html#ad757fb4e0271802633f22e9ead410d7a',1,'DBCMessageBase::is_fd']]]
+  ['factor_0',['factor',['../structDBCSignal.html#a91672bbec716776cd995f205350c0236',1,'DBCSignal::factor'],['../structcan__db__sig__t.html#aae5742f4c3311d7f54cf62fd18bf944d',1,'can_db_sig_t::factor']]],
+  ['frame_5ftype_1',['frame_type',['../structcan__db__msg__t.html#a0fd5ea6a69b97d8538f2d7403190143f',1,'can_db_msg_t']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['raw_5fvalue_0',['raw_value',['../structDBCSignal.html#a4995f3f2d2abe71511f1820dbc2a710b',1,'DBCSignal']]],
-  ['receiver_1',['receiver',['../structDBCSignal.html#afcb5414786d18893c04139ea55ef2f7d',1,'DBCSignal::receiver'],['../structDBCSignal.html#a894b71a89e8b75d901786cf8c3c7aae8',1,'DBCSignal::receiver']]]
+  ['offset_0',['offset',['../structDBCSignal.html#a0b1468f1fa0d253cea88c246645d3574',1,'DBCSignal::offset'],['../structcan__db__sig__t.html#a9e95e73c52ca0d746ac52f1eabf4a1ad',1,'can_db_sig_t::offset']]]
 ];

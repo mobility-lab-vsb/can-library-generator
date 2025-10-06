@@ -1,10 +1,12 @@
 var indexSectionsWithContent =
 {
-  0: "bdfilmnorsuv",
-  1: "d",
-  2: "d",
-  3: "d",
-  4: "bdfilmnorsuv"
+  0: "bcdfilmnoprsuv",
+  1: "cd",
+  2: "c",
+  3: "cd",
+  4: "bcdfilmnoprsuv",
+  5: "c",
+  6: "c"
 };
 
 var indexSectionNames =
@@ -13,7 +15,9 @@ var indexSectionNames =
   1: "classes",
   2: "files",
   3: "functions",
-  4: "variables"
+  4: "variables",
+  5: "typedefs",
+  6: "defines"
 };
 
 var indexSectionLabels =
@@ -22,6 +26,8 @@ var indexSectionLabels =
   1: "Classes",
   2: "Files",
   3: "Functions",
-  4: "Variables"
+  4: "Variables",
+  5: "Typedefs",
+  6: "Macros"
 };
 

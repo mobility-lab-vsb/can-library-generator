@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['name_0',['name',['../structDBCSignal.html#ab9cf6d8f6160d31b06e75568416a29a2',1,'DBCSignal::name'],['../structDBCMessageBase.html#a164a00e3d5f58074b1fce83124630ff8',1,'DBCMessageBase::name'],['../structDBCSignal.html#a3a1039b6b8555408af50838ae82d7b40',1,'DBCSignal::name'],['../structDBCMessageBase.html#ab44bf832045f6a3169189df92e16e766',1,'DBCMessageBase::name']]],
-  ['num_5fsignals_1',['num_signals',['../structDBCMessageBase.html#af42410529971d1a9b495619927cef700',1,'DBCMessageBase']]]
+  ['max_0',['max',['../structDBCSignal.html#aa84f2ffee3996b68a11543c90951ed5c',1,'DBCSignal::max'],['../structcan__db__sig__t.html#a04a45fc387d619a5092fbebc25e2b375',1,'can_db_sig_t::max']]],
+  ['min_1',['min',['../structDBCSignal.html#af2d48d84821fdedeabddca6a6e12b290',1,'DBCSignal::min'],['../structcan__db__sig__t.html#a00811e6a94aef80d50462b458709eb24',1,'can_db_sig_t::min']]],
+  ['msgmotor_5f01_2',['msgmotor_01',['../cangen_8cpp.html#ae2e2c0c6f385de7e1b1fbbec7e720b36',1,'msgMotor_01:&#160;cangen.cpp'],['../cangen_8hpp.html#ae2e2c0c6f385de7e1b1fbbec7e720b36',1,'msgMotor_01:&#160;cangen.cpp']]],
+  ['msgvd_5fgnss_5fprecision_5fposition_3',['msgvd_gnss_precision_position',['../cangen_8cpp.html#a1fa739f10a76463539caef9a8c9eb58f',1,'msgVD_GNSS_precision_position:&#160;cangen.cpp'],['../cangen_8hpp.html#a1fa739f10a76463539caef9a8c9eb58f',1,'msgVD_GNSS_precision_position:&#160;cangen.cpp']]]
 ];

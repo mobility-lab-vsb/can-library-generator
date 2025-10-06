@@ -1,0 +1,9 @@
+<map id="src/canlibrarygenerator/temp/cangen/cangen_db.h" name="src/canlibrarygenerator/temp/cangen/cangen_db.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="125,5,322,45"/>
+<area shape="rect" id="Node000002" href="$cangen__db_8c.html" title=" " alt="" coords="5,93,201,133"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,56,131,95,128,91,184,51"/>
+<area shape="rect" id="Node000003" href="$cangen__interface_8h.html" title=" " alt="" coords="225,93,464,133"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="263,51,319,91,316,95,260,55"/>
+<area shape="rect" id="Node000004" href="$cangen__interface_8c.html" title=" " alt="" coords="225,181,464,221"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="347,147,347,181,342,181,342,147"/>
+</map>
