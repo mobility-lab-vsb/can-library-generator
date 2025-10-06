@@ -62,7 +62,7 @@ def _generate_function_doxygen_comment(function_name, params, return_type, brief
     return comment
 
 def generate_init_struct(library_name):
-    h_code = _generate_file_header_comment(f"{library_name}_init.h",
+    h_code = _generate_file_header_comment(f"can_db_def.h",
                                            "Definitions of structures for CAN messages and signals")
     h_code += f"#ifndef CAN_DB_DEF_H\n"
     h_code += f"#define CAN_DB_DEF_H\n\n"
@@ -135,7 +135,7 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
     h_code += "#include <stdio.h>\n"
     h_code += "#include <stddef.h>\n"
     h_code += "#include <math.h>\n\n"
-    h_code += f'#include "../inc/{library_name}_db.h"\n\n'
+    h_code += f'#include "{library_name}_db.h"\n\n'
 
     # Function declarations with Doxygen comments
     h_code += _generate_function_doxygen_comment(
@@ -238,7 +238,7 @@ def generate_functions(selected_items, library_name, dbs, tree, message_modes=No
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_interface.c",
                                            "Implementation of functions for CAN communication")
-    c_code += f'#include "../inc/{library_name}_interface.h"\n\n'
+    c_code += f'#include "{library_name}_interface.h"\n\n'
 
     # Find message function
     c_code += f"""// Find message by ID function
@@ -491,6 +491,8 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
         hex_frame_id = hex(message.frame_id)
         h_code += f"#define {library_prefix.upper()}_{message.name.upper()}_ID {hex_frame_id}\n"
 
+    h_code += "\n"
+
     # Generate unique struct for each message
     for message_name, signal_names in selected_messages.items():
         message = None
@@ -535,7 +537,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
 
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_db.c", "Implementation of structures for messages and signals")
-    c_code += f'#include "../inc/{library_name}_db.h"\n\n'
+    c_code += f'#include "{library_name}_db.h"\n\n'
 
     # Define messages and signals
     message_definitions = []
@@ -633,7 +635,7 @@ def generate_structures(selected_items, library_name, dbs, tree, message_modes=N
 
 def generate_c_code(selected_items, library_name, dbs, tree, message_modes=None):
     """Generate libraries for selected messages and signals"""
-    init_h = generate_init_struct(selected_items)
+    init_h = generate_init_struct(library_name)
     struct_h, struct_c = generate_structures(selected_items,library_name, dbs, tree)
     function_h, function_c = generate_functions(selected_items, library_name, dbs, tree, message_modes=message_modes)
 
