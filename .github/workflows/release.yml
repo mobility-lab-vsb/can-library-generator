@@ -51,58 +51,62 @@ jobs:
       - name: Inject version into pyproject.toml
         run: python src/canlibrarygenerator/scripts/inject_version.py ${{ env.APP_VERSION }}
 
-      - name: Create Windows app with Briefcase
-        run: briefcase create windows
+      - name: Create and Build Windows app with Briefcase
+        run: |
+          briefcase create windows
+          briefcase build windows
 
-      - name: Patch Product.wxs to add desktop shortcut
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install -y innosetup
+
+      - name: Create dynamic installer.iss script
         shell: pwsh
         run: |
-          # Patches the WiX installer file to include a desktop shortcut.
-          $productWxs = "build\canlibrarygenerator\windows\app\canlibrarygenerator.wxs"
-    
-          $desktopShortcutContent = @'
-              <StandardDirectory Id="DesktopFolder">
-                  <Component Id="DesktopShortcut" Guid="d2073d69-1a26-4d98-accc-99ebeb3c8547">
-                      <Shortcut
-                          Id="DesktopShortcutId"
-                          Name="CANLibraryGenerator"
-                          Icon="ProductIcon"
-                          Description="GUI tool for generating C/C++ libraries from DBC files"
-                          Target="[INSTALLFOLDER]CANLibraryGenerator.exe"
-                          WorkingDirectory="INSTALLFOLDER" />
-                      <RemoveFolder Id="DesktopFolder" On="uninstall" />
-                      <RegistryValue
-                          Root="HKCU"
-                          Key="Software\Adam Rychtar\CANLibraryGenerator"
-                          Name="DesktopShortcutInstalled"
-                          Type="integer"
-                          Value="1"
-                          KeyPath="yes" />
-                  </Component>
-              </StandardDirectory>
+          # Generates ISS script with current version
+          $issContent = @' 
+          ; --- Inno Setup Script for Briefcase App ---
+          [Setup]
+          AppName=CANLibraryGenerator
+          AppVersion=${{ env.APP_VERSION }}
+          AppPublisher=MobilityLab
+          DefaultDirName={autopf}\CANLibraryGenerator
+          DefaultGroupName=CANLibraryGenerator
+          OutputDir=dist
+          OutputBaseFilename=CANLibraryGeneratorInstaller
+          Compression=lzma
+          SolidCompression=yes
+          WizardStyle=modern
+          UninstallDisplayIcon={app}\CANLibraryGenerator.exe
+          PrivilegesRequired=admin
+          DisableDirPage=no
+          DisableProgramGroupPage=no
+          
+          [Tasks]
+          Name: "desktopicon"; Description: "Create desktop shortcut"; GroupDescription: "Shortcuts:"
+          Name: "startmenuicon"; Description: "Create Start menu shortcut"; GroupDescription: "Shortcuts:"; Flags: unchecked
+          
+          [Files]
+          Source: "build\canlibrarygenerator\windows\app\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+          Source: "build\canlibrarygenerator\windows\app\src\canlibrarygenerator.exe"; DestDir: "{app}"; Flags: ignoreversion
+          
+          [Icons]
+          Name: "{group}\CANLibraryGenerator"; Filename: "{app}\CANLibraryGenerator.exe"; Tasks: startmenuicon
+          Name: "{userdesktop}\CANLibraryGenerator"; Filename: "{app}\CANLibraryGenerator.exe"; Tasks: desktopicon
+          Name: "{group}\Odinstalovat CANLibraryGenerator"; Filename: "{uninstallexe}"
           '@
           
-          $wxsContent = Get-Content $productWxs -Raw
-          
-          $newWxsContent = $wxsContent -replace '(<StandardDirectory Id="ProgramMenuFolder">)', "$($desktopShortcutContent)`n`$1"
-          $newWxsContent = $newWxsContent -replace '</Feature>', "    <ComponentRef Id=`"DesktopShortcut`" />`n        </Feature>"
-          $newWxsContent | Set-Content $productWxs
-          
-          Write-Output "File $productWxs was edited."
-          Write-Output "--- Contents of edited file $productWxs ---"
-          Get-Content $productWxs | Write-Output
+          $issContent | Out-File installer.iss -Encoding UTF8
 
-      - name: Build and Package Windows app with briefcase
+      - name: Compile Inno Setup installer
         run: |
-          # Builds and packages the Windows application for release.
-          briefcase build windows
-          briefcase package windows --adhoc-sign
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            dist/*.msi
+            dist/*.exe
 
   build-macos:
     runs-on: macos-latest
