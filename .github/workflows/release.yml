@@ -100,7 +100,7 @@ jobs:
 
       - name: Compile Inno Setup installer
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1

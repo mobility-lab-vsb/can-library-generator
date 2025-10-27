@@ -92,7 +92,7 @@ jobs:
 
       - name: Compile Inno Setup installer
         run: |
-          "& C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
       - name: Upload Windows app artifact
         uses: actions/upload-artifact@v4
@@ -132,10 +132,17 @@ jobs:
           briefcase build macOS
           briefcase package macOS --adhoc-sign
 
+      - name: Create Artifact Version (macOS)
+        id: macos_artifact_version
+        run: |
+          # Replace forbidden characters (like /) with '-' for the artifact name
+          SANITIZED_VERSION=$(echo "${{ env.APP_VERSION }}" | sed 's/\//-/g')
+          echo "ARTIFACT_VERSION=$SANITIZED_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Upload macOS app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-canlibrarygenerator-${{ env.APP_VERSION }}
+          name: macos-canlibrarygenerator-${{ steps.macos_artifact_version.outputs.ARTIFACT_VERSION }}
           path: dist/*.dmg
 
   build-linux:
@@ -173,8 +180,15 @@ jobs:
           briefcase build linux
           briefcase package linux
 
+      - name: Create Artifact Version (Linux)
+        id: linux_artifact_version
+        run: |
+          # Replace forbidden characters (like /) with '-' for the artifact name
+          SANITIZED_VERSION=$(echo "${{ env.APP_VERSION }}" | sed 's/\//-/g')
+          echo "ARTIFACT_VERSION=$SANITIZED_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Upload Linux app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: linux-canlibrarygenerator-${{ env.APP_VERSION }}
+          name: linux-canlibrarygenerator-${{ steps.linux_artifact_version.outputs.ARTIFACT_VERSION }}
           path: dist/*.deb
