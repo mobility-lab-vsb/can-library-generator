@@ -94,10 +94,18 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" installer.iss
 
+      - name: Create Artifact Version (Windows)
+        id: windows_artifact_version
+        shell: pwsh
+        run: |
+          # Replace forbidden characters (like /) with '-' for the artifact name (using PowerShell syntax)
+          $SANITIZED_VERSION = "${{ env.APP_VERSION }}" -replace '/', '-'
+          echo "ARTIFACT_VERSION=$SANITIZED_VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Upload Windows app artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-canlibrarygenerator-${{ env.APP_VERSION }}
+          name: windows-canlibrarygenerator-${{ steps.windows_artifact_version.outputs.ARTIFACT_VERSION }}
           path: dist/*.exe
 
 
