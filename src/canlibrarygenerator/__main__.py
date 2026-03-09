@@ -898,6 +898,7 @@ class DBCLibraryGenerator(QMainWindow):
             for file_path in file_paths:
                 try:
                     db = cantools.database.load_file(file_path)
+                    db.name = os.path.basename(file_path)
                     self.dbs.append(db)
 
                     # --- Collect nodes for the top widget ---
@@ -973,7 +974,7 @@ class DBCLibraryGenerator(QMainWindow):
 
         try:
             if language == "c":
-                init_h, struct_h, struct_c, function_h, function_c = generate_c_code(selected_items_ids, library_name, self.dbs, self.tree, message_modes=message_modes)
+                init_h, struct_h, struct_c, function_h, function_c = generate_c_code(selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes)
 
                 os.makedirs(os.path.join(directory, f"{library_name}"), exist_ok=True)
                 os.makedirs(os.path.join(directory, f"{library_name}", "inc"), exist_ok=True)
