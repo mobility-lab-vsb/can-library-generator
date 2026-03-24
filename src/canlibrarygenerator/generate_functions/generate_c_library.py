@@ -39,8 +39,7 @@ def _generate_file_header_comment(file_name, brief_description, __version__, dbc
         dbc_section = "\n".join(lines)
 
     generator_section = f"""*
-* @note         Generator version: {__version__}
-"""
+* @note         Generator version: {__version__}"""
 
     header = generator_section + dbc_section
 
@@ -86,20 +85,20 @@ def generate_init_struct(__version__):
     # Define the can_db_sig_t structure
     h_code += "\n/**\n * @brief   Structure for signal representation.\n */\n"
     h_code += "typedef struct can_db_sig_t {\n"
-    h_code += "    const char *name;      /**< Name of the signal. */\n"
+    h_code += "    const char *name;       /**< Name of the signal. */\n"
     h_code += "    int start_bit;          /**< Start bit of the signal. */\n"
-    h_code += "    int length;            /**< Length of the signal in bits. */\n"
+    h_code += "    int length;             /**< Length of the signal in bits. */\n"
     h_code += "    const char *byte_order; /**< Byte order (little_endian/big_endian). */\n"
     h_code += "    char value_type;        /**< Value type ('s' for signed, 'u' for unsigned). */\n"
-    h_code += "    double factor;         /**< Factor for conversion to physical value. */\n"
-    h_code += "    double offset;         /**< Offset for conversion to physical value. */\n"
-    h_code += "    double min;            /**< Minimum physical value. */\n"
-    h_code += "    double max;            /**< Maximum physical value. */\n"
-    h_code += "    const char *unit;      /**< Unit of the signal. */\n"
-    h_code += "    const char *receiver;  /**< Receiver of the signal. */\n"
-    h_code += "    uint64_t raw_value;    /**< Current raw value of the signal. */\n"
-    h_code += "    double phys_value;     /**< Current physical value of the signal. */\n"
-    h_code += "    double raw_init;       /**< Init raw value. */\n"
+    h_code += "    double factor;          /**< Factor for conversion to physical value. */\n"
+    h_code += "    double offset;          /**< Offset for conversion to physical value. */\n"
+    h_code += "    double min;             /**< Minimum physical value. */\n"
+    h_code += "    double max;             /**< Maximum physical value. */\n"
+    h_code += "    const char *unit;       /**< Unit of the signal. */\n"
+    h_code += "    const char *receiver;   /**< Receiver of the signal. */\n"
+    h_code += "    uint64_t raw_value;     /**< Current raw value of the signal. */\n"
+    h_code += "    double phys_value;      /**< Current physical value of the signal. */\n"
+    h_code += "    double raw_init;        /**< Init raw value. */\n"
     h_code += "} can_db_sig_t;\n\n"
 
     # Base message structure
@@ -116,7 +115,7 @@ def generate_init_struct(__version__):
     h_code += "    int is_fd;             /**< Boolean flag (fd / not fd). */\n"
     h_code += "    int frame_type;        /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */\n"
     h_code += "    uint32_t cycle_time;   /**< Cycle time of the message (ms). */\n"
-    h_code += "    can_db_sig_t *signals;    /**< Pointer to the array of the message signals. */\n"
+    h_code += "    can_db_sig_t *signals; /**< Pointer to the array of the message signals. */\n"
     h_code += "} can_db_msg_t;\n\n"
 
     h_code += f"#endif // CAN_DB_DEF_H\n"
