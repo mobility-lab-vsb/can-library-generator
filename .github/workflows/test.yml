@@ -1,4 +1,4 @@
-name: Test CAN Library Generator and Generate Docs
+name: Test CAN Library Generator
 
 on:
   push:
@@ -6,6 +6,7 @@ on:
       - dev
       - feat/canfd
       - feat/node_select
+  workflow_dispatch:
 
 permissions:
   contents: write
