@@ -32,14 +32,13 @@ def _generate_file_header_comment(file_name, brief_description, __version__, dbc
 
     dbc_section = ""
     if dbc_files:
-        lines = ["*", "* @note         DBC Files versions:"]
+        lines = ["\n*", "* @note         DBC Files versions:"]
         for name, version in dbc_files:
             lines.append(f"*               - {name}: {version}")
         lines.append("*")
         dbc_section = "\n".join(lines)
 
-    generator_section = f"""*
-* @note         Generator version: {__version__}"""
+    generator_section = f"""* @note         Generator version: {__version__}"""
 
     header = generator_section + dbc_section
 
@@ -118,7 +117,7 @@ def generate_init_struct(__version__):
     h_code += "    can_db_sig_t *signals; /**< Pointer to the array of the message signals. */\n"
     h_code += "} can_db_msg_t;\n\n"
 
-    h_code += f"#endif // CAN_DB_DEF_H\n"
+    h_code += f"#endif // CAN_DB_DEF_H"
 
     return h_code
 
@@ -160,7 +159,7 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
         brief="Finds a CAN message in the registry by its ID.",
         details="Returns a pointer to the found message or NULL if the message was not found."
     )
-    h_code += f"can_db_msg_t* {library_prefix}_find_message_by_id(uint32_t can_id);\n"
+    h_code += f"can_db_msg_t* {library_prefix}_find_message_by_id(uint32_t can_id);\n\n"
 
     h_code += _generate_function_doxygen_comment(
         f"{library_prefix}_parse_signal",
@@ -173,7 +172,7 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
         brief="Parses the raw signal value from CAN data.",
         details="Extracts signal bits from the data array according to the specified start bit, length and byte order."
     )
-    h_code += f"uint64_t {library_prefix}_parse_signal(const uint8_t* data, uint8_t msg_length, uint16_t start_bit, uint8_t length, const char* byte_order);\n"
+    h_code += f"uint64_t {library_prefix}_parse_signal(const uint8_t* data, uint8_t msg_length, uint16_t start_bit, uint8_t length, const char* byte_order);\n\n"
 
     h_code += _generate_function_doxygen_comment(
         f"{library_prefix}_unpackage_message",
@@ -184,7 +183,7 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
         brief="Unpackages a received CAN message and updates signal values.",
         details="Finds the message by ID, checks DLC, parses raw signal values, and converts them to physical values. Returns 0 on success, -1 on error (message not found or DLC mismatch)."
     )
-    h_code += f"int {library_prefix}_unpackage_message(uint32_t can_id, const uint8_t* data, uint8_t msg_length);\n"
+    h_code += f"int {library_prefix}_unpackage_message(uint32_t can_id, const uint8_t* data, uint8_t msg_length);\n\n"
 
     h_code += _generate_function_doxygen_comment(
         f"{library_prefix}_insert_signal",
@@ -198,7 +197,7 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
         brief="Inserts the raw signal value into a CAN data byte array.",
         details="Writes the bits of the raw signal value into the data array according to the specified start bit, length, and byte order."
     )
-    h_code += f"void {library_prefix}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, const char* byte_order);\n"
+    h_code += f"void {library_prefix}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, const char* byte_order);\n\n"
 
     h_code += _generate_function_doxygen_comment(
         f"{library_prefix}_package_message",
@@ -207,7 +206,7 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
         brief="Packages CAN message signals into a data array for transmission.",
         details="Finds the message by ID, checks DLC, and inserts raw signal values into the data array. Returns 0 on success, -1 on error."
     )
-    h_code += f"int {library_prefix}_package_message(uint32_t can_id);\n"
+    h_code += f"int {library_prefix}_package_message(uint32_t can_id);\n\n"
 
     for msg_id in message_modes:
         flags = message_modes.get(msg_id, {"rx": False, "tx": False})
@@ -224,7 +223,7 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
                 brief="Processes CAN messages into a data array for transmission.",
                 details="Takes the message and processes it to be ready to send on CAN interface.",
             )
-            h_code += f"void {library_prefix}_{message_name}_output_processing(void);\n"
+            h_code += f"void {library_prefix}_{message_name}_output_processing(void);\n\n"
             pass
         if is_rx:
             message_name = tree.item(msg_id, "text")
@@ -235,10 +234,9 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
                 brief="Processes CAN messages to be able to work with it.",
                 details="Takes the CAN message and unpacks its data to each signals and converts raw values to physical values.",
             )
-            h_code += f"void {library_prefix}_{message_name}_input_processing(const can_db_msg_t* can_db_rx_msg);\n"
+            h_code += f"void {library_prefix}_{message_name}_input_processing(const can_db_msg_t* can_db_rx_msg);\n\n"
             pass
 
-    h_code += "\n"
     h_code += _generate_function_doxygen_comment(
         f"{library_prefix}_init",
         [("msg", "Pointer to the byte array where the message should be initialised."),],
@@ -248,7 +246,18 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
     )
     h_code += f"void {library_prefix}_init(can_db_msg_t* msg);\n\n"
 
-    h_code += f"\n#endif // {library_name.upper()}_INTERFACE_H\n"
+    for message_name in selected_messages:
+
+        h_code += _generate_function_doxygen_comment(
+            f"{library_prefix}_{message_name}_init",
+            [],
+            "void",
+            brief=f"Initializes message {message_name} signals to default values.",
+            details=f"Sets all signals to their initial raw values and recalculates physical values."
+        )
+        h_code += f"void {library_prefix}_{message_name}_init(void);\n"
+
+    h_code += f"\n#endif // {library_name.upper()}_INTERFACE_H"
 
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_interface.c",
@@ -319,23 +328,15 @@ int {library_prefix}_unpackage_message(const uint32_t can_id, const uint8_t* dat
     can_db_msg_t* msg = {library_prefix}_find_message_by_id(can_id);
 
     if (!msg || msg->length != msg_length) {{
-        printf("Message with ID 0x%X not found or message length mismatch! Expected message length: %d, Received message_length: %d\\n",
-            can_id, msg ? msg->length : 0, msg_length);
         return -1;
     }}
 
-    //printf("Message found: ID 0x%X, message length %d\\n", can_id, msg_length);
     memcpy(msg->data, data, msg_length);
 
     for (size_t i = 0; i < msg->num_signals; i++) {{
         can_db_sig_t* sig = &msg->signals[i];
-
         sig->raw_value = {library_prefix}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->byte_order);
-
         sig->phys_value = (sig->raw_value * sig->factor) + sig->offset;
-
-        /*printf("Signal %s: raw_value=%lu, factor=%.7f, offset=%.1f, value=%.7f\\n",
-            sig->name, sig->raw_value, sig->factor, sig->offset, sig->phys_value);*/
     }}
 
     return 0;
@@ -381,31 +382,20 @@ void {library_prefix}_insert_signal(uint8_t* data, const uint8_t msg_length, con
 int {library_prefix}_package_message(const uint32_t can_id)
 {{
     can_db_msg_t* msg = {library_prefix}_find_message_by_id(can_id);
+    
+    if (!msg) {{
+        return -1;
+    }}
 
-    //printf("Message found!\\n");
     memset(msg->data, 0, msg->length);
 
     for (size_t i = 0; i < msg->num_signals; i++) {{
         can_db_sig_t* sig = &msg->signals[i];
-        //printf("Old RAW: %u\\n", sig->raw_value);
-        //printf("RAW: %u = (PHYS: %f - OFFSET: %.9f) / FACTOR: %.9f\\n", sig->raw_value, sig->phys_value, sig->offset, sig->factor);
         sig->raw_value = (int)llround((sig->phys_value - sig->offset) / sig->factor);
-        //printf("New RAW: %u\\n", sig->raw_value);
         {library_prefix}_insert_signal(msg->data, msg->length, sig->raw_value, sig->start_bit, sig->length, sig->byte_order);
     }}
 
     return 0;
-}}
-\n"""
-
-    # Set message to Init values
-    c_code += f"""// Set message to Init values
-void {library_prefix}_init(can_db_msg_t* msg) 
-{{
-    for (size_t i = 0; i < msg->num_signals; i++) {{
-        msg->signals[i].raw_value = msg->signals[i].raw_init;
-        msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
-    }} 
 }}
 \n"""
 
@@ -417,7 +407,7 @@ void {library_prefix}_init(can_db_msg_t* msg)
 
         if is_tx:
             message_name = tree.item(msg_id, "text")
-            c_code += f"void {library_prefix}_{message_name}_output_processing(void)\n{{"
+            c_code += f"void {library_prefix}_{message_name}_output_processing(void)\n{{\n"
 
             message = None
             for db in dbs:
@@ -433,19 +423,16 @@ void {library_prefix}_init(can_db_msg_t* msg)
                 for signal in message.signals:
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 1:
-                        c_code += f"    // Increment message counter\n"
-                        c_code += f"    {library_prefix}_{message.name}.{signal.name}->phys_value += 0x1u;\n\n"
+                        c_code += f"    {library_prefix}_{message.name}.{signal.name}->phys_value += 0x1u;\n"
 
-                c_code += f"    // Package all signals to message\n"
-                c_code += f"    (void){library_prefix}_package_message({library_prefix}_{message.name}.base.id);\n\n"
+                c_code += f"    (void){library_prefix}_package_message({library_prefix}_{message.name}.base.id);\n"
 
                 for signal in message.signals:
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 2:
-                        c_code += f"    // Calculate app crc value for tx message\n"
-                        c_code += f"    {library_prefix}_{message.name}.base.data[0] = calculate_crc({library_prefix}_{message.name}.base.data, dlc_table[{library_prefix}_{message.name}.base.dlc], 0x00u);\n\n"
+                        c_code += f"    {library_prefix}_{message.name}.base.data[0] = calculate_crc({library_prefix}_{message.name}.base.data, dlc_table[{library_prefix}_{message.name}.base.dlc], 0x00u);\n"
 
-                c_code += f"    (void){library_prefix}_msg_send(&{library_prefix}_{message.name}.base);\n\n"
+                c_code += f"    (void){library_prefix}_msg_send(&{library_prefix}_{message.name}.base);\n"
 
             c_code += "}\n\n"
 
@@ -458,6 +445,36 @@ void {library_prefix}_init(can_db_msg_t* msg)
 }}
 \n"""
             pass
+
+    # Set messages to init values
+    c_code += f"""// Set message to Init values
+void {library_prefix}_init(can_db_msg_t* msg) 
+{{
+    for (size_t i = 0; i < msg->num_signals; i++) {{
+        msg->signals[i].raw_value = msg->signals[i].raw_init;
+        msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
+    }} 
+}}
+\n"""
+
+    # Set specified message to init values
+    count = len(selected_messages)
+    i = 0
+    for message_name in selected_messages:
+        i += 1
+        c_code += f"""void {library_prefix}_{message_name}_init(void)
+{{
+    can_db_msg_t* msg = (can_db_msg_t*)&{library_prefix}_{message_name};
+
+    for (size_t i = 0; i < msg->num_signals; i++) {{
+        msg->signals[i].raw_value = msg->signals[i].raw_init;
+        msg->signals[i].phys_value =
+            (msg->signals[i].raw_value * msg->signals[i].factor) +
+            msg->signals[i].offset;
+    }}
+}}"""
+        if not i == count:
+            c_code += "\n\n"
 
     return h_code, c_code
 
@@ -519,7 +536,7 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
             continue
 
         struct_name = f"can_db_{message_name.replace(' ', '')}_t"
-        h_code += f"// Structure for CAN message {message_name}.\n\n"
+        h_code += f"// Structure for CAN message {message_name}.\n"
         h_code += f"typedef struct {{\n"
         h_code += "    can_db_msg_t base;\n"
 
@@ -537,7 +554,7 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
         h_code += f"extern {struct_name} {library_prefix}_{message_name};\n"
 
     # Universal structure for incoming messages
-    h_code += "\n // Universal structure for incoming messages.\n"
+    h_code += "\n// Universal structure for incoming messages.\n"
     h_code += f"extern can_db_msg_t can_db_rx_msg;\n\n"
 
     # Message registry
@@ -546,7 +563,7 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
     h_code += f"// Number of messages in the {library_prefix}_all_messages registry.\n"
     h_code += f"extern const size_t {library_prefix}_all_messages_count;\n\n"
 
-    h_code += f"#endif // {library_name.upper()}_DB_H\n"
+    h_code += f"#endif // {library_name.upper()}_DB_H"
 
     # Generate C implementation file (.c)
     c_code = _generate_file_header_comment(f"{library_name}_db.c", "Implementation of structures for messages and signals", __version__, dbc_files)
@@ -572,14 +589,17 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
         # Define signal array
         if message.signals:
             c_code += f"static can_db_sig_t {message.name}_signals[] = {{\n"
+            count = len(message.signals)
+            signal_count = 0
             for signal in message.signals:
                 if not signal_names or signal.name in signal_names:
+                    signal_count += 1
                     min_value = signal.minimum if signal.minimum is not None else 0.0
                     max_value = signal.maximum if signal.maximum is not None else 0.0
                     unit_value = f"\"{signal.unit}\"" if signal.unit else "\"\""
                     receiver_value = f"\"{', '.join(signal.receivers)}\"" if signal.receivers else "\"\""
                     raw_init = signal.raw_initial if signal.raw_initial else 0
-                    phys_init = (raw_init * signal.scale) - signal.offset
+                    phys_init = (raw_init * signal.scale) + signal.offset
 
                     c_code += "    {\n"
                     c_code += f"        .name = \"{signal.name}\",\n"
@@ -596,8 +616,10 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
                     c_code += f"        .raw_value = {raw_init},\n"
                     c_code += f"        .phys_value = {phys_init},\n"
                     c_code += f"        .raw_init = {raw_init}\n"
-                    c_code += "    },\n"
-            c_code += "};\n\n"
+                    c_code += "    }"
+                    if not signal_count == count:
+                        c_code += ",\n"
+            c_code += "\n};\n\n"
 
             num_signals = len([s for s in message.signals if not signal_names or s.name in signal_names])
         else:
@@ -630,11 +652,14 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
         c_code += f"    }},\n"
 
         # Assign direct pointers to signals
+        count = len(message.signals)
         for i, signal in enumerate(message.signals):
             if not signal_names or signal.name in signal_names:
-                c_code += f"    .{signal.name} = &{message.name}_signals[{i}],\n"
+                c_code += f"    .{signal.name} = &{message.name}_signals[{i}]"
+                if not i == count - 1:
+                    c_code += ",\n"
 
-        c_code += "};\n\n"
+        c_code += "\n};\n\n"
         message_definitions.append(f"(can_db_msg_t*)&{library_prefix}_{message.name}")
 
     # Message registry
@@ -642,7 +667,7 @@ def generate_structures(selected_items, library_name, dbs, tree, dbc_files, __ve
     c_code += f"can_db_msg_t* const {library_prefix}_all_messages[] = {{\n    "
     c_code += ",\n    ".join(message_definitions)
     c_code += "\n};\n\n"
-    c_code += f"const size_t {library_prefix}_all_messages_count = {len(message_definitions)};\n"
+    c_code += f"const size_t {library_prefix}_all_messages_count = {len(message_definitions)};"
 
     return h_code, c_code
 
