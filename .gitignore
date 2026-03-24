@@ -12,3 +12,4 @@ arm64-notfunctional.yml
 prikaz-arm64-server.txt
 dist
 __pycache__
+installer.iss
