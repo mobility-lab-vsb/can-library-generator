@@ -148,7 +148,7 @@ jobs:
           briefcase create macOS
           briefcase build macOS
           # briefcase package macOS -i "Developer ID Application: Josef Drozd (${{ secrets.APPLE_TEAM_ID }})" --no-notarize # Sign with Developer ID, notarization done in next step.
-          briefcase package macOS -i adhoc
+          briefcase package macOS --adhoc-sign
 
       # NOTARIZATION (DISABLED)
       #- name: Notarize DMG with Apple
