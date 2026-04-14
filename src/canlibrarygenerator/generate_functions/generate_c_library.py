@@ -412,15 +412,19 @@ int {library_prefix}_package_message(const uint32_t can_id)
                 for signal in message.signals:
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 1:
+                        c_code += f"    // Increment message counter\n"
                         c_code += f"    {library_prefix}_{message.name}.{signal.name}->phys_value += 0x1u;\n"
 
+                c_code += f"    // Package all signals to message\n"
                 c_code += f"    (void){library_prefix}_package_message({library_prefix}_{message.name}.base.id);\n"
 
                 for signal in message.signals:
                     attr = signal.dbc.attributes.get("GenSigFuncType")
                     if attr and attr.value == 2:
+                        c_code += f"    // Calculate app crc value for tx message\n"
                         c_code += f"    {library_prefix}_{message.name}.base.data[0] = calculate_crc({library_prefix}_{message.name}.base.data, dlc_table[{library_prefix}_{message.name}.base.dlc], 0x00u);\n"
 
+                c_code += f"    // Send message to can bus\n"
                 c_code += f"    (void){library_prefix}_msg_send(&{library_prefix}_{message.name}.base);\n"
 
             c_code += "}\n\n"
