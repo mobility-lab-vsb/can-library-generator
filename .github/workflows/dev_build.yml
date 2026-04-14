@@ -138,7 +138,7 @@ jobs:
           # Builds and packages the macOS application. Ad-hoc signing is used for dev builds.
           briefcase create macOS
           briefcase build macOS
-          briefcase package macOS --adhoc-sign
+          briefcase package macOS -i adhoc
 
       - name: Create Artifact Version (macOS)
         id: macos_artifact_version
