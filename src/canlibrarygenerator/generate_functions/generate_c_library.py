@@ -246,17 +246,6 @@ def generate_functions(selected_items, library_name, dbs, tree, __version__, mes
     )
     h_code += f"void {library_prefix}_init(can_db_msg_t* msg);\n\n"
 
-    for message_name in selected_messages:
-
-        h_code += _generate_function_doxygen_comment(
-            f"{library_prefix}_{message_name}_init",
-            [],
-            "void",
-            brief=f"Initializes message {message_name} signals to default values.",
-            details=f"Sets all signals to their initial raw values and recalculates physical values."
-        )
-        h_code += f"void {library_prefix}_{message_name}_init(void);\n"
-
     h_code += f"\n#endif // {library_name.upper()}_INTERFACE_H"
 
     # Generate C implementation file (.c)
@@ -456,25 +445,6 @@ void {library_prefix}_init(can_db_msg_t* msg)
     }} 
 }}
 \n"""
-
-    # Set specified message to init values
-    count = len(selected_messages)
-    i = 0
-    for message_name in selected_messages:
-        i += 1
-        c_code += f"""void {library_prefix}_{message_name}_init(void)
-{{
-    can_db_msg_t* msg = (can_db_msg_t*)&{library_prefix}_{message_name};
-
-    for (size_t i = 0; i < msg->num_signals; i++) {{
-        msg->signals[i].raw_value = msg->signals[i].raw_init;
-        msg->signals[i].phys_value =
-            (msg->signals[i].raw_value * msg->signals[i].factor) +
-            msg->signals[i].offset;
-    }}
-}}"""
-        if not i == count:
-            c_code += "\n\n"
 
     return h_code, c_code
 
