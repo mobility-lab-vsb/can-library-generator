@@ -92,22 +92,29 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
 
     # --- Generate C++ code ---
     try:
-        hpp_code, cpp_code = generate_cpp_code(
+        cpp_def, cpp_db_h, cpp_db_c, cpp_int_h, cpp_int_c = generate_cpp_code(
             selected_items,
             library_name,
             dbc_dbs,
-            tree
+            tree,
+            __version__="dev"
         )
     except Exception as e:
         print(f"Error during C++ code generation: {e}")
         sys.exit(1)
 
-    # --- Save C++ files ---
+    # --- Save C++ files mirroring C structure ---
+    cpp_dir = os.path.join(output_dir, f"{library_name}_cpp")
+    os.makedirs(cpp_dir, exist_ok=True)
+
     cpp_files = {
-        f"{library_name}.hpp": hpp_code,
-        f"{library_name}.cpp": cpp_code
+        "can_db_def.hpp": cpp_def,
+        f"{library_name}_db.hpp": cpp_db_h,
+        f"{library_name}_db.cpp": cpp_db_c,
+        f"{library_name}_interface.hpp": cpp_int_h,
+        f"{library_name}_interface.cpp": cpp_int_c
     }
 
     for filename, content in cpp_files.items():
-        with open(os.path.join(output_dir, filename), "w") as f:
+        with open(os.path.join(cpp_dir, filename), "w") as f:
             f.write(content)
