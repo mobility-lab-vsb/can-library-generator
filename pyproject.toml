@@ -51,6 +51,7 @@ requires = [
     "PyQt6-Qt6==6.9.1",
     "PyQt6_sip==13.10.2",
     "python-can==4.5.0",
+    "Jinja2==3.1.6",
 ]
 
 [tool.briefcase.app.canlibrarygenerator.macOS]
