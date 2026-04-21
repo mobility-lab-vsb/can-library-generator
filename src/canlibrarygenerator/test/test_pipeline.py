@@ -48,6 +48,7 @@ if __name__ == "__main__":
     generate_all_code(dbc_file, library_name, generate_c_code, generate_cpp_code)
 
     c_dir = os.path.join(output_dir, library_name)
+    cpp_dir = os.path.join(output_dir, f"{library_name}_cpp")
 
     if not shutil.which("gcc") or not shutil.which("g++"):
         print("❌ Error: gcc or g++ not found in system PATH.")
@@ -89,8 +90,9 @@ void {library_name}_msg_send(const can_db_msg_t* msg) {{
     run_cmd([
         "g++",
         cpp_test_file,
-        os.path.join(output_dir, f"{library_name}.cpp"),
-        "-I", output_dir,
+        os.path.join(cpp_dir, f"{library_name}_interface.cpp"),
+        os.path.join(cpp_dir, f"{library_name}_db.cpp"),
+        "-I", cpp_dir,
         "-o", cpp_exec
     ], "Compiling C++ tests")
 

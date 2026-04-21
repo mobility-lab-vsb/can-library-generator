@@ -39,9 +39,9 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
         {{ sig.maximum }},
         "{{ sig.unit }}",
         "{{ sig.receivers | join(', ') }}",
-        {{ sig.raw_initial }},
+        {{ sig.raw_initial | int }},
         {{ sig.phys_initial }},
-        {{ sig.raw_initial }}
+        {{ sig.raw_initial | int }}
     }{%- if not loop.last %},{% endif %}
 {%- endfor %}
 };
