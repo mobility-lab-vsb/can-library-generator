@@ -1,5 +1,5 @@
-from src.canlibrarygenerator.ir.builder import build_library_ir
-from src.canlibrarygenerator.renderers.cpp_renderer import CPPRenderer
+from ..ir.builder import build_library_ir
+from ..renderers.cpp_renderer import CPPRenderer
 
 def generate_cpp_code(selected_items, library_name, dbs, tree, __version__="dev", message_modes=None):
     """Generate C++ library output files"""

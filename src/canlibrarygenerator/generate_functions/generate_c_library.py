@@ -1,5 +1,5 @@
-from src.canlibrarygenerator.ir.builder import build_library_ir
-from src.canlibrarygenerator.renderers.c_renderer import CRenderer
+from ..ir.builder import build_library_ir
+from ..renderers.c_renderer import CRenderer
 
 
 def generate_c_code(selected_items, library_name, dbs, tree, __version__="dev", message_modes=None):

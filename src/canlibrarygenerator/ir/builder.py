@@ -1,5 +1,5 @@
 from .models import LibraryIR, MessageIR, SignalIR
-from src.canlibrarygenerator.utils.can_utils import get_dlc_from_data_length
+from ..utils.can_utils import get_dlc_from_data_length
 from datetime import datetime
 
 
