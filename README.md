@@ -100,7 +100,7 @@ All generated files during tests are stored in the `temp/` directory and are aut
 |   |   |   ├── test_c.c
 |   |   |   ├── test_cpp.cpp
 |   |   |   └── test_pipeline.py
-|   |   ├── utils/                         # Can utilities
+|   |   ├── utils/                         # CAN utilities
 |   |   |   └── can_utils.py
 |   |   ├── __init__.py
 |   |   └── __main__.py                    # DBC to code generator

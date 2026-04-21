@@ -489,6 +489,7 @@ class DBCLibraryGenerator(QMainWindow):
         self.library_name_entry = None  # Entry for library name
         self.language_group = None  # QButtonGroup for language selection
         self.image = None  # To hold the PIL Image object
+        self.chk_gen_def = None
 
         self.setup_gui()
         self.apply_theme()
@@ -841,6 +842,11 @@ class DBCLibraryGenerator(QMainWindow):
         controls_layout.addLayout(language_layout, 0, 4, 1, 1)  # Only 1 column span now
         controls_layout.setColumnStretch(1, 1)
 
+        self.chk_gen_def = QCheckBox("Generate 'can_db_def' header file")
+        self.chk_gen_def.setChecked(True)
+        self.chk_gen_def.setToolTip("Uncheck if you want to use your own custom can_db_def header.")
+        controls_layout.addWidget(self.chk_gen_def, 1, 0, 1, 5)
+
         # Selection buttons
         action_buttons_frame = QWidget()
         action_buttons_layout = QHBoxLayout(action_buttons_frame)
@@ -856,13 +862,13 @@ class DBCLibraryGenerator(QMainWindow):
         deselect_all_button.clicked.connect(lambda: self.controller.unselect_all())
         action_buttons_layout.addWidget(deselect_all_button)
 
-        controls_layout.addWidget(action_buttons_frame, 1, 0, 1, 5)  # Span all 5 columns
+        controls_layout.addWidget(action_buttons_frame, 2, 0, 1, 5)  # Span all 5 columns
 
         # Generate button
         generate_button = QPushButton("🚀 Generate Library")
         generate_button.setObjectName("AccentButton")  # Used for QSS styling
         generate_button.clicked.connect(self.generate_library)
-        controls_layout.addWidget(generate_button, 2, 0, 1, 5,
+        controls_layout.addWidget(generate_button, 3, 0, 1, 5,
                                   Qt.AlignmentFlag.AlignCenter)  # Span all 5 columns, center
 
         main_layout.addWidget(controls_frame)
@@ -994,12 +1000,14 @@ class DBCLibraryGenerator(QMainWindow):
             def_h, db_h, db_c, int_h, int_c = contents
 
             files_to_write = {
-                os.path.join(inc_dir, f"can_db_def{ext_h}"): def_h,
                 os.path.join(inc_dir, f"{library_name}_db{ext_h}"): db_h,
                 os.path.join(src_dir, f"{library_name}_db{ext_c}"): db_c,
                 os.path.join(inc_dir, f"{library_name}_interface{ext_h}"): int_h,
                 os.path.join(src_dir, f"{library_name}_interface{ext_c}"): int_c
             }
+
+            if self.chk_gen_def.isChecked():
+                files_to_write[os.path.join(inc_dir, f"can_db_def{ext_h}")] = def_h
 
             for filepath, content in files_to_write.items():
                 with open(filepath, "w", encoding="utf-8") as f:
