@@ -99,11 +99,22 @@ void test_canfd_message(void) {
     }
 }
 
+// --- Registry test ---
+void test_registry_size(void) {
+    printf("\n--- Testing C Registry ---\n");
+
+    // Using the generated variable for message count
+    size_t actual_size = cangen_all_messages_count;
+    printf("  Registry size: %zu messages\n", actual_size);
+    TEST_ASSERT(actual_size > 0, "Registry is not empty");
+}
+
 int main(void) {
     printf("Running C tests...\n");
 
     test_standard_can_message();
     test_canfd_message();
+    test_registry_size();
 
     printf("\n======================================\n");
     printf("RESULT: %d / %d tests passed.\n", tests_passed, tests_run);
