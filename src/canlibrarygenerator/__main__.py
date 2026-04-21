@@ -973,52 +973,43 @@ class DBCLibraryGenerator(QMainWindow):
         language = "c" if language_id == 0 else "cpp"
 
         try:
+            lib_dir = os.path.join(directory, library_name)
+            inc_dir = os.path.join(lib_dir, "inc")
+            src_dir = os.path.join(lib_dir, "src")
+
+            os.makedirs(inc_dir, exist_ok=True)
+            os.makedirs(src_dir, exist_ok=True)
+
             if language == "c":
-                init_h, struct_h, struct_c, function_h, function_c = generate_c_code(selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes)
+                ext_h, ext_c = ".h", ".c"
+                contents = generate_c_code(
+                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes
+                )
+            else:
+                ext_h, ext_c = ".hpp", ".cpp"
+                contents = generate_cpp_code(
+                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes
+                )
 
-                os.makedirs(os.path.join(directory, f"{library_name}"), exist_ok=True)
-                os.makedirs(os.path.join(directory, f"{library_name}", "inc"), exist_ok=True)
-                os.makedirs(os.path.join(directory, f"{library_name}", "src"), exist_ok=True)
+            def_h, db_h, db_c, int_h, int_c = contents
 
-                h_file_path = os.path.join(directory, f"{library_name}", "inc", "can_db_def.h")
-                with open(h_file_path, "w") as h_file:
-                    h_file.write(init_h)
+            files_to_write = {
+                os.path.join(inc_dir, f"can_db_def{ext_h}"): def_h,
+                os.path.join(inc_dir, f"{library_name}_db{ext_h}"): db_h,
+                os.path.join(src_dir, f"{library_name}_db{ext_c}"): db_c,
+                os.path.join(inc_dir, f"{library_name}_interface{ext_h}"): int_h,
+                os.path.join(src_dir, f"{library_name}_interface{ext_c}"): int_c
+            }
 
-                h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_db.h")
-                with open(h_file_path, "w") as h_file:
-                    h_file.write(struct_h)
+            for filepath, content in files_to_write.items():
+                with open(filepath, "w", encoding="utf-8") as f:
+                    f.write(content)
 
-                c_file_path = os.path.join(directory, f"{library_name}", "src", f"{library_name}_db.c")
-                with open(c_file_path, "w") as c_file:
-                    c_file.write(struct_c)
-
-                h_file_path = os.path.join(directory, f"{library_name}", "inc", f"{library_name}_interface.h")
-                with open(h_file_path, "w") as h_file:
-                    h_file.write(function_h)
-
-                c_file_path = os.path.join(directory, f"{library_name}", "src", f"{library_name}_interface.c")
-                with open(c_file_path, "w") as c_file:
-                    c_file.write(function_c)
-
-                QMessageBox.information(self, "Success",
-                                        f"Generated {library_name}_db.c and {library_name}_interface.c \n "
-                                        f"files in {directory}/{library_name}/src\n"
-                                        f"Generated {library_name}_db.h, {library_name}_interface.h and can_db_def.h \n "
-                                        f"files in {directory}/{library_name}/inc\n")
-            else:  # language == "cpp"
-                hpp_code, cpp_code = generate_cpp_code(selected_items_ids, library_name, self.dbs, self.tree)
-
-                hpp_file_path = os.path.join(directory, f"{library_name}.hpp")
-                with open(hpp_file_path, "w") as hpp_file:
-                    hpp_file.write(hpp_code)
-
-                cpp_file_path = os.path.join(directory, f"{library_name}.cpp")
-                with open(cpp_file_path, "w") as cpp_file:
-                    cpp_file.write(cpp_code)
-
-                QMessageBox.information(self, "Success",
-                                        f"Generated {library_name}.hpp and {library_name}.cpp \n "
-                                        f"files in {directory}")
+            QMessageBox.information(self, "Success",
+                                    f"Generated {library_name}_db{ext_c} and {library_name}_interface{ext_c}\n"
+                                    f"files in {library_name}/src\n"
+                                    f"Generated {library_name}_db{ext_h}, {library_name}_interface{ext_h} and can_db_def{ext_h}\n"
+                                    f"files in {library_name}/inc\n")
 
         except Exception as e:
             QMessageBox.critical(self, "Generation Error", f"An error occurred during {library_name} generation: {e}")
