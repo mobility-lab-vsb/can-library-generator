@@ -5,10 +5,11 @@ This project is a Python-based tool that parses DBC (CAN database) files and gen
 ## ✨ Features
 
 - Parses DBC files using the [`cantools`](https://github.com/eerimoq/cantools) library.
-- Generates type-safe and structured in C or C++ (**Deprecated**).
-- Supports signal decoding/encoding, raw values, scaling and offset.
-- Provides a test pipeline for verifying generated libraries.
-- Cross-platform support (Windows, Linux, macOS via GCC/MinGW)
+- Generates type-safe and structured C and C++ libraries using Jinja2 templates.
+- Supports signal decoding/encoding, raw values, scaling, offset, and sign extension.
+- Generates fully featured APIs including RX/TX processing modes.
+- Provides an automated test pipeline for verifying both C and C++ generated libraries.
+- Cross-platform support (Windows, Linux, macOS via GCC/MinGW).
 
 ## 🛠 Requirements
 - [`Python 3.13+`](https://www.python.org/)
@@ -41,31 +42,30 @@ python -m src.canlibrarygenerator
 Follow the prompt to select `.dbc` file. The generated library will be saved in a folder of your choice.
 
 ## Generated Files
-The script creates the following:
+Both C and C++ generators now share the same architecture and create the following structure (extensions are `.h`/`.c` for C and `.hpp`/`.cpp` for C++):
 ```graphql
 ├── <prefix>/                   # Root folder for generated libraries
     ├── inc/                        # Folder with header files
-    |   ├── can_db_def.h                # Header file with base Message/Signal structure (use only once in whole project)
-    |   ├── <prefix>_db.h               # Header file with Messages and Signals structures
-    |   └── <prefix>_interface.h        # Header file with functions for unpackage/package and input/output process
+    |   ├── can_db_def.h(.hpp)                # Header file with base Message/Signal structure (use only once in whole project)
+    |   ├── <prefix>_db.h(.hpp)               # Header file with Messages and Signals structures
+    |   └── <prefix>_interface.h(.hpp)        # Header file with functions for unpackage/package and input/output process
     └── src/                        # Folder with source files
-        ├── <prefix>_db.c               # Source file with declaration of Messages and Signals
-        └── <prefix>_interface.c        # Source file with declaration of  functions for unpackage/package and input/output process
+        ├── <prefix>_db.c(.cpp)               # Source file with declaration of Messages and Signals
+        └── <prefix>_interface.c(.cpp)        # Source file with declaration of  functions for unpackage/package and input/output process
 ```
 
-- *(if using C++ mode)* `<prefix>.hpp` and `<prefix>.cpp` with modern classes and vector support.
-
-## 🧪 Test Pipeline (Automatic after every commit)
+## 🧪 Test Pipeline (Automatic after every commit in certain branches)
 ```sh
-python test_pipeline.py
+python src/canlibrarygenerator/test/test_pipeline.py
 ```
 The pipeline will:
-- Compile the generated code.
+- Generate the code from an example DBC file.
+- Compile the generated C and C++ code using gcc/g++.
 - Run example test applications.
-- Check that unpacking and packing (e.g. `<prefix>_unpackage_message()`, `<prefix>_package_message()`) works correctly.
+- Check that unpacking and packing (e.g. <prefix>_unpackage_message(), <prefix>_package_message()) works correctly with data integrity tests.
 
 ## 🧹 Cleaning Up
-All generated files are stored in the `temp/` directory and are automatically cleaned after testing.
+All generated files during tests are stored in the `temp/` directory and are automatically cleaned after the test pipeline finishes.
 
 ## 📁 Project structure
 ```graphql
@@ -77,8 +77,14 @@ All generated files are stored in the `temp/` directory and are automatically cl
 |   |   ├── generate_functions/            # Scripts for generating libraries
 |   |   |   ├── generate_c_library.py
 |   |   |   └── generate_cpp_library.py
+|   |   ├── ir/                            # Intermediate Representation (builder, models)
+|   |   |   ├── builder.py
+|   |   |   └── models.py
 |   |   ├── png/                           # Images
 |   |   |   └── VSB-TUO_logo.png
+|   |   ├── renderers/                     # Jinja2 template renderers
+|   |   |   ├── c_renderer.py
+|   |   |   └── cpp_renderer.py
 |   |   ├── resources/                     # Folder with resources for building project
 |   |   |   └── icon/                          # Folder with icon images
 |   |   |       |   icon.icns
@@ -89,10 +95,13 @@ All generated files are stored in the `temp/` directory and are automatically cl
 |   |   |   |   delete_temp_files.py
 |   |   |   |   generate_source_files.py
 |   |   |   └── inject_version.py
+|   |   ├── templates/                     # Jinja2 templates (c/ and cpp/)
 |   |   ├── test/                          # Test applications
 |   |   |   ├── test_c.c
 |   |   |   ├── test_cpp.cpp
 |   |   |   └── test_pipeline.py
+|   |   ├── utils/                         # Can utilities
+|   |   |   └── can_utils.py
 |   |   ├── __init__.py
 |   |   └── __main__.py                    # DBC to code generator
 ├── CHANGELOG.md
