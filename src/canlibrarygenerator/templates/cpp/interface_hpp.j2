@@ -52,7 +52,7 @@ void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint
  */
 int {{ ir.library_name }}_package_message(uint32_t can_id);
 
-{%- for msg in ir.messages %}
+{% for msg in ir.messages %}
 {%- if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void);
 {%- endif %}
