@@ -69,7 +69,7 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
     std::memcpy(msg->data, data, msg_length);
     for (auto* sig : msg->signals) {
         sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->is_big_endian);
-        if (sig->value_type == 's') {
+        if (sig->is_signed == true) {
             int64_t s_val = static_cast<int64_t>(sig->raw_value);
             s_val = (s_val << (64 - sig->length)) >> (64 - sig->length);
             sig->phys_value = (s_val * sig->factor) + sig->offset;

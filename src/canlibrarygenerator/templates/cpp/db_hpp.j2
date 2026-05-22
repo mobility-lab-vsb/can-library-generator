@@ -44,7 +44,7 @@
 struct can_db_{{ msg.name.replace(' ', '') }}_t {
     can_db_msg_t base;
 {%- for sig in msg.signals %}
-    can_db_sig_t *{{ sig.name }};
+    can_db_sig_t *{{ sig.code_name }};
 {%- endfor %}
 };
 {%- endfor %}

@@ -26,17 +26,21 @@
  * @brief   Structure for signal representation.
  */
 typedef struct can_db_sig_t {
+{% if not ir.embedded %}
     const char *name;       /**< Name of the signal. */
+{% endif %}
     int start_bit;          /**< Start bit of the signal. */
     int length;             /**< Length of the signal in bits. */
     bool is_big_endian;     /**< Endianness flag: false = little endian, true = big endian. */
-    char value_type;        /**< Value type ('s' for signed, 'u' for unsigned). */
+    bool is_signed;         /**< Value type (1 for signed, 0 for unsigned). */
     double factor;          /**< Factor for conversion to physical value. */
     double offset;          /**< Offset for conversion to physical value. */
     double min;             /**< Minimum physical value. */
     double max;             /**< Maximum physical value. */
+{% if not ir.embedded %}
     const char *unit;       /**< Unit of the signal. */
     const char *receiver;   /**< Receiver of the signal. */
+{% endif %}
     uint64_t raw_value;     /**< Current raw value of the signal. */
     double phys_value;      /**< Current physical value of the signal. */
     double raw_init;        /**< Init raw value. */
@@ -47,11 +51,15 @@ typedef struct can_db_sig_t {
  */
 typedef struct can_db_msg_t {
     const uint32_t id;      /**< CAN ID of the message. */
+{% if not ir.embedded %}
     const char *name;       /**< Name of the message. */
+{% endif %}
     uint8_t dlc;            /**< Data Length Code (DLC) of the message. */
     uint8_t length;         /**< Byte length of the message. */
+{% if not ir.embedded %}
     const char *senders;    /**< Senders of the message. */
     const char *receivers;  /**< Receivers of the message. */
+{% endif %}
     size_t num_signals;     /**< Number of signals in the message. */
     uint8_t data[64];       /**< Data of the message. */
     int is_fd;              /**< Boolean flag (fd / not fd). */

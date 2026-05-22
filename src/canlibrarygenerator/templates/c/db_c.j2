@@ -31,18 +31,23 @@
 {%- if msg.signals %}
 static can_db_sig_t {{ msg.name }}_signals[] = {
 {%- for sig in msg.signals %}
+    /* Signal: {{ sig.name }} */
     {
+    {% if not ir.embedded %}
         .name = "{{ sig.name }}",
+    {% endif %}
         .start_bit = {{ sig.start_bit }},
         .length = {{ sig.length }},
         .is_big_endian = {{ 1 if sig.is_big_endian else 0 }},
-        .value_type = '{{ "s" if sig.is_signed else "u" }}',
+        .is_signed = '{{ 1 if sig.is_signed else 0 }}',
         .factor = {{ sig.factor }},
         .offset = {{ sig.offset }},
         .min = {{ sig.minimum }},
         .max = {{ sig.maximum }},
+    {% if not ir.embedded %}
         .unit = "{{ sig.unit }}",
         .receiver = "{{ sig.receivers | join(', ') }}",
+    {% endif %}
         .raw_value = {{ sig.raw_initial }},
         .phys_value = {{ sig.phys_initial }},
         .raw_init = {{ sig.raw_initial }}
@@ -53,23 +58,28 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
 // No signals for this message
 {%- endif %}
 
+/* Message: {{ msg.name }} */
 can_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }} = {
     .base = {
         .id = {{ msg.frame_id }},
+    {% if not ir.embedded %}
         .name = "{{ msg.name }}",
+    {% endif %}
         .dlc = {{ msg.dlc }},
         .length = {{ msg.length }},
+    {% if not ir.embedded %}
         .senders = "{{ msg.senders | join(', ') }}",
         .receivers = "{{ msg.receivers | join(', ') }}",
+    {% endif %}
         .num_signals = {{ msg.signals | length }},
-         .data = {0},
+        .data = {0},
         .is_fd = {{ 1 if msg.is_fd else 0 }},
         .frame_type = {{ 1 if msg.is_extended else 0 }},
         .cycle_time = {{ msg.cycle_time }},
         .signals = {% if msg.signals|length > 0 %}{{ msg.name }}_signals{% else %}NULL{% endif %}
     },
 {%- for sig in msg.signals %}
-    .{{ sig.name }} = &{{ msg.name }}_signals[{{ loop.index0 }}]{%- if not loop.last %},{% endif %}
+    .{{ sig.code_name }} = &{{ msg.name }}_signals[{{ loop.index0 }}]{%- if not loop.last %},{% endif %}
 {%- endfor %}
 };
 
