@@ -7,7 +7,7 @@ class SignalIR:
     name: str
     start_bit: int
     length: int
-    byte_order: str
+    is_big_endian: bool
     is_signed: bool
     factor: float
     offset: float

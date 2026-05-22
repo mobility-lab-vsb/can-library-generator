@@ -37,7 +37,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                         name=sig.name,
                         start_bit=sig.start,
                         length=sig.length,
-                        byte_order=sig.byte_order,
+                        is_big_endian=(sig.byte_order == "big_endian"),
                         is_signed=sig.is_signed,
                         factor=sig.scale,
                         offset=sig.offset,

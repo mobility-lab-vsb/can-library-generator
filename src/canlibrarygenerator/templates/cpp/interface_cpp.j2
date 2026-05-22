@@ -32,9 +32,9 @@ can_db_msg_t* {{ ir.library_name }}_find_message_by_id(const uint32_t can_id) {
     return nullptr;
 }
 
-uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, const std::string& byte_order) {
+uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, const bool is_big_endian) {
     uint64_t result = 0;
-    if (byte_order == "little_endian") {
+    if (!is_big_endian) {
         uint8_t byte = start_bit / 8;
         uint8_t bit = start_bit % 8;
         uint8_t bitsRead = 0;
@@ -68,7 +68,7 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
 
     std::memcpy(msg->data, data, msg_length);
     for (auto* sig : msg->signals) {
-        sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->byte_order);
+        sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->is_big_endian);
         if (sig->value_type == 's') {
             int64_t s_val = static_cast<int64_t>(sig->raw_value);
             s_val = (s_val << (64 - sig->length)) >> (64 - sig->length);
@@ -80,8 +80,8 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
     return 0;
 }
 
-void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const std::string& byte_order) {
-    if (byte_order == "little_endian") {
+void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const bool is_big_endian) {
+    if (!is_big_endian) {
         for (int i = 0; i < length; i++) {
             int bitIndex = start_bit + i;
             int byteIndex = bitIndex / 8;
@@ -106,7 +106,7 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id) {
     std::memset(msg->data, 0, msg->length);
     for (auto* sig : msg->signals) {
         sig->raw_value = static_cast<uint64_t>(std::llround((sig->phys_value - sig->offset) / sig->factor));
-        {{ ir.library_name }}_insert_signal(msg->data, msg->length, (uint32_t)sig->raw_value, sig->start_bit, sig->length, sig->byte_order);
+        {{ ir.library_name }}_insert_signal(msg->data, msg->length, (uint32_t)sig->raw_value, sig->start_bit, sig->length, sig->is_big_endian);
     }
     return 0;
 }

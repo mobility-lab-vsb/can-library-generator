@@ -20,6 +20,7 @@
 #ifndef CAN_DB_DEF_H
 #define CAN_DB_DEF_H
 
+#include <stdbool.h>
 
 /**
  * @brief   Structure for signal representation.
@@ -28,7 +29,7 @@ typedef struct can_db_sig_t {
     const char *name;       /**< Name of the signal. */
     int start_bit;          /**< Start bit of the signal. */
     int length;             /**< Length of the signal in bits. */
-    const char *byte_order; /**< Byte order (little_endian/big_endian). */
+    bool is_big_endian;     /**< Endianness flag: false = little endian, true = big endian. */
     char value_type;        /**< Value type ('s' for signed, 'u' for unsigned). */
     double factor;          /**< Factor for conversion to physical value. */
     double offset;          /**< Offset for conversion to physical value. */

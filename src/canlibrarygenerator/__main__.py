@@ -162,7 +162,6 @@ class CheckableTreeWidget(QTreeWidget):
     def _handle_item_changed(self, item: QTreeWidgetItem, column: int):
         if self._block_signals:
             return
-        # reagujeme jen na signály (child) a jen na levý checkbox (column 0)
         if item.parent() is None or column != 0:
             return
         if not (item.flags() & Qt.ItemFlag.ItemIsUserCheckable):
@@ -490,6 +489,7 @@ class DBCLibraryGenerator(QMainWindow):
         self.language_group = None  # QButtonGroup for language selection
         self.image = None  # To hold the PIL Image object
         self.chk_gen_def = None
+        self.chk_embedded = None
 
         self.setup_gui()
         self.apply_theme()
@@ -844,8 +844,13 @@ class DBCLibraryGenerator(QMainWindow):
 
         self.chk_gen_def = QCheckBox("Generate 'can_db_def' header file")
         self.chk_gen_def.setChecked(True)
-        self.chk_gen_def.setToolTip("Uncheck if you want to use your own custom can_db_def header.")
+        self.chk_gen_def.setToolTip("Uncheck if you already have can_db_def header file.")
         controls_layout.addWidget(self.chk_gen_def, 1, 0, 1, 5)
+
+        self.chk_embedded = QCheckBox("Generate library for Embedded platforms")
+        self.chk_embedded.setChecked(False)
+        self.chk_embedded.setToolTip("Check this if you want to generate optimized (low memory use) library.")
+        controls_layout.addWidget(self.chk_embedded, 1, 0, 2, 5)
 
         # Selection buttons
         action_buttons_frame = QWidget()

@@ -31,11 +31,11 @@ can_db_msg_t* {{ ir.library_name }}_find_message_by_id(const uint32_t can_id)
 }
 
 // Parse signal function
-uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, const char* byte_order)
+uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, bool is_big_endian)
 {
     uint64_t result = 0;
 
-    if (strcmp(byte_order, "little_endian") == 0) {
+    if (!is_big_endian) {
         // Intel (little endian)
         uint8_t byte = start_bit / 8;
         uint8_t bit = start_bit % 8;
@@ -85,7 +85,7 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
 
     for (size_t i = 0; i < msg->num_signals; i++) {
         can_db_sig_t* sig = &msg->signals[i];
-        sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->byte_order);
+        sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->is_big_endian);
         sig->phys_value = (sig->raw_value * sig->factor) + sig->offset;
     }
 
@@ -93,9 +93,9 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
 }
 
 // Insert signal data function
-void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const char* byte_order)
+void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, bool is_big_endian)
 {
-    if (strcmp(byte_order, "little_endian") == 0) {
+    if (!is_big_endian) {
         for (int i = 0; i < length; i++) {
             int bitIndex = start_bit + i;
             int byteIndex = bitIndex / 8;
@@ -139,7 +139,7 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id)
     for (size_t i = 0; i < msg->num_signals; i++) {
         can_db_sig_t* sig = &msg->signals[i];
         sig->raw_value = (int)llround((sig->phys_value - sig->offset) / sig->factor);
-        {{ ir.library_name }}_insert_signal(msg->data, msg->length, sig->raw_value, sig->start_bit, sig->length, sig->byte_order);
+        {{ ir.library_name }}_insert_signal(msg->data, msg->length, sig->raw_value, sig->start_bit, sig->length, sig->is_big_endian);
     }
 
     return 0;

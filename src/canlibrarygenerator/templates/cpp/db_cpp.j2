@@ -35,7 +35,7 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
         "{{ sig.name }}",
         {{ sig.start_bit }},
         {{ sig.length }},
-        "{{ sig.byte_order }}",
+        {{ "true" if sig.is_big_endian else "false" }},
         '{{ "s" if sig.is_signed else "u" }}',
         {{ sig.factor }},
         {{ sig.offset }},
