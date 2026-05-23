@@ -5,7 +5,7 @@ import cantools
 from collections import namedtuple
 
 
-def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_code):
+def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_code, embedded=False, output_suffix="", with_units=False):
     """
     Generates both C and C++ libraries from a given DBC file.
     """
@@ -14,9 +14,7 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
     dbc_path = os.path.abspath(dbc_filename)
     output_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'temp'))
 
-    # --- Clean and recreate output directory ---
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)
+    # --- Create output directory ---
     os.makedirs(output_dir, exist_ok=True)
 
     # --- Load DBC file ---
@@ -61,6 +59,9 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
 
     tree = MockTree()
 
+    c_output_name = f"{library_name}{output_suffix}"
+    cpp_output_name = f"{library_name}{output_suffix}_cpp"
+
     # --- Generate C code ---
     try:
         h_init, h_code, c_code, func_h, func_c = generate_c_code(
@@ -68,14 +69,19 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
             library_name,
             dbc_dbs,
             tree,
-            __version__="dev"
+            __version__="dev",
+            embedded=embedded,
+            with_units=with_units
         )
     except Exception as e:
         print(f"Error during C code generation: {e}")
         sys.exit(1)
 
     # --- Save C files ---
-    c_dir = os.path.join(output_dir, library_name)
+    c_dir = os.path.join(output_dir, c_output_name)
+    if os.path.exists(c_dir):
+        shutil.rmtree(c_dir)
+
     os.makedirs(c_dir, exist_ok=True)
 
     c_files = {
@@ -97,14 +103,19 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
             library_name,
             dbc_dbs,
             tree,
-            __version__="dev"
+            __version__="dev",
+            embedded=embedded,
+            with_units=with_units
         )
     except Exception as e:
         print(f"Error during C++ code generation: {e}")
         sys.exit(1)
 
     # --- Save C++ files ---
-    cpp_dir = os.path.join(output_dir, f"{library_name}_cpp")
+    cpp_dir = os.path.join(output_dir, cpp_output_name)
+    if os.path.exists(cpp_dir):
+        shutil.rmtree(cpp_dir)
+
     os.makedirs(cpp_dir, exist_ok=True)
 
     cpp_files = {

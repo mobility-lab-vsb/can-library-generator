@@ -1,7 +1,7 @@
 from ..ir.builder import build_library_ir
 from ..renderers.cpp_renderer import CPPRenderer
 
-def generate_cpp_code(selected_items, library_name, dbs, tree, __version__="dev", message_modes=None):
+def generate_cpp_code(selected_items, library_name, dbs, tree, __version__="dev", message_modes=None, embedded=False, with_units=False):
     """Generate C++ library output files"""
 
     ir = build_library_ir(
@@ -10,7 +10,9 @@ def generate_cpp_code(selected_items, library_name, dbs, tree, __version__="dev"
         dbs=dbs,
         tree=tree,
         version=__version__,
-        message_modes=message_modes or {}
+        message_modes=message_modes or {},
+        embedded=embedded,
+        with_units=with_units
     )
 
     renderer = CPPRenderer()

@@ -5,9 +5,10 @@ from typing import List, Dict
 @dataclass
 class SignalIR:
     name: str
+    code_name: str
     start_bit: int
     length: int
-    byte_order: str
+    is_big_endian: bool
     is_signed: bool
     factor: float
     offset: float
@@ -44,3 +45,5 @@ class LibraryIR:
     messages: List[MessageIR]
     current_date: str
     current_year: int
+    embedded: bool = False
+    with_units: bool = False

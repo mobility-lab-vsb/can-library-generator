@@ -31,26 +31,26 @@ can_db_msg_t* {{ ir.library_name }}_find_message_by_id(const uint32_t can_id)
 }
 
 // Parse signal function
-uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, const char* byte_order)
+uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t msg_length, const uint16_t start_bit, const uint8_t length, bool is_big_endian)
 {
     uint64_t result = 0;
 
-    if (strcmp(byte_order, "little_endian") == 0) {
+    if (!is_big_endian) {
         // Intel (little endian)
         uint8_t byte = start_bit / 8;
         uint8_t bit = start_bit % 8;
-        uint8_t bitsRead = 0;
+        uint8_t bits_read = 0;
 
-        while (bitsRead < length) {
-            uint8_t remainingBitsInByte = 8 - bit;
-            uint8_t bitsToRead = (length - bitsRead < remainingBitsInByte) ? (length - bitsRead) : remainingBitsInByte;
+        while (bits_read < length) {
+            uint8_t remaining_bits_in_byte = 8 - bit;
+            uint8_t bits_to_read = (length - bits_read < remaining_bits_in_byte) ? (length - bits_read) : remaining_bits_in_byte;
 
-            uint8_t mask = ((1 << bitsToRead) - 1);
+            uint8_t mask = ((1 << bits_to_read) - 1);
             uint8_t extracted = (data[byte] >> bit) & mask;
 
-            result |= ((uint64_t)extracted << bitsRead);
+            result |= ((uint64_t)extracted << bits_read);
 
-            bitsRead += bitsToRead;
+            bits_read += bits_to_read;
             bit = 0;
             byte++;
         }
@@ -58,12 +58,12 @@ uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, const uint8_t m
     else {
         // Motorola (big-endian / @0+)
         for (uint8_t i = 0; i < length; i++) {
-            uint16_t bitOffset = start_bit - i;
-            uint8_t byteIndex = bitOffset / 8;
-            uint8_t bitInByte = 7 - (bitOffset % 8);
+            uint16_t bit_offset = start_bit - i;
+            uint8_t byte_index = bit_offset / 8;
+            uint8_t bit_in_byte = 7 - (bit_offset % 8);
 
-            if (byteIndex < msg_length) {
-                uint8_t bit = (data[byteIndex] >> bitInByte) & 0x1;
+            if (byte_index < msg_length) {
+                uint8_t bit = (data[byte_index] >> bit_in_byte) & 0x1;
                 result |= ((uint64_t)bit << i);
             }
         }
@@ -85,7 +85,7 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
 
     for (size_t i = 0; i < msg->num_signals; i++) {
         can_db_sig_t* sig = &msg->signals[i];
-        sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->byte_order);
+        sig->raw_value = {{ ir.library_name }}_parse_signal(msg->data, msg->length, sig->start_bit, sig->length, sig->is_big_endian);
         sig->phys_value = (sig->raw_value * sig->factor) + sig->offset;
     }
 
@@ -93,33 +93,33 @@ int {{ ir.library_name }}_unpackage_message(const uint32_t can_id, const uint8_t
 }
 
 // Insert signal data function
-void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, const char* byte_order)
+void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length, const uint32_t raw_value, const int start_bit, const int length, bool is_big_endian)
 {
-    if (strcmp(byte_order, "little_endian") == 0) {
+    if (!is_big_endian) {
         for (int i = 0; i < length; i++) {
-            int bitIndex = start_bit + i;
-            int byteIndex = bitIndex / 8;
-            int bit_in_byte = bitIndex % 8;
-            if (byteIndex >= msg_length) continue;
+            int bit_index = start_bit + i;
+            int byte_index = bit_index / 8;
+            int bit_in_byte = bit_index % 8;
+            if (byte_index >= msg_length) continue;
 
             if ((raw_value >> i) & 1) {
-                data[byteIndex] |= (1 << bit_in_byte);
+                data[byte_index] |= (1 << bit_in_byte);
             } else {
-                data[byteIndex] &= ~(1 << bit_in_byte);
+                data[byte_index] &= ~(1 << bit_in_byte);
             }
         }
     }
     else {
         for (int i = 0; i < length; i++) {
-            int bitPos = start_bit - i;
-            int byteIndex = bitPos / 8;
-            int bitIndex = bitPos % 8;
-            if (byteIndex >= msg_length) continue;
+            int bit_pos = start_bit - i;
+            int byte_index = bit_pos / 8;
+            int bit_index = bit_pos % 8;
+            if (byte_index >= msg_length) continue;
 
             if ((raw_value >> i) & 1) {
-                data[byteIndex] |= (1 << (7 - bitIndex));
+                data[byte_index] |= (1 << (7 - bit_index));
             } else {
-                data[byteIndex] &= ~(1 << (7 - bitIndex));
+                data[byte_index] &= ~(1 << (7 - bit_index));
             }
         }
     }
@@ -139,7 +139,7 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id)
     for (size_t i = 0; i < msg->num_signals; i++) {
         can_db_sig_t* sig = &msg->signals[i];
         sig->raw_value = (int)llround((sig->phys_value - sig->offset) / sig->factor);
-        {{ ir.library_name }}_insert_signal(msg->data, msg->length, sig->raw_value, sig->start_bit, sig->length, sig->byte_order);
+        {{ ir.library_name }}_insert_signal(msg->data, msg->length, sig->raw_value, sig->start_bit, sig->length, sig->is_big_endian);
     }
 
     return 0;

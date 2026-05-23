@@ -31,18 +31,23 @@
 {%- if msg.signals %}
 static can_db_sig_t {{ msg.name }}_signals[] = {
 {%- for sig in msg.signals %}
+    /* Signal: {{ sig.name }} */
     {
+    {%- if not ir.embedded %}
         "{{ sig.name }}",
+    {%- endif %}
         {{ sig.start_bit }},
         {{ sig.length }},
-        "{{ sig.byte_order }}",
-        '{{ "s" if sig.is_signed else "u" }}',
+        {{ "true" if sig.is_big_endian else "false" }},
+        {{ "true" if sig.is_signed else "false" }},
         {{ sig.factor }},
         {{ sig.offset }},
         {{ sig.minimum }},
         {{ sig.maximum }},
+    {%- if not ir.embedded %}
         "{{ sig.unit }}",
         "{{ sig.receivers | join(', ') }}",
+    {%- endif %}
         {{ sig.raw_initial | int }},
         {{ sig.phys_initial }},
         {{ sig.raw_initial | int }}
@@ -51,18 +56,23 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
 };
 {%- endif %}
 
+/* Message: {{ msg.name }} */
 can_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }} = {
     {
         {{ "0x%X"|format(msg.frame_id) }},
+    {%- if not ir.embedded %}
         "{{ msg.name }}",
+    {%- endif %}
         {{ msg.dlc }},
         {{ msg.length }},
+    {%- if not ir.embedded %}
         "{{ msg.senders | join(', ') }}",
         "{{ msg.receivers | join(', ') }}",
+    {%- endif %}
         {{ msg.signals | length }},
         {0},
         {{ "true" if msg.is_fd else "false" }},
-        {{ 1 if msg.is_extended else 0 }},
+        {{ "true" if msg.is_extended else "false" }},
         {{ msg.cycle_time }},
         { {% if msg.signals|length > 0 %}{% for sig in msg.signals %}&{{ msg.name }}_signals[{{ loop.index0 }}]{{ ", " if not loop.last }}{% endfor %}{% endif %} }
     },

@@ -2,8 +2,50 @@ from .models import LibraryIR, MessageIR, SignalIR
 from ..utils.can_utils import get_dlc_from_data_length
 from datetime import datetime
 
+import re
 
-def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes):
+
+def _sanitize_identifier_part(value: str) -> str:
+    value = value.strip()
+
+    replacements = {
+        "%": "percent",
+        "°": "deg",
+        "/": "p",
+        "\\": "p",
+        "-": "_",
+        " ": "_",
+        ".": "_",
+        "(": "",
+        ")": "",
+        "[": "",
+        "]": "",
+    }
+
+    for old, new in replacements.items():
+        value = value.replace(old, new)
+
+    value = re.sub(r"[^0-9a-zA-Z_]", "_", value)
+    value = re.sub(r"_+", "_", value)
+    value = value.strip("_")
+
+    return value
+
+
+def _make_signal_code_name(signal_name: str, unit: str, with_unit: bool) -> str:
+    base = _sanitize_identifier_part(signal_name)
+
+    if not with_unit:
+        return base
+
+    unit_suffix = _sanitize_identifier_part(unit or "")
+
+    if not unit_suffix:
+        return base
+
+    return f"{base}_{unit_suffix}"
+
+def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False):
     selected_messages = {}
 
     for item in selected_items:
@@ -35,9 +77,10 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 signals.append(
                     SignalIR(
                         name=sig.name,
+                        code_name=_make_signal_code_name(sig.name, sig.unit or "", with_units),
                         start_bit=sig.start,
                         length=sig.length,
-                        byte_order=sig.byte_order,
+                        is_big_endian=(sig.byte_order == "big_endian"),
                         is_signed=sig.is_signed,
                         factor=sig.scale,
                         offset=sig.offset,
@@ -78,5 +121,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
         dbc_versions=[(db.name, db.version or "unknown") for db in dbs],
         messages=messages,
         current_date=datetime.now().strftime("%d.%m.%Y"),
-        current_year=datetime.now().year
+        current_year=datetime.now().year,
+        embedded=embedded,
+        with_units=with_units
     )

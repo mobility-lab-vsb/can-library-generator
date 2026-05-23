@@ -35,7 +35,7 @@ can_db_msg_t* {{ ir.library_name }}_find_message_by_id(uint32_t can_id);
 /**
  * @brief Parses the raw signal value from CAN data.
  */
-uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, uint8_t msg_length, uint16_t start_bit, uint8_t length, const std::string& byte_order);
+uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, uint8_t msg_length, uint16_t start_bit, uint8_t length, bool is_big_endian);
 
 /**
  * @brief Unpackages a received CAN message and updates signal values.
@@ -45,7 +45,7 @@ int {{ ir.library_name }}_unpackage_message(uint32_t can_id, const uint8_t* data
 /**
  * @brief Inserts the raw signal value into a CAN data byte array.
  */
-void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, const std::string& byte_order);
+void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, bool is_big_endian);
 
 /**
  * @brief Packages CAN message signals into a data array for transmission.

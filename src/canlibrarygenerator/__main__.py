@@ -162,7 +162,6 @@ class CheckableTreeWidget(QTreeWidget):
     def _handle_item_changed(self, item: QTreeWidgetItem, column: int):
         if self._block_signals:
             return
-        # reagujeme jen na signály (child) a jen na levý checkbox (column 0)
         if item.parent() is None or column != 0:
             return
         if not (item.flags() & Qt.ItemFlag.ItemIsUserCheckable):
@@ -490,6 +489,8 @@ class DBCLibraryGenerator(QMainWindow):
         self.language_group = None  # QButtonGroup for language selection
         self.image = None  # To hold the PIL Image object
         self.chk_gen_def = None
+        self.chk_embedded = None
+        self.chk_unit = None
 
         self.setup_gui()
         self.apply_theme()
@@ -842,10 +843,30 @@ class DBCLibraryGenerator(QMainWindow):
         controls_layout.addLayout(language_layout, 0, 4, 1, 1)  # Only 1 column span now
         controls_layout.setColumnStretch(1, 1)
 
+        options_widget = QWidget()
+        options_layout = QVBoxLayout(options_widget)
+        options_layout.setContentsMargins(0, 0, 0, 0)
+        options_layout.setSpacing(4)
+
         self.chk_gen_def = QCheckBox("Generate 'can_db_def' header file")
         self.chk_gen_def.setChecked(True)
-        self.chk_gen_def.setToolTip("Uncheck if you want to use your own custom can_db_def header.")
-        controls_layout.addWidget(self.chk_gen_def, 1, 0, 1, 5)
+        self.chk_gen_def.setToolTip("Uncheck if you already have can_db_def header file.")
+        options_layout.addWidget(self.chk_gen_def)
+
+        self.chk_embedded = QCheckBox("Generate library for Embedded platforms")
+        self.chk_embedded.setChecked(False)
+        self.chk_embedded.setToolTip("Check this if you want to generate optimized (low memory use) library.")
+        options_layout.addWidget(self.chk_embedded)
+
+        self.chk_unit = QCheckBox("Generate signal names with units")
+        self.chk_unit.setChecked(False)
+        self.chk_unit.setToolTip(
+            "Check this if you want to generate signal names with units. "
+            "(e.g. sigVehicle_speed_mps)."
+        )
+        options_layout.addWidget(self.chk_unit)
+
+        controls_layout.addWidget(options_widget, 1, 0, 1, 5)
 
         # Selection buttons
         action_buttons_frame = QWidget()
@@ -978,6 +999,9 @@ class DBCLibraryGenerator(QMainWindow):
         language_id = self.language_group.checkedId()
         language = "c" if language_id == 0 else "cpp"
 
+        embedded = self.chk_embedded.isChecked()
+        with_units = self.chk_unit.isChecked()
+
         try:
             lib_dir = os.path.join(directory, library_name)
             inc_dir = os.path.join(lib_dir, "inc")
@@ -989,12 +1013,12 @@ class DBCLibraryGenerator(QMainWindow):
             if language == "c":
                 ext_h, ext_c = ".h", ".c"
                 contents = generate_c_code(
-                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes
+                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes, embedded=embedded, with_units=with_units
                 )
             else:
                 ext_h, ext_c = ".hpp", ".cpp"
                 contents = generate_cpp_code(
-                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes
+                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes, embedded=embedded, with_units=with_units
                 )
 
             def_h, db_h, db_c, int_h, int_c = contents
