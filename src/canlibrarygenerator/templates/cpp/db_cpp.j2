@@ -57,7 +57,7 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
 {%- endif %}
 
 /* Message: {{ msg.name }} */
-can_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }} = {
+{{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }} = {
     {
         {{ "0x%X"|format(msg.frame_id) }},
     {%- if not ir.embedded %}

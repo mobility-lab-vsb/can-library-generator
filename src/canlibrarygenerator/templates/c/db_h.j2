@@ -46,12 +46,12 @@ typedef struct {
 {%- for sig in msg.signals %}
     can_db_sig_t *{{ sig.code_name }};
 {%- endfor %}
-} can_db_{{ msg.name.replace(' ', '') }}_t;
+} {{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t;
 {%- endfor %}
 
 // Declaration of global CAN message instances.
 {%- for msg in ir.messages %}
-extern can_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }};
+extern {{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }};
 {%- endfor %}
 
 // Universal structure for incoming messages.

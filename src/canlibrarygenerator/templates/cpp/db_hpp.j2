@@ -41,7 +41,7 @@
 /**
  * @brief Structure for CAN message {{ msg.name }}.
  */
-struct can_db_{{ msg.name.replace(' ', '') }}_t {
+struct {{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t {
     can_db_msg_t base;
 {%- for sig in msg.signals %}
     can_db_sig_t *{{ sig.code_name }};
@@ -51,7 +51,7 @@ struct can_db_{{ msg.name.replace(' ', '') }}_t {
 
 // Declaration of global CAN message instances.
 {%- for msg in ir.messages %}
-extern can_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }};
+extern {{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }};
 {%- endfor %}
 
 // Global registry of all defined CAN messages.
