@@ -21,6 +21,8 @@
 #define CAN_DB_DEF_H
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /**
  * @brief   Structure for signal representation.
@@ -50,7 +52,7 @@ typedef struct can_db_sig_t {
  * @brief   Base structure for CAN message.
  */
 typedef struct can_db_msg_t {
-    const uint32_t id;      /**< CAN ID of the message. */
+    uint32_t id;            /**< CAN ID of the message. */
 {%- if not ir.embedded %}
     const char *name;       /**< Name of the message. */
 {%- endif %}
@@ -62,6 +64,8 @@ typedef struct can_db_msg_t {
 {%- endif %}
     size_t num_signals;     /**< Number of signals in the message. */
     uint8_t data[64];       /**< Data of the message. */
+    bool is_active;         /**< Runtime flag indicating whether the message is active. */
+    uint32_t timestamp_ms;  /**< Runtime timestamp of the message in milliseconds. */
     int is_fd;              /**< Boolean flag (fd / not fd). */
     int frame_type;         /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */
     uint32_t cycle_time;    /**< Cycle time of the message (ms). */

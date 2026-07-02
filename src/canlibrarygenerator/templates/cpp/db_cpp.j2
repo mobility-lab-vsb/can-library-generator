@@ -71,6 +71,8 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
     {%- endif %}
         {{ msg.signals | length }},
         {0},
+        false,
+        0,
         {{ "true" if msg.is_fd else "false" }},
         {{ "true" if msg.is_extended else "false" }},
         {{ msg.cycle_time }},
