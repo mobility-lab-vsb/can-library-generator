@@ -98,6 +98,22 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
 
             modes = message_modes_by_name.get(message.name, {"rx": False, "tx": False})
 
+            cycle_time_fast = 0
+            try:
+                if (
+                        message.dbc and
+                        message.dbc.attributes and
+                        "GenMsgCycleTimeFast" in message.dbc.attributes
+                ):
+                    cycle_time_fast = message.dbc.attributes["GenMsgCycleTimeFast"].value
+            except Exception:
+                cycle_time_fast = 0
+
+            print(
+                message.name,
+                cycle_time_fast
+            )
+
             messages.append(
                 MessageIR(
                     name=message.name,
@@ -111,7 +127,8 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                     receivers=list(message.receivers or []),
                     signals=signals,
                     mode_rx=modes["rx"],
-                    mode_tx=modes["tx"]
+                    mode_tx=modes["tx"],
+                    cycle_time_fast=cycle_time_fast
                 )
             )
 

@@ -35,6 +35,7 @@ class MessageIR:
     signals: List[SignalIR]
     mode_rx: bool
     mode_tx: bool
+    cycle_time_fast: int = 0
 
 
 @dataclass

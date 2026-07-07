@@ -72,6 +72,7 @@ struct can_db_msg_t {
     bool is_fd;                         /**< Boolean flag (fd / not fd). */
     int frame_type;                     /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */
     uint32_t cycle_time;                /**< Cycle time of the message (ms). */
+    uint32_t cycle_time_fast;   /**< Cycle time fast of the message (ms). */
     std::vector<can_db_sig_t*> signals; /**< Vector of pointers to the message signals. */
 };
 
