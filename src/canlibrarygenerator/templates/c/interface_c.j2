@@ -149,7 +149,28 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id)
 {% if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 {
+{%- for sig in msg.signals %}
+{%- if sig.gen_sig_func_type == 1 %}
+
+    /* Increment message counter */
+    {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->phys_value += 1u;
+
+{%- endif %}
+{%- endfor %}
+
+    /* Package all signals to message */
     (void){{ ir.library_name }}_package_message({{ ir.library_name }}_{{ msg.name }}.base.id);
+
+{%- for sig in msg.signals %}
+{%- if sig.gen_sig_func_type == 2 %}
+
+    /* CRC calculation */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[0] = calculate_crc({{ ir.library_name }}_{{ msg.name }}.base.data, dlc_table[{{ ir.library_name }}_{{ msg.name }}.base.dlc], 0x00u);
+
+{%- endif %}
+{%- endfor %}
+
+    /* Send message to CAN bus */
     (void){{ ir.library_name }}_msg_send(&{{ ir.library_name }}_{{ msg.name }}.base);
 }
 {%- endif %}

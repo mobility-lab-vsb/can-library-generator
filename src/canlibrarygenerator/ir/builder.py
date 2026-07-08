@@ -74,6 +74,16 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 if selected_messages[message.name] and sig.name not in selected_messages[message.name]:
                     continue
 
+                gen_sig_func_type = 0
+
+                if sig.dbc and sig.dbc.attributes and "GenSigFuncType" in sig.dbc.attributes:
+                    gen_sig_func_type = int(sig.dbc.attributes["GenSigFuncType"].value)
+
+                print(
+                    sig.name,
+                    gen_sig_func_type
+                )
+
                 signals.append(
                     SignalIR(
                         name=sig.name,
@@ -90,6 +100,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                         receivers=list(sig.receivers or []),
                         raw_initial=sig.raw_initial or 0,
                         phys_initial=(sig.raw_initial or 0) * sig.scale + sig.offset,
+                        gen_sig_func_type=gen_sig_func_type,
                         attributes={
                             k: v.value for k, v in sig.dbc.attributes.items()
                         } if sig.dbc and sig.dbc.attributes else {}
@@ -108,11 +119,6 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                     cycle_time_fast = message.dbc.attributes["GenMsgCycleTimeFast"].value
             except Exception:
                 cycle_time_fast = 0
-
-            print(
-                message.name,
-                cycle_time_fast
-            )
 
             messages.append(
                 MessageIR(

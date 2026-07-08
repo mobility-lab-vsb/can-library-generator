@@ -18,6 +18,7 @@ class SignalIR:
     receivers: List[str]
     raw_initial: int
     phys_initial: float
+    gen_sig_func_type: int = 0
     attributes: Dict[str, int] = field(default_factory=dict)
 
 
