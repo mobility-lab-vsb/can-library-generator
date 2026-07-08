@@ -79,11 +79,6 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 if sig.dbc and sig.dbc.attributes and "GenSigFuncType" in sig.dbc.attributes:
                     gen_sig_func_type = int(sig.dbc.attributes["GenSigFuncType"].value)
 
-                print(
-                    sig.name,
-                    gen_sig_func_type
-                )
-
                 signals.append(
                     SignalIR(
                         name=sig.name,
