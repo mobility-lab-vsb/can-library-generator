@@ -145,6 +145,25 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id)
     return 0;
 }
 
+// Set message to Init values
+void {{ ir.library_name }}_init(can_db_msg_t* msg)
+{
+    if(msg == NULL) {
+        return;
+    }
+
+    for (size_t i = 0; i < msg->num_signals; i++) {
+        msg->signals[i].raw_value = msg->signals[i].raw_init;
+        msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
+    }
+
+    /* Execute user callback if registered */
+    if(msg->cb_fnc != NULL)
+    {
+        msg->cb_fnc(msg);
+    }
+}
+
 {%- for msg in ir.messages %}
 {% if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
@@ -157,6 +176,11 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 
 {%- endif %}
 {%- endfor %}
+
+    /* Execute user callback before message packaging */
+    if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc(&{{ ir.library_name }}_{{ msg.name }}.base);
+    }
 
     /* Package all signals to message */
     (void){{ ir.library_name }}_package_message({{ ir.library_name }}_{{ msg.name }}.base.id);
@@ -178,15 +202,11 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* can_db_rx_msg)
 {
     (void){{ ir.library_name }}_unpackage_message(can_db_rx_msg->id, can_db_rx_msg->data, can_db_rx_msg->length);
+
+    /* Execute user callback after message unpacking */
+    if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc(can_db_rx_msg);
+    }
 }
 {%- endif %}
 {%- endfor %}
-
-// Set message to Init values
-void {{ ir.library_name }}_init(can_db_msg_t* msg)
-{
-    for (size_t i = 0; i < msg->num_signals; i++) {
-        msg->signals[i].raw_value = msg->signals[i].raw_init;
-        msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
-    }
-}

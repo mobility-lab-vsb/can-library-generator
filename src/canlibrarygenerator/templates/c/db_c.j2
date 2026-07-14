@@ -79,6 +79,7 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
         .frame_type = {{ 1 if msg.is_extended else 0 }},
         .cycle_time = {{ msg.cycle_time }},
         .cycle_time_fast = {{ msg.cycle_time_fast }},
+        .cb_fnc = NULL,
         .signals = {% if msg.signals|length > 0 %}{{ msg.name }}_signals{% else %}NULL{% endif %}
     },
 {%- for sig in msg.signals %}

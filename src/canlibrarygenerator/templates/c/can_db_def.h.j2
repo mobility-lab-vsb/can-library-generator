@@ -48,6 +48,16 @@ typedef struct can_db_sig_t {
     double raw_init;        /**< Init raw value. */
 } can_db_sig_t;
 
+/* Forward declaration */
+typedef struct can_db_msg_t can_db_msg_t;
+
+/**
+* @brief Generic CAN messsage callback.
+*
+* Callback is called with pointer to message instance.
+*/
+typedef void (*can_db_callback_t)(can_db_msg_t *msg);
+
 /**
  * @brief   Base structure for CAN message.
  */
@@ -70,6 +80,7 @@ typedef struct can_db_msg_t {
     int frame_type;             /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */
     uint32_t cycle_time;        /**< Cycle time of the message (ms). */
     uint32_t cycle_time_fast;   /**< Cycle time fast of the message (ms). */
+    can_db_callback_t cb_fnc;   /**< Callback function. */
     can_db_sig_t *signals;      /**< Pointer to the array of the message signals. */
 } can_db_msg_t;
 

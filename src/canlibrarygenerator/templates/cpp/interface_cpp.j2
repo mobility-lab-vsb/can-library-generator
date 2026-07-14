@@ -111,6 +111,14 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id) {
     return 0;
 }
 
+void {{ ir.library_name }}_init(can_db_msg_t* msg) {
+    if (!msg) return;
+    for (auto* sig : msg->signals) {
+        sig->raw_value = sig->raw_init;
+        sig->phys_value = (sig->raw_value * sig->factor) + sig->offset;
+    }
+}
+
 {%- for msg in ir.messages %}
 {% if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void) {
@@ -145,11 +153,3 @@ void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* r
 }
 {%- endif %}
 {%- endfor %}
-
-void {{ ir.library_name }}_init(can_db_msg_t* msg) {
-    if (!msg) return;
-    for (auto* sig : msg->signals) {
-        sig->raw_value = sig->raw_init;
-        sig->phys_value = (sig->raw_value * sig->factor) + sig->offset;
-    }
-}
