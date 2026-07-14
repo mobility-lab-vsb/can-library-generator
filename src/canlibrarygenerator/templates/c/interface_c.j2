@@ -160,7 +160,7 @@ void {{ ir.library_name }}_init(can_db_msg_t* msg)
     /* Execute user callback if registered */
     if(msg->cb_fnc != NULL)
     {
-        msg->cb_fnc(msg);
+        msg->cb_fnc();
     }
 }
 
@@ -179,7 +179,7 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 
     /* Execute user callback before message packaging */
     if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
-        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc(&{{ ir.library_name }}_{{ msg.name }}.base);
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
     }
 
     /* Package all signals to message */
@@ -205,7 +205,7 @@ void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* c
 
     /* Execute user callback after message unpacking */
     if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
-        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc(can_db_rx_msg);
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
     }
 }
 {%- endif %}
