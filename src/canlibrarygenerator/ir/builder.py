@@ -45,7 +45,8 @@ def _make_signal_code_name(signal_name: str, unit: str, with_unit: bool) -> str:
 
     return f"{base}_{unit_suffix}"
 
-def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False):
+def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False,
+                     generate_counter=True, generate_crc=True, generate_callback=True):
     selected_messages = {}
 
     for item in selected_items:
@@ -141,5 +142,8 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
         current_date=datetime.now().strftime("%d.%m.%Y"),
         current_year=datetime.now().year,
         embedded=embedded,
-        with_units=with_units
+        with_units=with_units,
+        generate_counter=generate_counter,
+        generate_crc=generate_crc,
+        generate_callback=generate_callback
     )

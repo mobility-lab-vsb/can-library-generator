@@ -5,7 +5,8 @@ import cantools
 from collections import namedtuple
 
 
-def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_code, embedded=False, output_suffix="", with_units=False):
+def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_code, embedded=False, output_suffix="", with_units=False,
+                      generate_counter=True, generate_crc=True, generate_callback=True):
     """
     Generates both C and C++ libraries from a given DBC file.
     """
@@ -71,7 +72,10 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
             tree,
             __version__="dev",
             embedded=embedded,
-            with_units=with_units
+            with_units=with_units,
+            generate_counter=generate_counter,
+            generate_crc=generate_crc,
+            generate_callback=generate_callback
         )
     except Exception as e:
         print(f"Error during C code generation: {e}")
@@ -105,7 +109,10 @@ def generate_all_code(dbc_filename, library_name, generate_c_code, generate_cpp_
             tree,
             __version__="dev",
             embedded=embedded,
-            with_units=with_units
+            with_units=with_units,
+            generate_counter=generate_counter,
+            generate_crc=generate_crc,
+            generate_callback=generate_callback
         )
     except Exception as e:
         print(f"Error during C++ code generation: {e}")

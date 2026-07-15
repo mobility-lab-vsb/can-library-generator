@@ -49,3 +49,6 @@ class LibraryIR:
     current_year: int
     embedded: bool = False
     with_units: bool = False
+    generate_counter: bool = True
+    generate_crc: bool = True
+    generate_callback: bool = True

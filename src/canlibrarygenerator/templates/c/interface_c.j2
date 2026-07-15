@@ -157,34 +157,40 @@ void {{ ir.library_name }}_init(can_db_msg_t* msg)
         msg->signals[i].phys_value = (msg->signals[i].raw_value * msg->signals[i].factor) + msg->signals[i].offset;
     }
 
+{%- if ir.generate_callback %}
     /* Execute user callback if registered */
     if(msg->cb_fnc != NULL)
     {
         msg->cb_fnc();
     }
+{%- endif %}
 }
 
 {%- for msg in ir.messages %}
 {% if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 {
+{%- if ir.generate_counter %}
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_func_type == 1 %}
-
     /* Increment message counter */
     {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->phys_value += 1u;
 
 {%- endif %}
 {%- endfor %}
+{%- endif %}
 
+{%- if ir.generate_callback %}
     /* Execute user callback before message packaging */
     if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
         {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
     }
+{%- endif %}
 
     /* Package all signals to message */
     (void){{ ir.library_name }}_package_message({{ ir.library_name }}_{{ msg.name }}.base.id);
 
+{%- if ir.generate_crc %}
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_func_type == 2 %}
 
@@ -193,6 +199,7 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 
 {%- endif %}
 {%- endfor %}
+{%- endif %}
 
     /* Send message to CAN bus */
     (void){{ ir.library_name }}_msg_send(&{{ ir.library_name }}_{{ msg.name }}.base);
@@ -203,10 +210,12 @@ void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* c
 {
     (void){{ ir.library_name }}_unpackage_message(can_db_rx_msg->id, can_db_rx_msg->data, can_db_rx_msg->length);
 
+{%- if ir.generate_callback %}
     /* Execute user callback after message unpacking */
     if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
         {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
     }
+{%- endif %}
 }
 {%- endif %}
 {%- endfor %}

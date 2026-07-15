@@ -52,6 +52,11 @@ void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint
  */
 int {{ ir.library_name }}_package_message(uint32_t can_id);
 
+/**
+ * @brief Sets the CAN message signals data to initial.
+ */
+void {{ ir.library_name }}_init(can_db_msg_t* msg);
+
 {% for msg in ir.messages %}
 {%- if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void);
@@ -60,10 +65,5 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void);
 void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* can_db_rx_msg);
 {%- endif %}
 {%- endfor %}
-
-/**
- * @brief Sets the CAN message signals data to initial.
- */
-void {{ ir.library_name }}_init(can_db_msg_t* msg);
 
 #endif // {{ ir.library_name.upper() }}_INTERFACE_HPP

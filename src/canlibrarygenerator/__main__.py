@@ -491,6 +491,9 @@ class DBCLibraryGenerator(QMainWindow):
         self.chk_gen_def = None
         self.chk_embedded = None
         self.chk_unit = None
+        self.chk_counter = None
+        self.chk_crc = None
+        self.chk_callback = None
 
         self.setup_gui()
         self.apply_theme()
@@ -866,6 +869,31 @@ class DBCLibraryGenerator(QMainWindow):
         )
         options_layout.addWidget(self.chk_unit)
 
+        self.chk_counter = QCheckBox("Generate message counter processing")
+        self.chk_counter.setChecked(True)
+        self.chk_counter.setToolTip(
+            "Generate automatic message counter increment in TX output processing "
+            "for signals with GenSigFuncType set to MsgCounter."
+        )
+        options_layout.addWidget(self.chk_counter)
+
+        self.chk_crc = QCheckBox("Generate CRC processing")
+        self.chk_crc.setChecked(True)
+        self.chk_crc.setToolTip(
+            "Generate automatic CRC calculation in tx output processing "
+            "for signals with GenSigFuncType set to CRC."
+        )
+        options_layout.addWidget(self.chk_crc)
+
+        self.chk_callback = QCheckBox("Generate message callbacks")
+        self.chk_callback.setChecked(True)
+        self.chk_callback.setToolTip(
+            "Generate the callback type and cb_fnc member in message structure, "
+            "including callback execution during initialization, RX processing "
+            "and TX processing."
+        )
+        options_layout.addWidget(self.chk_callback)
+
         controls_layout.addWidget(options_widget, 1, 0, 1, 5)
 
         # Selection buttons
@@ -1001,6 +1029,9 @@ class DBCLibraryGenerator(QMainWindow):
 
         embedded = self.chk_embedded.isChecked()
         with_units = self.chk_unit.isChecked()
+        generate_counter = self.chk_counter.isChecked()
+        generate_crc = self.chk_crc.isChecked()
+        generate_callback = self.chk_callback.isChecked()
 
         try:
             lib_dir = os.path.join(directory, library_name)
@@ -1013,12 +1044,14 @@ class DBCLibraryGenerator(QMainWindow):
             if language == "c":
                 ext_h, ext_c = ".h", ".c"
                 contents = generate_c_code(
-                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes, embedded=embedded, with_units=with_units
+                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes, embedded=embedded, with_units=with_units,
+                    generate_counter=generate_counter, generate_crc=generate_crc, generate_callback=generate_callback
                 )
             else:
                 ext_h, ext_c = ".hpp", ".cpp"
                 contents = generate_cpp_code(
-                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes, embedded=embedded, with_units=with_units
+                    selected_items_ids, library_name, self.dbs, self.tree, __version__, message_modes=message_modes, embedded=embedded, with_units=with_units,
+                    generate_counter=generate_counter, generate_crc=generate_crc, generate_callback=generate_callback
                 )
 
             def_h, db_h, db_c, int_h, int_c = contents

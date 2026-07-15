@@ -51,12 +51,14 @@ struct can_db_sig_t {
     uint64_t raw_init;                  /**< Init raw value. */
 };
 
+{%- if ir.generate_callback %}
 /**
  * @brief Generic CAN message callback.
  *
  * Callback is called with pointer to message instance.
  */
 typedef void (*can_db_callback_t)(void);
+{%- endif %}
 
 /**
  * @brief   Base structure for CAN message.
@@ -80,7 +82,9 @@ struct can_db_msg_t {
     int frame_type;                     /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */
     uint32_t cycle_time;                /**< Cycle time of the message (ms). */
     uint32_t cycle_time_fast;           /**< Cycle time fast of the message (ms). */
+{%- if ir.generate_callback %}
     can_db_callback_t cb_fnc;           /**< Callback function. */
+{%- endif %}
     std::vector<can_db_sig_t*> signals; /**< Vector of pointers to the message signals. */
 };
 

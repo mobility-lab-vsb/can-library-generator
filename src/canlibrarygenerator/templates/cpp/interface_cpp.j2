@@ -122,6 +122,7 @@ void {{ ir.library_name }}_init(can_db_msg_t* msg) {
 {%- for msg in ir.messages %}
 {% if msg.mode_tx %}
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void) {
+{%- if ir.generate_counter %}
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_funct_type == 1 %}
 
@@ -130,10 +131,19 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void) {
 
 {%- endif %}
 {%- endfor %}
+{%- endif %}
+
+{%- if ir.generate_callback %}
+    /* Execute user callback before message packaging */
+    if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
+    }
+{%- endif %}
 
     /* Package all signals to message */
     (void){{ ir.library_name }}_package_message({{ ir.library_name }}_{{ msg.name }}.base.id);
 
+{%- if ir.generate_crc %}
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_func_type == 2 %}
 
@@ -142,6 +152,7 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void) {
 
 {%- endif %}
 {%- endfor %}
+{%- endif %}
 
     /* Send message to CAN bus */
     (void){{ ir.library_name }}_msg_send(&{{ ir.library_name }}_{{ msg.name }}.base);
@@ -150,6 +161,14 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void) {
 {% if msg.mode_rx %}
 void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* rx_msg) {
     {{ ir.library_name }}_unpackage_message(rx_msg->id, rx_msg->data, rx_msg->length);
+
+{%- if ir.generate_callback %}
+
+    if (({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != nullptr)) {
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
+    }
+{%- endif %}
+
 }
 {%- endif %}
 {%- endfor %}
