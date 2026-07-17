@@ -98,7 +98,9 @@ void {{ ir.library_name }}_init(can_db_msg_t* msg);
  */
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void);
 {%- endif %}
+{%- endfor %}
 
+{%- for msg in ir.messages %}
 {%- if msg.mode_rx %}
 
 /**
