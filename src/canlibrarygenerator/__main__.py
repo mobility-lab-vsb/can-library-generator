@@ -1081,6 +1081,7 @@ class DBCLibraryGenerator(QMainWindow):
 
 
 def main():
+    print(f"cantools version: {cantools.__version__}")
     app = QApplication(sys.argv)
     window = DBCLibraryGenerator()
     window.show()

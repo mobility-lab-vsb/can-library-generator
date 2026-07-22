@@ -70,6 +70,98 @@ def _get_message_attribute(message, attribute_name: str, default=0):
 
     return default
 
+
+def _get_message_enum_attribute_name(message, attribute_name: str) -> str | None:
+    if (
+        not message.dbc
+        or not message.dbc.attributes
+        or attribute_name not in message.dbc.attributes
+    ):
+        return None
+
+    attribute = message.dbc.attributes[attribute_name]
+    value = attribute.value
+
+    if isinstance(value, str):
+        return value
+
+    definition = getattr(attribute, "definition", None)
+    choices = getattr(definition, "choices", None)
+
+    if choices is None:
+        return None
+
+    try:
+        index = int(value)
+
+        if isinstance(choices, dict):
+            choice = choices.get(index)
+            return str(choice) if choice is not None else None
+
+        if isinstance(choices, (list, tuple)):
+            if 0 <= index < len(choices):
+                return str(choices[index])
+
+    except (TypeError, ValueError, IndexError, KeyError):
+        return None
+
+    return None
+
+
+def _normalize_enum_name(value: str | None) -> str | None:
+    """
+    Normalize an enum value for reliable comparison.
+    """
+    if value is None:
+        return None
+
+    return (
+        value
+        .strip()
+        .upper()
+        .replace("-", "_")
+        .replace(" ", "_")
+    )
+
+
+def _is_can_fd_message(message) -> bool:
+    """
+    Determine whether a message uses CAN FD.
+
+    For J1939PG messages, the J1939PgAppearanceOnBus attribute is used:
+        CAN_EXTENDED   -> Classic CAN
+        CANFD_EXTENDED -> CAN FD
+        Default        -> fallback to cantools message.is_fd
+
+    For all non-J1939 messages, cantools message.is_fd is used directly.
+    """
+    frame_format = _normalize_enum_name(
+        _get_message_enum_attribute_name(
+            message,
+            "VFrameFormat"
+        )
+    )
+
+    # Non-J1939 messages are handled directly by cantools.
+    if frame_format != "J1939PG":
+        return bool(message.is_fd)
+
+    appearance = _normalize_enum_name(
+        _get_message_enum_attribute_name(
+            message,
+            "J1939PgAppearanceOnBus"
+        )
+    )
+
+    if appearance == "CANFD_EXTENDED":
+        return True
+
+    if appearance == "CAN_EXTENDED":
+        return False
+
+    # Default, missing or unknown value falls back to cantools.
+    return bool(message.is_fd)
+
 def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False,
                      generate_counter=True, generate_crc=True, generate_callback=True):
     selected_messages = {}
@@ -146,13 +238,15 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 )
             )
 
+            resolved_is_fd = _is_can_fd_message(message)
+
             messages.append(
                 MessageIR(
                     name=message.name,
                     frame_id=message.frame_id,
                     length=message.length,
                     dlc=get_dlc_from_data_length(message.length),
-                    is_fd=message.is_fd,
+                    is_fd=resolved_is_fd,
                     is_extended=message.is_extended_frame,
                     cycle_time=message.cycle_time or 0,
                     senders=list(message.senders or []),
