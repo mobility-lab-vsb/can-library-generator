@@ -45,6 +45,31 @@ def _make_signal_code_name(signal_name: str, unit: str, with_unit: bool) -> str:
 
     return f"{base}_{unit_suffix}"
 
+
+def _get_message_attribute(message, attribute_name: str, default=0):
+    """
+    Read a message-level DBC attribute and return its raw value.
+
+    Args:
+        message: cantools message object.
+        attribute_name: Name of the DBC message attribute.
+        default: Value returned when the attribute does not exist.
+
+    Returns:
+        Value of the DBC attribute or the supplied default value.
+    """
+    if (
+        message.dbc
+        and message.dbc.attributes
+        and attribute_name in message.dbc.attributes
+    ):
+        value = message.dbc.attributes[attribute_name].value
+
+        if value is not None:
+            return value
+
+    return default
+
 def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False,
                      generate_counter=True, generate_crc=True, generate_callback=True):
     selected_messages = {}
@@ -105,16 +130,21 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
 
             modes = message_modes_by_name.get(message.name, {"rx": False, "tx": False})
 
-            cycle_time_fast = 0
-            try:
-                if (
-                        message.dbc and
-                        message.dbc.attributes and
-                        "GenMsgCycleTimeFast" in message.dbc.attributes
-                ):
-                    cycle_time_fast = message.dbc.attributes["GenMsgCycleTimeFast"].value
-            except Exception:
-                cycle_time_fast = 0
+            cycle_time_fast = int(
+                _get_message_attribute(
+                    message,
+                    "GenMsgCycleTimeFast",
+                    0
+                )
+            )
+
+            start_delay_time = int(
+                _get_message_attribute(
+                    message,
+                    "GenMsgStartDelayTime",
+                    0
+                )
+            )
 
             messages.append(
                 MessageIR(
@@ -130,6 +160,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                     signals=signals,
                     mode_rx=modes["rx"],
                     mode_tx=modes["tx"],
+                    start_delay_time=start_delay_time,
                     cycle_time_fast=cycle_time_fast
                 )
             )

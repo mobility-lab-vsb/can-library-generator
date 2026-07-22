@@ -82,6 +82,7 @@ struct can_db_msg_t {
     int frame_type;                     /**< Type of frame ID (0 - STANDARD, 1 - EXTENDED). */
     uint32_t cycle_time;                /**< Cycle time of the message (ms). */
     uint32_t cycle_time_fast;           /**< Cycle time fast of the message (ms). */
+    uint32_t start_delay_time;  /**< Initial transmission delay of the message (ms). */
 {%- if ir.generate_callback %}
     can_db_callback_t cb_fnc;           /**< Callback function. */
 {%- endif %}

@@ -77,6 +77,7 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
         {{ "true" if msg.is_extended else "false" }},
         {{ msg.cycle_time }},
         {{ msg.cycle_time_fast }},
+        {{ msg.start_delay_time }},
     {%- if ir.generate_callback %}
         nullptr,
     {%- endif %}
