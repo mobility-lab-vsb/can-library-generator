@@ -19,6 +19,76 @@
 
 #include "{{ ir.library_name }}_interface.h"
 
+{# Determine which J1939 helper functions are required. #}
+{%- set ns = namespace(
+    ctr_a=false,
+    ctr_d=false,
+    ctr_f=false,
+    crc_a=false,
+    crc_c=false,
+    crc_d=false,
+    crc_e=false
+) %}
+
+{%- for msg in ir.messages %}
+    {%- if msg.j1939_counter_type == "a" %}
+        {%- set ns.ctr_a = true %}
+    {%- elif msg.j1939_counter_type == "d" %}
+        {%- set ns.ctr_d = true %}
+    {%- elif msg.j1939_counter_type == "f" %}
+        {%- set ns.ctr_f = true %}
+    {%- endif %}
+
+    {%- if msg.j1939_crc_type == "A" %}
+        {%- set ns.crc_a = true %}
+    {%- elif msg.j1939_crc_type == "C" %}
+        {%- set ns.crc_c = true %}
+    {%- elif msg.j1939_crc_type == "D" %}
+        {%- set ns.crc_d = true %}
+    {%- elif msg.j1939_crc_type == "E" %}
+        {%- set ns.crc_e = true %}
+    {%- endif %}
+{%- endfor %}
+
+{%- if ir.generate_counter and (ns.ctr_a or ns.ctr_d or ns.ctr_f) %}
+
+/*
+ * External J1939 message counter functions.
+ *
+ * The implementations must be provided by the integrating application.
+ */
+{%- if ns.ctr_a %}
+extern uint8_t j1939_increment_ctr_a(uint8_t previous_counter);
+{%- endif %}
+{%- if ns.ctr_d %}
+extern uint8_t j1939_increment_ctr_d(uint8_t previous_counter);
+{%- endif %}
+{%- if ns.ctr_f %}
+extern uint8_t j1939_increment_ctr_f(uint8_t previous_counter);
+{%- endif %}
+{%- endif %}
+
+{%- if ir.generate_crc and (ns.crc_a or ns.crc_c or ns.crc_d or ns.crc_e) %}
+
+/*
+ * External J1939 message CRC/checksum functions.
+ *
+ * The implementations must be provided by the integrating application.
+ */
+{%- if ns.crc_a %}
+extern uint8_t j1939_calculate_crc_a(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- if ns.crc_c %}
+extern uint8_t j1939_calculate_crc_c(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- if ns.crc_d %}
+extern uint8_t j1939_calculate_crc_d(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- if ns.crc_e %}
+extern uint8_t j1939_calculate_crc_e(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- endif %}
+
 // Find message by ID function
 can_db_msg_t* {{ ir.library_name }}_find_message_by_id(const uint32_t can_id)
 {
@@ -172,6 +242,24 @@ void {{ ir.library_name }}_init(can_db_msg_t* msg)
 void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 {
 {%- if ir.generate_counter %}
+{%- if msg.j1939_counter_type == "a" %}
+    /* Increment the J1939 message counter using counter rule 'a'. */
+    {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value = j1939_increment_ctr_a(
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_counter_type == "d" %}
+    /* Increment the J1939 message counter using counter rule 'd'. */
+    {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value = j1939_increment_ctr_d(
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_counter_type == "f" %}
+    /* Increment the J1939 message counter using counter rule 'f'. */
+    {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value = j1939_increment_ctr_f(
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+{%- else %}
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_func_type == 1 %}
     /* Increment message counter */
@@ -179,6 +267,7 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 
 {%- endif %}
 {%- endfor %}
+{%- endif %}
 {%- endif %}
 
 {%- if ir.generate_callback %}
@@ -192,6 +281,49 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
     (void){{ ir.library_name }}_package_message({{ ir.library_name }}_{{ msg.name }}.base.id);
 
 {%- if ir.generate_crc %}
+{%- if msg.j1939_crc_type == "A" %}
+    /* Calculate the J1939 CRC using calculation rule 'A'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = j1939_calculate_crc_a(
+        &{{ ir.library_name }}_{{ msg.name }}.base,
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_crc_type == "C" %}
+    /* Calculate the J1939 CRC using calculation rule 'C'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = (uint8_t)(({{ ir.library_name }}_{{ msg.name }}.base.data[7] & 0x0Fu) |
+        (
+            (
+                j1939_calculate_crc_c(
+                    &{{ ir.library_name }}_{{ msg.name }}.base,
+                    (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+                )
+                & 0x0Fu
+            ) << 4u
+        )
+    );
+
+{%- elif msg.j1939_crc_type == "D" %}
+    /* Calculate the J1939 CRC using calculation rule 'D'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = j1939_calculate_crc_d(
+        &{{ ir.library_name }}_{{ msg.name }}.base,
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_crc_type == "E" %}
+    /* Calculate the J1939 CRC using calculation rule 'E'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = (uint8_t)(({{ ir.library_name }}_{{ msg.name }}.base.data[7] & 0x0Fu) |
+        (
+            (
+                j1939_calculate_crc_e(
+                    &{{ ir.library_name }}_{{ msg.name }}.base,
+                    (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+                )
+                & 0x0Fu
+            ) << 4u
+        )
+    );
+
+{%- else %}
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_func_type == 2 %}
 
@@ -200,6 +332,7 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 
 {%- endif %}
 {%- endfor %}
+{%- endif %}
 {%- endif %}
 
     /* Send message to CAN bus */
