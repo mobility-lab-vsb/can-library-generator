@@ -5,6 +5,63 @@ from datetime import datetime
 import re
 
 
+J1939_CRC_SIGNAL_LAYOUTS = {
+    "A": {
+        "start_bit": 56,
+        "length": 8,
+        "byte_order": "little_endian",
+    },
+    "C": {
+        "start_bit": 60,
+        "length": 4,
+        "byte_order": "little_endian",
+    },
+    "D": {
+        "start_bit": 56,
+        "length": 8,
+        "byte_order": "little_endian",
+    },
+    "E": {
+        "start_bit": 60,
+        "length": 4,
+        "byte_order": "little_endian",
+    },
+}
+
+
+J1939_COUNTER_SIGNAL_LAYOUTS = {
+    "a": {
+        "start_bit": 52,
+        "length": 4,
+        "byte_order": "little_endian",
+        "maximum": 15,
+        "not_available": None,
+    },
+    "d": {
+        "start_bit": 56,
+        "length": 4,
+        "byte_order": "little_endian",
+        "maximum": 15,
+        "not_available": None,
+    },
+    "f": {
+        "start_bit": 56,
+        "length": 4,
+        "byte_order": "little_endian",
+        "maximum": 7,
+        "not_available": 15,
+    },
+}
+
+
+SUPPORTED_J1939_CRC_COUNTER_COMBINATIONS = {
+    "Aa",
+    "Cd",
+    "Da",
+    "Ef",
+}
+
+
 def _sanitize_identifier_part(value: str) -> str:
     value = value.strip()
 
@@ -224,6 +281,156 @@ def _is_can_fd_message(message, db) -> bool:
     return bool(message.is_fd)
 
 
+def _parse_j1939_crc_counter_attribute(message):
+    """
+    Parse and validate the FsJ1939UseCrcAndCounter message attribute.
+
+    Supported combinations:
+        Aa, Cd, Da, Ef
+
+    Args:
+        message: cantools message object.
+
+    Returns:
+        Tuple:
+            (crc_type, counter_type)
+
+        If protection is not configured:
+            (None, None)
+
+    Raises:
+        ValueError: If the attribute value is invalid or unsupported.
+    """
+    value = _get_message_enum_attribute_name(
+        message,
+        "FsJ1939UseCrcAndCounter"
+    )
+
+    if value is None:
+        return None, None
+
+    value = str(value).strip()
+
+    if not value or value.lower() == "default":
+        return None, None
+
+    if len(value) != 2:
+        raise ValueError(
+            f"Message '{message.name}' has invalid "
+            f"FsJ1939UseCrcAndCounter value '{value}'. "
+            f"Expected a two-character value such as 'Aa', 'Cd', "
+            f"'Da' or 'Ef'."
+        )
+
+    crc_type = value[0]
+    counter_type = value[1]
+
+    if value not in SUPPORTED_J1939_CRC_COUNTER_COMBINATIONS:
+        supported = ", ".join(
+            sorted(SUPPORTED_J1939_CRC_COUNTER_COMBINATIONS)
+        )
+
+        raise ValueError(
+            f"Message '{message.name}' uses unsupported J1939 "
+            f"CRC/counter combination '{value}'. "
+            f"Supported combinations are: {supported}."
+        )
+
+    return crc_type, counter_type
+
+
+def _find_dbc_signal_by_layout(
+    message,
+    role: str,
+    start_bit: int,
+    length: int,
+    byte_order: str
+):
+    """
+    Find a DBC signal by its exact bit layout.
+
+    Args:
+        message: cantools message object.
+        role: Human-readable signal role for error messages.
+        start_bit: Expected signal start bit.
+        length: Expected signal length in bits.
+        byte_order: Expected signal byte order.
+
+    Returns:
+        Matching cantools Signal object.
+
+    Raises:
+        ValueError: If no signal or multiple signals match.
+    """
+    matches = [
+        signal
+        for signal in message.signals
+        if signal.start == start_bit
+        and signal.length == length
+        and signal.byte_order == byte_order
+    ]
+
+    if not matches:
+        raise ValueError(
+            f"Message '{message.name}' uses J1939 protection, "
+            f"but its {role} signal was not found. "
+            f"Expected start bit {start_bit}, length {length} "
+            f"and byte order '{byte_order}'."
+        )
+
+    if len(matches) > 1:
+        names = ", ".join(signal.name for signal in matches)
+
+        raise ValueError(
+            f"Message '{message.name}' contains multiple signals "
+            f"matching the {role} layout: {names}."
+        )
+
+    return matches[0]
+
+
+def _find_j1939_protection_signals(
+    message,
+    crc_type: str,
+    counter_type: str
+):
+    """
+    Find the J1939 checksum/CRC and counter signals.
+
+    The signals are identified using their J1939-defined bit layouts,
+    not GenSigFuncType or signal names.
+
+    Args:
+        message: cantools message object.
+        crc_type: J1939 CRC/checksum type A, C, D or E.
+        counter_type: J1939 counter type a, d or f.
+
+    Returns:
+        Tuple:
+            (crc_signal, counter_signal)
+    """
+    crc_layout = J1939_CRC_SIGNAL_LAYOUTS[crc_type]
+    counter_layout = J1939_COUNTER_SIGNAL_LAYOUTS[counter_type]
+
+    crc_signal = _find_dbc_signal_by_layout(
+        message=message,
+        role=f"J1939 CRC/checksum type {crc_type}",
+        start_bit=crc_layout["start_bit"],
+        length=crc_layout["length"],
+        byte_order=crc_layout["byte_order"],
+    )
+
+    counter_signal = _find_dbc_signal_by_layout(
+        message=message,
+        role=f"J1939 counter type {counter_type}",
+        start_bit=counter_layout["start_bit"],
+        length=counter_layout["length"],
+        byte_order=counter_layout["byte_order"],
+    )
+
+    return crc_signal, counter_signal
+
+
 def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False,
                      generate_counter=True, generate_crc=True, generate_callback=True):
     selected_messages = {}
@@ -248,6 +455,42 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
         for message in db.messages:
             if message.name not in selected_messages:
                 continue
+
+            selected_signal_names = set(
+                selected_messages[message.name]
+            )
+
+            j1939_crc_type, j1939_counter_type = (
+                _parse_j1939_crc_counter_attribute(message)
+            )
+
+            dbc_j1939_crc_signal = None
+            dbc_j1939_counter_signal = None
+
+            if j1939_crc_type is not None and j1939_counter_type is not None:
+                if message.length != 8:
+                    raise ValueError(
+                        f"Message '{message.name}' uses "
+                        f"FsJ1939UseCrcAndCounter="
+                        f"'{j1939_crc_type}{j1939_counter_type}', "
+                        f"but its payload length is {message.length} bytes. "
+                        f"Only 8-byte J1939 messages are supported."
+                    )
+                (
+                    dbc_j1939_crc_signal,
+                    dbc_j1939_counter_signal,
+                ) = _find_j1939_protection_signals(
+                    message=message,
+                    crc_type=j1939_crc_type,
+                    counter_type=j1939_counter_type,
+                )
+
+                # CRC and counter signals are required for generated J1939
+                # output processing. Add them even when the user did not
+                # select them explicitly in the GUI.
+
+                selected_signal_names.add(dbc_j1939_crc_signal.name)
+                selected_signal_names.add(dbc_j1939_counter_signal)
 
             signals = []
             for sig in message.signals:
@@ -302,6 +545,66 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
 
             resolved_is_fd = _is_can_fd_message(message, db)
 
+            j1939_crc_signal_code_name = None
+            j1939_counter_signal_code_name = None
+            j1939_counter_maximum = None
+            j1939_counter_not_available = None
+
+            if dbc_j1939_crc_signal is not None:
+                crc_signal_ir = next(
+                    (
+                        signal
+                        for signal in signals
+                        if signal.name == dbc_j1939_crc_signal.name
+                    ),
+                    None
+                )
+
+                counter_signal_ir = next(
+                    (
+                        signal
+                        for signal in signals
+                        if signal.name == dbc_j1939_counter_signal.name
+                    ),
+                    None
+                )
+
+                if crc_signal_ir is None:
+                    raise ValueError(
+                        f"Internal generator error: J1939 CRC/checksum "
+                        f"signal '{dbc_j1939_crc_signal.name}' was not "
+                        f"added to message '{message.name}'.'"
+                    )
+
+                if counter_signal_ir is None:
+                    raise ValueError(
+                        f"Internal generator error: J1939 counter "
+                        f"signal '{dbc_j1939_counter_signal.name}' was not "
+                        f"added to message '{message.name}'."
+                    )
+
+                counter_layout = (
+                    J1939_COUNTER_SIGNAL_LAYOUTS[
+                        j1939_counter_type
+                    ]
+                )
+
+                j1939_crc_signal_code_name = (
+                    crc_signal_ir.code_name
+                )
+
+                j1939_counter_signal_code_name = (
+                    counter_signal_ir.code_name
+                )
+
+                j1939_counter_maximum = (
+                    counter_layout["maximum"]
+                )
+
+                j1939_counter_not_available = (
+                    counter_layout["not_available"]
+                )
+
             messages.append(
                 MessageIR(
                     name=message.name,
@@ -317,7 +620,13 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                     mode_rx=modes["rx"],
                     mode_tx=modes["tx"],
                     start_delay_time=start_delay_time,
-                    cycle_time_fast=cycle_time_fast
+                    cycle_time_fast=cycle_time_fast,
+                    j1939_crc_type=j1939_crc_type,
+                    j1939_counter_type=j1939_counter_type,
+                    j1939_crc_signal_code_name=j1939_crc_signal_code_name,
+                    j1939_counter_signal_code_name=j1939_counter_signal_code_name,
+                    j1939_counter_maximum=j1939_counter_maximum,
+                    j1939_counter_not_available=j1939_counter_not_available,
                 )
             )
 

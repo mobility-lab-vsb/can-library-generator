@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 
 @dataclass
@@ -38,6 +38,12 @@ class MessageIR:
     mode_tx: bool
     start_delay_time: int
     cycle_time_fast: int = 0
+    j1939_crc_type: Optional[str] = None
+    j1939_counter_type: Optional[str] = None
+    j1939_crc_signal_code_name: Optional[str] = None
+    j1939_counter_signal_code_name: Optional[str] = None
+    j1939_counter_maximum: Optional[int] = None
+    j1939_counter_not_available: Optional[int] = None
 
 
 @dataclass
