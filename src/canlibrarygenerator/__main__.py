@@ -2,23 +2,23 @@ import sys
 import os
 import darkdetect
 import cantools
-from PIL import Image, ImageQt
 
 from PyQt6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QGroupBox, QPushButton, QLabel, QLineEdit, QRadioButton, QButtonGroup,
+    QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QFrame, QSplitter, QScrollArea, QSizePolicy, QPushButton, QLabel, QLineEdit, QRadioButton, QButtonGroup,
     QTreeWidget, QTreeWidgetItem, QFileDialog, QMessageBox,
     QHeaderView, QCheckBox, QGraphicsOpacityEffect
 )
 
-from PyQt6.QtGui import QPixmap
-from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QPixmap, QFont, QPainter, QIcon
+from PyQt6.QtCore import Qt, QTimer, QSize, pyqtSignal
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Set
 
 from .generate_functions.generate_c_library import generate_c_code
 from .generate_functions.generate_cpp_library import generate_cpp_code
+from .ir.builder import _is_j1939_message, _is_can_fd_message
 
 # Define your app version
 __version__ = "dev"
@@ -35,7 +35,22 @@ def _apply_disabled_visual(cb: QCheckBox, enabled: bool):
 # -------------------------
 # CheckableTreeWidget (Msgs)
 # -------------------------
+class ElidedLabel(QLabel):
+    """Keep long DBC file lists from enlarging the window."""
+
+    def setText(self, text):
+        super().setText(text)
+        self.setToolTip(text)
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setPen(self.palette().color(self.foregroundRole()))
+        text = self.fontMetrics().elidedText(self.text(), Qt.TextElideMode.ElideRight, self.width())
+        painter.drawText(self.contentsRect(), self.alignment(), text)
+
+
 class CheckableTreeWidget(QTreeWidget):
+    selection_changed = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -75,6 +90,7 @@ class CheckableTreeWidget(QTreeWidget):
             cb.setToolTip(tooltip)
         if on_change:
             cb.stateChanged.connect(on_change)
+        cb.stateChanged.connect(lambda: self.selection_changed.emit())
         layout.addWidget(cb)
         w._checkbox = cb  # convenience pointer
         return w
@@ -251,6 +267,7 @@ class NodesTreeWidget(QTreeWidget):
 
     def add_node(self, node_name: str, rx=False, tx=False):
         item = QTreeWidgetItem([node_name, "", ""])  # placeholders for RX/TX widgets
+        item.setToolTip(0, node_name)
         self.addTopLevelItem(item)
 
         rxw = self._centered_checkbox(
@@ -473,12 +490,15 @@ class DBCLibraryGenerator(QMainWindow):
         self.controller = None
         self.nodes_tree = None
         self.setWindowTitle("CAN Library Generator")
+        icon = QIcon(self.resource_path("resources/icon/icon.png"))
+        for size in (16, 24, 32, 48, 64, 128, 256):
+            icon.addFile(self.resource_path(f"resources/icon/icon-{size}.png"), QSize(size, size))
+        self.setWindowIcon(icon)
         self.dbs = []  # List of loaded DBC databases
         self.tree = None  # CheckableTreeWidget for messages and signals
         self.files_label = None  # Label for selected files
         self.library_name_entry = None  # Entry for library name
         self.language_group = None  # QButtonGroup for language selection
-        self.image = None  # To hold the PIL Image object
         self.chk_gen_def = None
         self.chk_embedded = None
         self.chk_unit = None
@@ -502,422 +522,339 @@ class DBCLibraryGenerator(QMainWindow):
         return os.path.join(base_path, relative_path)
 
     def apply_theme(self):
-        """
-        Applies a dark or light theme using QSS, mimicking sv_ttk.
-        """
-        checked_path = "src/canlibrarygenerator/png/checked.png"
-        unchecked_path = "src/canlibrarygenerator/png/unchecked.png"
-
-        # Převod na absolutní cestu
-        checked_abs = os.path.abspath(checked_path)
-        unchecked_abs = os.path.abspath(unchecked_path)
-
-        # Pro Windows je potřeba převod lomítek
-        checked_abs = checked_abs.replace('\\', '/')
-        unchecked_abs = unchecked_abs.replace('\\', '/')
-        # Common styles for both themes
-        common_qss = """
-        QGroupBox {
-            border: 1px solid #444; /* Darker border for group boxes */
-            border-radius: 6px;
-            margin-top: 1ex; /* Space for the title */
-            font-weight: bold;
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            subcontrol-position: top left; /* Position at top left */
-            padding: 0 5px; /* Padding around title text */
-        }
-        QPushButton {
-            border-radius: 4px;
-            padding: 6px 12px; /* Smaller padding for smaller buttons */
-            font-weight: normal;
-            border: 1px solid; /* Defined by theme */
-        }
-        QPushButton:hover {
-            /* Handled by theme specific styles */
-        }
-        QPushButton:pressed {
-            /* Handled by theme specific styles */
-        }
-        QPushButton#AccentButton {
-            font-weight: bold;
-            border: none; /* Accent button has no border in sv_ttk */
-        }
-        QLineEdit {
-            border: 1px solid; /* Defined by theme */
-            border-radius: 4px;
-            padding: 4px;
-        }
-        QRadioButton {
-            spacing: 5px; /* Space between radio button and text */
-        }
-        QTreeWidget {
-            border: 1px solid; /* Defined by theme */
-            border-radius: 4px;
-            padding: 2px;
-            show-decoration-selected: 1; /* Show checkmark when selected */
-        }
-        QHeaderView::section {
-            padding: 6px; /* Padding for header text */
-            border: none; /* No individual borders between sections */
-            border-bottom: 2px solid #0078D7; /* Accent line at bottom */
-            font-weight: bold;
-            text-align: center; /* Center align header text */
-        }
-        QTreeWidget::item {
-            padding: 3px 0; /* Padding for tree items */
-        }
-        QTreeWidget::item:hover {
-            /* Handled by theme specific styles */
-        }
-        QTreeWidget::item:selected {
-            /* Handled by theme specific styles */
-        }
-        QScrollBar:vertical {
-            border: none; /* No border for scrollbar itself */
-            background: transparent; /* Background of the scrollbar area */
-            width: 12px;
-            margin: 0px 0px 0px 0px;
-            border-radius: 6px;
-        }
-        QScrollBar::handle:vertical {
-            border-radius: 5px;
-            min-height: 20px;
-        }
-        QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-            border: none;
-            background: none;
-        }
-        QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
-            width: 0px; /* Hide arrows */
-            height: 0px;
-        }
-        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-            background: none;
-        }
-
-        """
-
+        """Apply the same restrained palette to all workspace panels."""
         if darkdetect.isDark():
-            theme_qss = """
-            QMainWindow {
-                background-color: #2C2C2C; /* sv_ttk dark background */
-                color: #F0F0F0; /* sv_ttk text color */
-            }
-            QGroupBox {
-                background-color: #3A3A3A; /* sv_ttk frame background */
-                color: #F0F0F0;
-                border-color: #4A4A4A; /* sv_ttk border color */
-            }
-            QGroupBox::title {
-                color: #F0F0F0;
-            }
+            colors = dict(background="#2C2C2C", panel="#353535", text="#EEEEEE",
+                          muted="#BBBBBB", border="#505050", input="#303030",
+                          alternate="#343434", hover="#414141", selected="#254D68")
+        else:
+            colors = dict(background="#F0F0F0", panel="#F7F7F7", text="#222222",
+                          muted="#555555", border="#C4C4C4", input="#FFFFFF",
+                          alternate="#F7F7F7", hover="#E5E5E5", selected="#CCE8FF")
+        colors["check_icon"] = self.resource_path("resources/icon/checkbox-checked.svg").replace("\\", "/")
+        colors["radio_icon"] = self.resource_path("resources/icon/radio-checked.svg").replace("\\", "/")
+        self.setStyleSheet("""
+            QMainWindow, QWidget#Workspace { background: %(background)s; }
+            QWidget { color: %(text)s; }
+            QFrame#Panel { background: %(panel)s; border: 1px solid %(border)s; border-radius: 10px; }
+            QLabel { background: transparent; }
+            QLabel#PanelTitle { font-weight: 600; }
+            QLabel#SecondaryLabel { color: %(muted)s; }
             QPushButton {
-                background-color: #4A4A4A; /* sv_ttk button background */
-                border-color: #555555; /* sv_ttk button border */
-                color: #F0F0F0;
+                background: %(panel)s; border: 1px solid %(border)s;
+                border-radius: 7px; padding: 6px 10px;
             }
-            QPushButton:hover {
-                background-color: #555555; /* Slightly lighter on hover */
-            }
-            QPushButton:pressed {
-                background-color: #3A3A3A; /* Slightly darker on press */
-            }
-            QPushButton#AccentButton {
-                background-color: #0078D7; /* sv_ttk accent blue */
-                color: white;
-            }
-            QPushButton#AccentButton:hover {
-                background-color: #006AC1; /* Darker accent blue on hover */
-            }
-            QPushButton#AccentButton:pressed {
-                background-color: #004C99; /* Even darker accent blue on press */
-            }
-            QLabel {
-                color: #F0F0F0;
-            }
+            QPushButton:hover { background: %(hover)s; }
+            QPushButton:pressed, QPushButton:checked { background: %(selected)s; }
+            QPushButton#AccentButton { background: #0078D7; color: white; border-color: #0078D7; }
+            QPushButton#AccentButton:hover { background: #006AC1; }
+            QPushButton#AccentButton:pressed { background: #004C99; }
             QLineEdit {
-                background-color: #3A3A3A; /* sv_ttk entry background */
-                border-color: #555555; /* sv_ttk entry border */
-                color: #F0F0F0;
+                background: %(input)s; border: 1px solid %(border)s;
+                border-radius: 6px; padding: 5px 7px;
             }
-            QRadioButton {
-                color: #F0F0F0;
+            QLineEdit:focus { border-color: #0078D7; }
+            QCheckBox, QRadioButton { background: transparent; spacing: 7px; }
+            QCheckBox::indicator, QTreeWidget::indicator {
+                width: 14px; height: 14px; border: 1px solid %(border)s;
+                border-radius: 4px; background: %(input)s;
+            }
+            QCheckBox::indicator:checked, QTreeWidget::indicator:checked {
+                background: #0078D7; border-color: #0078D7; image: url("%(check_icon)s");
+            }
+            QCheckBox::indicator:hover, QTreeWidget::indicator:hover { border-color: #0078D7; }
+            QRadioButton::indicator {
+                width: 14px; height: 14px; border: 1px solid %(border)s;
+                border-radius: 8px; background: %(input)s;
+            }
+            QRadioButton::indicator:checked {
+                background: #0078D7; border-color: #0078D7; image: url("%(radio_icon)s");
             }
             QTreeWidget {
-                background-color: #3A3A3A; /* sv_ttk treeview background */
-                color: #F0F0F0;
-                border-color: #4A4A4A; /* sv_ttk treeview border */
-                alternate-background-color: #444444; /* For alternating row colors */
+                background: %(input)s; alternate-background-color: %(alternate)s;
+                border: 1px solid %(border)s; border-radius: 7px; padding: 2px;
+                selection-background-color: %(selected)s; selection-color: %(text)s;
             }
+            QTreeWidget::item { padding: 4px 0; }
+            QTreeWidget::item:hover { background: %(hover)s; }
+            QTreeWidget::item:selected { background: %(selected)s; color: %(text)s; }
             QHeaderView::section {
-                background-color: #3A3A3A; /* sv_ttk header background */
-                color: #F0F0F0;
+                background: %(panel)s; color: %(text)s; padding: 6px 4px;
+                border: none; border-bottom: 1px solid %(border)s;
             }
-            QTreeWidget::item:hover {
-                background-color: rgba(0, 120, 215, 0.2); /* Light blue hover */
-            }
-            QTreeWidget::item:selected {
-                background-color: rgba(0, 120, 215, 0.4); /* Darker blue selected */
-            }
-            QScrollBar::handle:vertical {
-                background: #666666; /* Scrollbar handle color */
-            }
-            """
-        else:  # Light theme
-            theme_qss = """
-            QMainWindow {
-                background-color: #F0F0F0; /* sv_ttk light background */
-            }
-            QGroupBox {
-                background-color: #FFFFFF; /* sv_ttk frame background */
-                border-color: #CCCCCC; /* sv_ttk border color */
-            }
-            QPushButton {
-                background-color: #EEEEEE; /* sv_ttk button background */
-                border-color: #BBBBBB; /* sv_ttk button border */
-            }
-            QPushButton:hover {
-                background-color: #DDDDDD; /* Slightly darker on hover */
-            }
-            QPushButton:pressed {
-                background-color: #CCCCCC; /* Slightly darker on press */
-            }
-            QPushButton#AccentButton {
-                background-color: #0078D7; /* sv_ttk accent blue */
-                color: white;
-            }
-            QPushButton#AccentButton:hover {
-                background-color: #006AC1; /* Darker accent blue on hover */
-            }
-            QPushButton#AccentButton:pressed {
-                background-color: #004C99; /* Even darker accent blue on press */
-            }
-            QLabel {
-                color: #333333;
-            }
-            QLineEdit {
-                background-color: #FFFFFF; /* sv_ttk entry background */
-                border-color: #BBBBBB; /* sv_ttk entry border */
-                color: #333333;
-            }
-            QRadioButton {
-                color: #333333;
-            }
-            QTreeWidget {
-                color: #333333;
-                border-color: #BBBBBB; /* sv_ttk treeview border */
-                alternate-background-color: #F8F8F8; /* For alternating row colors */
-            }
-            QHeaderView::section {
-                background-color: #EEEEEE; /* sv_ttk header background */
-                color: #333333;
-            }
-            QTreeWidget::item:hover {
-                background-color: rgba(0, 120, 215, 0.1); /* Light blue hover */
-            }
-            QTreeWidget::item:selected {
-                background-color: rgba(0, 120, 215, 0.2); /* Darker blue selected */
-            }
-            QScrollBar::handle:vertical {
-                background: #AAAAAA; /* Scrollbar handle color */
-            }
-            """
-        self.setStyleSheet(common_qss + theme_qss)
+            QSplitter::handle { background: %(background)s; }
+            QSplitter::handle:hover { background: %(border)s; border-radius: 3px; }
+            QScrollArea#SettingsScroll, QWidget#SettingsContents { background: transparent; border: none; }
+            QScrollBar:vertical { background: transparent; width: 10px; margin: 0; }
+            QScrollBar::handle:vertical { background: %(border)s; border-radius: 5px; min-height: 24px; }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: transparent; }
+        """ % colors)
+        self._align_table_headers()
+
+    def _align_table_headers(self):
+        # Match the node title row to the message toolbar after styling.
+        title_height = max(self.nodes_title.sizeHint().height(),
+                           self.select_all_button.sizeHint().height(),
+                           self.clear_selection_button.sizeHint().height())
+        self.nodes_title.setFixedHeight(title_height)
+        self.select_all_button.setFixedHeight(title_height)
+        self.clear_selection_button.setFixedHeight(title_height)
+        header_height = max(self.nodes_tree.header().sizeHint().height(),
+                            self.tree.header().sizeHint().height())
+        self.nodes_tree.header().setFixedHeight(header_height)
+        self.tree.header().setFixedHeight(header_height)
+
+    @staticmethod
+    def _panel(title=None):
+        panel = QFrame()
+        panel.setObjectName("Panel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(10)
+        if title:
+            label = QLabel(title)
+            label.setObjectName("PanelTitle")
+            layout.addWidget(label)
+        return panel, layout
 
     def setup_gui(self):
-        """Initialize the GUI components."""
-        self.setGeometry(100, 100, 920, 890)  # Set initial window size
+        """Keep the message tree tall, with resizable side panels."""
+        self.setMinimumSize(820, 420)
+        available = self.screen().availableGeometry()
+        self.resize(min(1200, max(820, available.width() - 48)),
+                    min(760, max(420, available.height() - 64)))
+        self.setFont(QFont("Segoe UI", 10))
+        central = QWidget()
+        central.setObjectName("Workspace")
+        self.setCentralWidget(central)
+        layout = QVBoxLayout(central)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
 
-        central_widget = QWidget()
-        self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(10, 10, 10, 10)  # Padding around the main content
-        main_layout.setSpacing(10)  # Spacing between major sections
+        file_panel, _ = self._panel()
+        # The file toolbar remains compact regardless of window height.
+        file_layout = file_panel.layout()
+        file_layout.setContentsMargins(12, 8, 12, 8)
+        toolbar = QHBoxLayout()
+        toolbar.setSpacing(12)
+        select_files = QPushButton("Select DBC Files")
+        select_files.clicked.connect(self.open_files)
+        toolbar.addWidget(select_files)
+        self.files_label = ElidedLabel("No files selected.")
+        self.files_label.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        file_details = QWidget()
+        file_details.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        details_layout = QVBoxLayout(file_details)
+        details_layout.setContentsMargins(0, 0, 0, 0)
+        details_layout.setSpacing(3)
+        details_layout.addWidget(self.files_label)
+        self.file_metadata = ElidedLabel()
+        self.file_metadata.setObjectName("SecondaryLabel")
+        self.file_metadata.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred)
+        self.file_metadata.hide()
+        details_layout.addWidget(self.file_metadata)
+        toolbar.addWidget(file_details, 1)
+        self.settings_button = QPushButton("Settings")
+        self.settings_button.setCheckable(True)
+        self.settings_button.setChecked(True)
+        self.settings_button.setToolTip("Show or hide generation settings")
+        self.settings_button.toggled.connect(self._toggle_settings)
+        toolbar.addWidget(self.settings_button)
+        self.logo_label = QLabel()
+        logo = QPixmap(self.resource_path(os.path.join("png", "VSB-TUO_logo.png")))
+        if not logo.isNull():
+            self.logo_label.setPixmap(logo.scaled(145, 62, Qt.AspectRatioMode.KeepAspectRatio,
+                                                Qt.TransformationMode.SmoothTransformation))
+        self.logo_label.setFixedSize(145, 62)
+        self.logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        toolbar.addWidget(self.logo_label)
+        file_layout.addLayout(toolbar)
+        layout.addWidget(file_panel)
 
-        # --- Top Frame: File Selection ---
-        file_frame = QGroupBox("DBC File Selection")
-        file_layout = QHBoxLayout(file_frame)
-        file_layout.setContentsMargins(15, 20, 15, 10)  # Adjusted padding inside group box
-        file_layout.setSpacing(10)  # Spacing between widgets in this layout
-
-        # Button for open dialog
-        select_files_button = QPushButton("📂 Select DBC Files")
-        select_files_button.clicked.connect(self.open_files)
-        file_layout.addWidget(select_files_button)
-
-        # Label for selected files
-        self.files_label = QLabel("No files selected.")
-        self.files_label.setStyleSheet("color: gray;")  # Apply gray color directly
-        file_layout.addWidget(self.files_label, 1)  # Stretch factor 1
-
-        # VSB logo
-        image_path = self.resource_path(os.path.join("png", "VSB-TUO_logo.png"))
-        try:
-            self.image = Image.open(image_path)
-            self.image = self.image.resize((145, 62), Image.Resampling.LANCZOS)  # Use LANCZOS for quality
-
-            # Convert PIL Image to QPixmap
-            q_image = ImageQt.ImageQt(self.image)  # Use ImageQt for conversion
-            logo_pixmap = QPixmap.fromImage(q_image)
-
-            logo_label = QLabel()
-            logo_label.setPixmap(logo_pixmap)
-            logo_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
-            file_layout.addWidget(logo_label)
-        except Exception as e:
-            print(f"Error loading image: {e}")
-            logo_label = QLabel("Logo Missing")  # Placeholder if image fails
-            logo_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
-            file_layout.addWidget(logo_label)
-
-        main_layout.addWidget(file_frame)
-
-        # --- Middle Frame: NodeTreeView for nodes ---
-        nodes_frame = QGroupBox("Nodes")
-        nodes_layout = QVBoxLayout(nodes_frame)
-        nodes_layout.setContentsMargins(15, 20, 15, 10)
-        nodes_layout.setSpacing(5)
-
+        self.workspace_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.workspace_splitter.setChildrenCollapsible(False)
+        self.workspace_splitter.setHandleWidth(8)
+        self.nodes_panel, nodes_layout = self._panel("Nodes")
+        self.nodes_title = nodes_layout.itemAt(0).widget()
+        self.nodes_panel.setMinimumWidth(160)
         self.nodes_tree = NodesTreeWidget()
-        self.nodes_tree.header().setStretchLastSection(False)
+        self.nodes_tree.setRootIsDecorated(False)
+        self.nodes_tree.setUniformRowHeights(True)
+        for column in (1, 2):
+            self.nodes_tree.header().setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
+            self.nodes_tree.setColumnWidth(column, 36)
+        nodes_layout.addWidget(self.nodes_tree, 1)
+        self.workspace_splitter.addWidget(self.nodes_panel)
 
-        nodes_layout.addWidget(self.nodes_tree)
-        main_layout.addWidget(nodes_frame)
-
-        # --- Middle Frame: CheckboxTreeview for Messages and Signals ---
-        tree_frame = QGroupBox("Messages and Signals")
-        tree_layout = QVBoxLayout(tree_frame)
-        tree_layout.setContentsMargins(15, 20, 15, 10)
-        tree_layout.setSpacing(5)
-
-        # CheckableTreeWidget for messages and signals
+        self.messages_panel, messages_layout = self._panel()
+        self.messages_panel.setMinimumWidth(340)
+        message_toolbar = QHBoxLayout()
+        title = QLabel("Messages & Signals")
+        title.setObjectName("PanelTitle")
+        message_toolbar.addWidget(title, 1)
+        self.select_all_button = QPushButton("Select All")
+        self.select_all_button.clicked.connect(lambda: self.controller.select_all())
+        self.clear_selection_button = QPushButton("Clear")
+        self.clear_selection_button.clicked.connect(lambda: self.controller.unselect_all())
+        message_toolbar.addWidget(self.select_all_button)
+        message_toolbar.addWidget(self.clear_selection_button)
+        messages_layout.addLayout(message_toolbar)
         self.tree = CheckableTreeWidget()
-        self.tree.header().setStretchLastSection(False)  # Prevent last column from stretching automatically
-        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)  # Make Name column stretchable
-        self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
-        # Header text alignment is now handled by QSS (text-align: center)
-
-        tree_layout.addWidget(self.tree)
-        main_layout.addWidget(tree_frame, 1)  # Stretch factor 1 for tree frame
+        self.tree.setUniformRowHeights(True)
+        self.tree.setAlternatingRowColors(True)
+        # Keep the internal Type column for the controller, but omit it visually.
+        self.tree.setColumnHidden(1, True)
+        self.tree.headerItem().setText(2, "CAN ID")
+        for column, width in ((2, 112), (3, 36), (4, 36)):
+            self.tree.header().setSectionResizeMode(column, QHeaderView.ResizeMode.Fixed)
+            self.tree.setColumnWidth(column, width)
+        messages_layout.addWidget(self.tree, 1)
+        self.workspace_splitter.addWidget(self.messages_panel)
 
         self.controller = SelectionController(self.tree, self.nodes_tree)
         self.tree.set_controller(self.controller)
         self.nodes_tree.set_controller(self.controller)
-
-        # --- Bottom Frame: Controls and Generation ---
-        controls_frame = QGroupBox("Generation Settings")
-        controls_layout = QGridLayout(controls_frame)
-        controls_layout.setContentsMargins(15, 20, 15, 10)
-        controls_layout.setSpacing(10)  # Spacing between widgets in this layout
-
-        # Library name entry
-        controls_layout.addWidget(QLabel("Library Name/Prefix:"), 0, 0, Qt.AlignmentFlag.AlignLeft)
-        self.library_name_entry = QLineEdit("cangen")
-        controls_layout.addWidget(self.library_name_entry, 0, 1, 1, 2)
-
-        # Language selections
-        controls_layout.addWidget(QLabel("Language:"), 0, 3,
-                                  Qt.AlignmentFlag.AlignRight)  # Align right to push towards radios
-        language_layout = QHBoxLayout()
-        language_layout.setSpacing(5)
-        self.language_group = QButtonGroup(self)  # Use a button group for radio buttons
-
-        c_radio = QRadioButton("C")
-        c_radio.setChecked(True)  # Default to C
-        self.language_group.addButton(c_radio, 0)  # ID 0 for C
-        language_layout.addWidget(c_radio)
-
-        cpp_radio = QRadioButton("CPP")
-        self.language_group.addButton(cpp_radio, 1)  # ID 1 for CPP
-        language_layout.addWidget(cpp_radio)
-
-        controls_layout.addLayout(language_layout, 0, 4, 1, 1)  # Only 1 column span now
-        controls_layout.setColumnStretch(1, 1)
-
-        options_widget = QWidget()
-        options_layout = QVBoxLayout(options_widget)
+        self.settings_panel, settings_layout = self._panel("Generation Settings")
+        self.settings_panel.setMinimumWidth(250)
+        self.settings_panel.setMaximumWidth(360)
+        scroll = QScrollArea()
+        scroll.setObjectName("SettingsScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        contents = QWidget()
+        contents.setObjectName("SettingsContents")
+        options_layout = QVBoxLayout(contents)
         options_layout.setContentsMargins(0, 0, 0, 0)
-        options_layout.setSpacing(4)
+        options_layout.setSpacing(12)
+        options_layout.addWidget(QLabel("Library Name/Prefix:"))
+        self.library_name_entry = QLineEdit("cangen")
+        options_layout.addWidget(self.library_name_entry)
+        options_layout.addWidget(QLabel("Language:"))
+        language_layout = QHBoxLayout()
+        self.language_group = QButtonGroup(self)
+        for identifier, name in enumerate(("C", "C++")):
+            radio = QRadioButton(name)
+            self.language_group.addButton(radio, identifier)
+            radio.setChecked(identifier == 0)
+            language_layout.addWidget(radio)
+        language_layout.addStretch()
+        options_layout.addLayout(language_layout)
+        options_layout.addSpacing(8)
+        option_definitions = [
+            ("chk_gen_def", "Generate can_db_def header", True,
+             "Uncheck if you already have a can_db_def header file."),
+            ("chk_embedded", "Embedded library", False,
+             "Generate an optimized library with lower memory use."),
+            ("chk_unit", "Signal names with units", False,
+             "Append units to signal names, for example sigVehicle_speed_mps."),
+            ("chk_counter", "Message counter processing", True,
+             "Generate automatic TX message counter processing."),
+            ("chk_crc", "CRC processing", True,
+             "Generate automatic CRC calculation in TX output processing."),
+            ("chk_callback", "Message callbacks", True,
+             "Generate message callback support for initialization, RX and TX processing."),
+        ]
+        for attribute, text, checked, tooltip in option_definitions:
+            checkbox = QCheckBox(text)
+            checkbox.setChecked(checked)
+            checkbox.setToolTip(tooltip)
+            setattr(self, attribute, checkbox)
+            options_layout.addWidget(checkbox)
+        options_layout.addStretch(1)
+        scroll.setWidget(contents)
+        settings_layout.addWidget(scroll, 1)
+        self.workspace_splitter.addWidget(self.settings_panel)
+        self.workspace_splitter.setStretchFactor(0, 0)
+        self.workspace_splitter.setStretchFactor(1, 1)
+        self.workspace_splitter.setStretchFactor(2, 0)
+        self.workspace_splitter.setSizes([200, 680, 280])
+        layout.addWidget(self.workspace_splitter, 1)
 
-        self.chk_gen_def = QCheckBox("Generate 'can_db_def' header file")
-        self.chk_gen_def.setChecked(True)
-        self.chk_gen_def.setToolTip("Uncheck if you already have can_db_def header file.")
-        options_layout.addWidget(self.chk_gen_def)
+        footer = QHBoxLayout()
+        self.selection_summary = QLabel("0 selected · 0 RX · 0 TX")
+        self.selection_summary.setObjectName("SecondaryLabel")
+        footer.addWidget(self.selection_summary)
+        footer.addStretch(1)
+        version_label = QLabel(f"Version {__version__}")
+        version_label.setObjectName("SecondaryLabel")
+        footer.addWidget(version_label)
+        self.generate_button = QPushButton("Generate Library")
+        self.generate_button.setObjectName("AccentButton")
+        self.generate_button.clicked.connect(self.generate_library)
+        footer.addWidget(self.generate_button)
+        layout.addLayout(footer)
 
-        self.chk_embedded = QCheckBox("Generate library for Embedded platforms")
-        self.chk_embedded.setChecked(False)
-        self.chk_embedded.setToolTip("Check this if you want to generate optimized (low memory use) library.")
-        options_layout.addWidget(self.chk_embedded)
+        # Coalesce cascaded node/signal toggles into one summary refresh.
+        self.summary_timer = QTimer(self)
+        self.summary_timer.setSingleShot(True)
+        self.summary_timer.timeout.connect(self._update_selection_summary)
+        self.tree.selection_changed.connect(self._schedule_selection_summary)
+        self.tree.itemChanged.connect(self._schedule_selection_summary)
+        self._settings_sizes = [200, 680, 280]
 
-        self.chk_unit = QCheckBox("Generate signal names with units")
-        self.chk_unit.setChecked(False)
-        self.chk_unit.setToolTip(
-            "Check this if you want to generate signal names with units. "
-            "(e.g. sigVehicle_speed_mps)."
-        )
-        options_layout.addWidget(self.chk_unit)
+    def _toggle_settings(self, visible):
+        if not visible:
+            self._settings_sizes = self.workspace_splitter.sizes()
+        self.settings_panel.setVisible(visible)
+        if visible:
+            sizes = self._settings_sizes.copy()
+            available = self.workspace_splitter.width() - 2 * self.workspace_splitter.handleWidth()
+            sizes[1] = max(self.messages_panel.minimumWidth(), available - sizes[0] - sizes[2])
+            self.workspace_splitter.setSizes(sizes)
 
-        self.chk_counter = QCheckBox("Generate message counter processing")
-        self.chk_counter.setChecked(True)
-        self.chk_counter.setToolTip(
-            "Generate automatic message counter increment in TX output processing "
-            "for signals with GenSigFuncType set to MsgCounter."
-        )
-        options_layout.addWidget(self.chk_counter)
+    def _schedule_selection_summary(self, *_):
+        self.summary_timer.start(0)
 
-        self.chk_crc = QCheckBox("Generate CRC processing")
-        self.chk_crc.setChecked(True)
-        self.chk_crc.setToolTip(
-            "Generate automatic CRC calculation in tx output processing "
-            "for signals with GenSigFuncType set to CRC."
-        )
-        options_layout.addWidget(self.chk_crc)
+    def _update_selection_summary(self):
+        selected_messages = {self.tree.parent(item) for item in self.tree.get_checked()}
+        rx = sum(self.tree.is_message_cell_checked(item, "RX") for item in selected_messages)
+        tx = sum(self.tree.is_message_cell_checked(item, "TX") for item in selected_messages)
+        self.selection_summary.setText(f"{len(selected_messages)} selected · {rx} RX · {tx} TX")
 
-        self.chk_callback = QCheckBox("Generate message callbacks")
-        self.chk_callback.setChecked(True)
-        self.chk_callback.setToolTip(
-            "Generate the callback type and cb_fnc member in message structure, "
-            "including callback execution during initialization, RX processing "
-            "and TX processing."
-        )
-        options_layout.addWidget(self.chk_callback)
+    def _update_file_metadata(self):
+        descriptions = []
+        for db in self.dbs:
+            types = set()
+            for message in db.messages:
+                is_fd = _is_can_fd_message(message, db)
+                if _is_j1939_message(message, db):
+                    types.add("J1939 (CAN FD)" if is_fd else "J1939")
+                else:
+                    types.add("CAN FD" if is_fd else "CAN")
+            bus_type = " / ".join(sorted(types)) or "Type not specified"
+            version = str(db.version).strip() if db.version is not None else ""
+            version_label = f"Version {version}" if version else "Version not specified"
+            description = f"{bus_type} · {version_label}"
+            if len(self.dbs) > 1:
+                description = f"{db.name}: {description}"
+            descriptions.append(description)
+        self.file_metadata.setText("  |  ".join(descriptions))
+        self.file_metadata.setToolTip("\n".join(descriptions))
+        self.file_metadata.setVisible(bool(descriptions))
 
-        controls_layout.addWidget(options_widget, 1, 0, 1, 5)
-
-        # Selection buttons
-        action_buttons_frame = QWidget()
-        action_buttons_layout = QHBoxLayout(action_buttons_frame)
-        action_buttons_layout.setContentsMargins(0, 0, 0, 0)  # No extra margins for this internal layout
-        action_buttons_layout.setSpacing(10)  # Spacing between buttons
-        action_buttons_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)  # Center the buttons
-
-        select_all_button = QPushButton("✅ Select All")
-        select_all_button.clicked.connect(lambda: self.controller.select_all())
-        action_buttons_layout.addWidget(select_all_button)
-
-        deselect_all_button = QPushButton("❌ Deselect All")
-        deselect_all_button.clicked.connect(lambda: self.controller.unselect_all())
-        action_buttons_layout.addWidget(deselect_all_button)
-
-        controls_layout.addWidget(action_buttons_frame, 2, 0, 1, 5)  # Span all 5 columns
-
-        # Generate button
-        generate_button = QPushButton("🚀 Generate Library")
-        generate_button.setObjectName("AccentButton")  # Used for QSS styling
-        generate_button.clicked.connect(self.generate_library)
-        controls_layout.addWidget(generate_button, 3, 0, 1, 5,
-                                  Qt.AlignmentFlag.AlignCenter)  # Span all 5 columns, center
-
-        main_layout.addWidget(controls_frame)
-
-        # --- Footer: App version ---
-        version_label = QLabel(f"App version {__version__}")
-        version_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        version_label.setStyleSheet("color: gray;")
-        main_layout.addWidget(version_label)
+    def _fit_nodes_panel(self):
+        """Choose an initial width that accommodates the loaded node names."""
+        tree = self.nodes_tree
+        name_width = max(tree.sizeHintForColumn(0), tree.header().sectionSizeHint(0))
+        margins = self.nodes_panel.layout().contentsMargins()
+        desired = (name_width + tree.columnWidth(1) + tree.columnWidth(2)
+                   + 2 * tree.frameWidth() + tree.verticalScrollBar().sizeHint().width()
+                   + margins.left() + margins.right())
+        sizes = self.workspace_splitter.sizes()
+        settings_visible = not self.settings_panel.isHidden()
+        handles = 2 if settings_visible else 1
+        available = self.workspace_splitter.width() - handles * self.workspace_splitter.handleWidth()
+        settings_width = sizes[2] if settings_visible else 0
+        maximum = available - self.messages_panel.minimumWidth() - settings_width
+        nodes_width = max(self.nodes_panel.minimumWidth(), min(desired, maximum))
+        self.workspace_splitter.setSizes([
+            nodes_width, max(self.messages_panel.minimumWidth(), available - nodes_width - settings_width),
+            settings_width,
+        ])
+        if not settings_visible:
+            self._settings_sizes[0] = nodes_width
 
     def open_files(self):
         """Open multiple DBC files and load their content into the widgets."""
@@ -981,6 +918,9 @@ class DBCLibraryGenerator(QMainWindow):
                     self.nodes_tree.add_node(name)
 
             self.controller.apply_enable_states()
+            self._fit_nodes_panel()
+            self._update_file_metadata()
+            self._schedule_selection_summary()
 
     def build_message_mode_map(self) -> dict:
         """Returns { message_id: {"rx": bool, "tx": bool} } for every message."""
@@ -1075,6 +1015,7 @@ def main():
     print(f"cantools version: {cantools.__version__}")
     app = QApplication(sys.argv)
     window = DBCLibraryGenerator()
+    app.setWindowIcon(window.windowIcon())
     window.show()
     print("CAN_Library_Generator started...")
     sys.exit(app.exec())
