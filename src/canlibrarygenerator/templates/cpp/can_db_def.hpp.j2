@@ -25,7 +25,9 @@
 {%- if not ir.embedded %}
 #include <string>
 {%- endif %}
+{% if not ir.embedded %}
 #include <vector>
+{% endif %}
 
 /**
  * @brief   Structure for signal representation.
@@ -86,7 +88,11 @@ struct can_db_msg_t {
 {%- if ir.generate_callback %}
     can_db_callback_t cb_fnc;           /**< Callback function. */
 {%- endif %}
+{% if ir.embedded %}
+    can_db_sig_t* const* signals;
+{% else %}
     std::vector<can_db_sig_t*> signals; /**< Vector of pointers to the message signals. */
+{% endif %}
 };
 
 #endif // CAN_DB_DEF_HPP

@@ -82,6 +82,16 @@ class MultipleTransmitterTests(unittest.TestCase):
         self.controller.unselect_all()
         self.assert_messages_selected(False)
 
+    def test_rx_off_preserves_signals_while_tx_remains_enabled(self):
+        mid = self.message_ids[0]
+        self.tree._msg_tx_cb[mid].setChecked(True)
+        self.tree._msg_rx_cb[mid].setChecked(True)
+        self.tree._msg_rx_cb[mid].setChecked(False)
+        self.assertTrue(self.tree.is_message_cell_checked(mid, 'TX'))
+        self.assertEqual(len(self.tree.get_checked()), 1)
+        self.tree._msg_tx_cb[mid].setChecked(False)
+        self.assertEqual(self.tree.get_checked(), [])
+
 
 if __name__ == "__main__":
     unittest.main()

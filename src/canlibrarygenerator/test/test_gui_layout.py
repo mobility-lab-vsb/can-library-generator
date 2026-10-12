@@ -87,6 +87,16 @@ class WorkspaceLayoutTests(unittest.TestCase):
         self.assertFalse(self.window.chk_callback.isChecked())
         self.assertEqual(self.window.workspace_splitter.sizes(), sizes)
 
+    def test_invalid_prefix_does_not_create_output(self):
+        self.window.nodes_tree._tx_cb['SecondTx'].setChecked(True)
+        self.window.library_name_entry.setText('bad-prefix')
+        with patch('src.canlibrarygenerator.__main__.QFileDialog.getExistingDirectory',
+                   return_value=self.temp.name), \
+             patch('src.canlibrarygenerator.__main__.QMessageBox.critical') as error:
+            self.window.generate_library()
+            error.assert_called_once()
+        self.assertEqual([path.name for path in Path(self.temp.name).iterdir()], ['workspace.dbc'])
+
     def test_node_selection_summary_and_export_for_both_languages(self):
         self.window.nodes_tree._tx_cb['SecondTx'].setChecked(True)
         self.settle()

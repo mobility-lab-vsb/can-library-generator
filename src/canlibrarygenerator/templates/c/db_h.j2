@@ -54,9 +54,6 @@ typedef struct {
 extern {{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_name }}_{{ msg.name }};
 {%- endfor %}
 
-// Universal structure for incoming messages.
-extern can_db_msg_t can_db_rx_msg;
-
 // Global registry of all defined CAN messages.
 extern can_db_msg_t* const {{ ir.library_name }}_all_messages[];
 

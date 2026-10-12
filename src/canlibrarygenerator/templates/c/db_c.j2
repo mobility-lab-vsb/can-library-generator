@@ -34,23 +34,23 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
     /* Signal: {{ sig.name }} */
     {
     {%- if not ir.embedded %}
-        .name = "{{ sig.name }}",
+        .name = {{ sig.name | c_string }},
     {%- endif %}
         .start_bit = {{ sig.start_bit }},
         .length = {{ sig.length }},
         .is_big_endian = {{ 1 if sig.is_big_endian else 0 }},
         .is_signed = {{ 1 if sig.is_signed else 0 }},
-        .factor = {{ sig.factor }},
-        .offset = {{ sig.offset }},
-        .min = {{ sig.minimum }},
-        .max = {{ sig.maximum }},
+        .factor = {{ sig.factor | float }},
+        .offset = {{ sig.offset | float }},
+        .min = {{ sig.minimum | float }},
+        .max = {{ sig.maximum | float }},
     {%- if not ir.embedded %}
-        .unit = "{{ sig.unit }}",
-        .receiver = "{{ sig.receivers | join(', ') }}",
+        .unit = {{ sig.unit | c_string }},
+        .receiver = {{ sig.receivers | join(', ') | c_string }},
     {%- endif %}
-        .raw_value = {{ sig.raw_initial }},
-        .phys_value = {{ sig.phys_initial }},
-        .raw_init = {{ sig.raw_initial }}
+        .raw_value = UINT64_C({{ sig.raw_initial }}),
+        .phys_value = {{ sig.phys_initial | float }},
+        .raw_init = UINT64_C({{ sig.raw_initial }})
     }{%- if not loop.last %},{% endif %}
 {%- endfor %}
 };
@@ -63,13 +63,13 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
     .base = {
         .id = {{ "0x%X"|format(msg.frame_id) }},
     {%- if not ir.embedded %}
-        .name = "{{ msg.name }}",
+        .name = {{ msg.name | c_string }},
     {%- endif %}
         .dlc = {{ msg.dlc }},
         .length = {{ msg.length }},
     {%- if not ir.embedded %}
-        .senders = "{{ msg.senders | join(', ') }}",
-        .receivers = "{{ msg.receivers | join(', ') }}",
+        .senders = {{ msg.senders | join(', ') | c_string }},
+        .receivers = {{ msg.receivers | join(', ') | c_string }},
     {%- endif %}
         .num_signals = {{ msg.signals | length }},
         .data = {% if msg.is_j1939 %}{

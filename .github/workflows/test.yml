@@ -2,48 +2,50 @@ name: Test CAN Library Generator
 
 on:
   push:
-    branches:
-      - dev
-      - feat/canfd
-      - feat/node_select
+    branches: ['**']
+  pull_request:
   workflow_dispatch:
+  workflow_call:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  test_generator:
-    runs-on: ubuntu-latest
-
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
+        python: ['3.11', '3.12']
+    runs-on: ${{ matrix.os }}
     env:
-      CFLAGS: "-Wall -Werror"
-      CXXFLAGS: "-Wall -Werror"
-      GENERATED_LIBS_DIR: ${{ github.workspace }}/src/canlibrarygenerator/temp
-      DOXYGEN_TEMP_OUTPUT_DIR: _site
-
+      QT_QPA_PLATFORM: offscreen
+      PYTHONIOENCODING: utf-8
+      CFLAGS: '-Wall -Wextra -Werror'
+      CXXFLAGS: '-Wall -Wextra -Werror'
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+          python-version: ${{ matrix.python }}
+      - uses: msys2/setup-msys2@v2
+        if: runner.os == 'Windows'
         with:
-          python-version: "3.11"
-
-      - name: Install dependencies
+          msystem: UCRT64
+          path-type: inherit
+          install: mingw-w64-ucrt-x86_64-gcc
+      - name: Linux compiler and Qt dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y gcc g++ libegl1 libgl1 libxkbcommon0
+      - name: Install test and build dependencies
+        run: python -m pip install -r requirements-dev.txt
+      - name: Run regression suite
+        shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+        run: python -m unittest discover -s src/canlibrarygenerator/test -p 'test_*.py' -v
+      - name: Compile and execute example libraries
+        shell: ${{ runner.os == 'Windows' && 'msys2 {0}' || 'bash' }}
+        run: python -m src.canlibrarygenerator.test.test_pipeline
+      - name: Build and inspect wheel
         run: |
-          sudo apt-get update
-          sudo apt-get install -y gcc g++ make
-          pip install -r requirements.txt
-
-      - name: Run test pipeline script
-        env:
-          GITHUB_WORKSPACE: ${{ github.workspace }}
-        run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          rm -rf ${{ env.GENERATED_LIBS_DIR }}
-          mkdir -p ${{ env.GENERATED_LIBS_DIR }}
-          python3 src/canlibrarygenerator/test/test_pipeline.py
+          python -m build --wheel
+          python -m src.canlibrarygenerator.scripts.check_wheel

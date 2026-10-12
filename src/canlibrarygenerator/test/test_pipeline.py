@@ -2,11 +2,12 @@ import os
 import subprocess
 import shutil
 import sys
+import shlex
+import tempfile
 
 from src.canlibrarygenerator.generate_functions.generate_c_library import generate_c_code
 from src.canlibrarygenerator.generate_functions.generate_cpp_library import generate_cpp_code
 from src.canlibrarygenerator.scripts.codegen_utils import generate_all_code
-from src.canlibrarygenerator.scripts.delete_temp_files import delete_temp_files
 
 
 def run_cmd(cmd, step_name):
@@ -60,7 +61,8 @@ def generate_variant(embedded: bool, suffix: str, with_units: bool = False):
         generate_cpp_code,
         embedded=embedded,
         output_suffix=suffix,
-        with_units=with_units
+        with_units=with_units,
+        output_dir=output_dir
     )
 
 def create_c_mock(c_dir: str):
@@ -106,6 +108,7 @@ def compile_and_run_c(folder_name: str, exe_base_name: str):
         "-std=c99",
         "-Wall",
         "-Wextra",
+        *shlex.split(os.environ.get("CFLAGS", "-Werror")),
         c_test_file,
         os.path.join(c_dir, f"{library_name}_interface.c"),
         os.path.join(c_dir, f"{library_name}_db.c"),
@@ -135,6 +138,7 @@ def compile_and_run_cpp(folder_name: str, exe_base_name: str):
         "-std=c++17",
         "-Wall",
         "-Wextra",
+        *shlex.split(os.environ.get("CXXFLAGS", "-Werror")),
         cpp_test_file,
         os.path.join(cpp_dir, f"{library_name}_interface.cpp"),
         os.path.join(cpp_dir, f"{library_name}_db.cpp"),
@@ -147,12 +151,8 @@ def compile_and_run_cpp(folder_name: str, exe_base_name: str):
 # ---------------- START ----------------
 
 if __name__ == "__main__":
-    print("🧹 0. Cleaning temp directory...")
-
-    if os.path.exists(output_dir):
-        shutil.rmtree(output_dir)
-
-    os.makedirs(output_dir, exist_ok=True)
+    temp = tempfile.TemporaryDirectory(prefix="can_pipeline_")
+    output_dir = temp.name
 
     if not shutil.which("gcc") or not shutil.which("g++"):
         print("❌ Error: gcc or g++ not found in system PATH.")
@@ -216,6 +216,6 @@ if __name__ == "__main__":
 
     # ---------------- CLEANUP ----------------
     print("\n🧹 10. Cleaning up temporary files...")
-    delete_temp_files()
+    temp.cleanup()
 
     print("\n✅ ALL NORMAL + EMBEDDED TESTS PASSED SUCCESSFULLY")

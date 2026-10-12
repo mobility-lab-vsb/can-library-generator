@@ -34,26 +34,31 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
     /* Signal: {{ sig.name }} */
     {
     {%- if not ir.embedded %}
-        "{{ sig.name }}",
+        {{ sig.name | c_string }},
     {%- endif %}
         {{ sig.start_bit }},
         {{ sig.length }},
         {{ "true" if sig.is_big_endian else "false" }},
         {{ "true" if sig.is_signed else "false" }},
-        {{ sig.factor }},
-        {{ sig.offset }},
-        {{ sig.minimum }},
-        {{ sig.maximum }},
+        {{ sig.factor | float }},
+        {{ sig.offset | float }},
+        {{ sig.minimum | float }},
+        {{ sig.maximum | float }},
     {%- if not ir.embedded %}
-        "{{ sig.unit }}",
-        "{{ sig.receivers | join(', ') }}",
+        {{ sig.unit | c_string }},
+        {{ sig.receivers | join(', ') | c_string }},
     {%- endif %}
-        {{ sig.raw_initial | int }},
-        {{ sig.phys_initial }},
-        {{ sig.raw_initial | int }}
+        UINT64_C({{ sig.raw_initial | int }}),
+        {{ sig.phys_initial | float }},
+        UINT64_C({{ sig.raw_initial | int }})
     }{%- if not loop.last %},{% endif %}
 {%- endfor %}
 };
+{%- if ir.embedded %}
+static can_db_sig_t* const {{ msg.name }}_signal_refs[] = {
+{% for sig in msg.signals %}    &{{ msg.name }}_signals[{{ loop.index0 }}]{{ "," if not loop.last }}
+{% endfor %}};
+{%- endif %}
 {%- endif %}
 
 /* Message: {{ msg.name }} */
@@ -61,13 +66,13 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
     {
         {{ "0x%X"|format(msg.frame_id) }},
     {%- if not ir.embedded %}
-        "{{ msg.name }}",
+        {{ msg.name | c_string }},
     {%- endif %}
         {{ msg.dlc }},
         {{ msg.length }},
     {%- if not ir.embedded %}
-        "{{ msg.senders | join(', ') }}",
-        "{{ msg.receivers | join(', ') }}",
+        {{ msg.senders | join(', ') | c_string }},
+        {{ msg.receivers | join(', ') | c_string }},
     {%- endif %}
         {{ msg.signals | length }},
         {% if msg.is_j1939 %}{
@@ -83,7 +88,11 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
     {%- if ir.generate_callback %}
         nullptr,
     {%- endif %}
+{% if ir.embedded %}
+        {% if msg.signals %}{{ msg.name }}_signal_refs{% else %}nullptr{% endif %}
+{% else %}
         { {% if msg.signals|length > 0 %}{% for sig in msg.signals %}&{{ msg.name }}_signals[{{ loop.index0 }}]{{ ", " if not loop.last }}{% endfor %}{% endif %} }
+{% endif %}
     },
 {%- for sig in msg.signals %}
     &{{ msg.name }}_signals[{{ loop.index0 }}]{%- if not loop.last %},{% endif %}
@@ -93,8 +102,14 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
 {%- endfor %}
 
 // Message registry
+{% if ir.embedded %}
+can_db_msg_t* const {{ ir.library_name }}_all_messages[] = {
+{% else %}
 std::vector<can_db_msg_t*> {{ ir.library_name }}_all_messages = {
+{% endif %}
 {%- for msg in ir.messages %}
     &{{ ir.library_name }}_{{ msg.name }}.base{%- if not loop.last %},{% endif %}
 {%- endfor %}
 };
+
+const size_t {{ ir.library_name }}_all_messages_count = {{ ir.messages | length }};
