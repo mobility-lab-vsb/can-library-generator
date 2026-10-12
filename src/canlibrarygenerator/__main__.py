@@ -15,7 +15,7 @@ from PyQt6.QtGui import QPixmap
 from PyQt6.QtCore import Qt
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Set, Optional
+from typing import Dict, List, Set
 
 from .generate_functions.generate_c_library import generate_c_code
 from .generate_functions.generate_cpp_library import generate_cpp_code
@@ -310,7 +310,7 @@ class SelectionController:
 
     # Indexes keyed by stable item_id strings
     message_children: Dict[str, List[str]] = field(default_factory=dict)
-    message_sender: Dict[str, Optional[str]] = field(default_factory=dict)
+    message_senders: Dict[str, Set[str]] = field(default_factory=dict)
     message_receivers: Dict[str, Set[str]] = field(default_factory=dict)
     signal_receivers: Dict[str, Set[str]] = field(default_factory=dict)
 
@@ -324,15 +324,10 @@ class SelectionController:
     def register_message(self, message_id: str, message_obj):
         self.message_children.setdefault(message_id, [])
 
-        # Sender (first sender if list)
-        sender = None
-        try:
-            if getattr(message_obj, 'senders', None):
-                sender = message_obj.senders[0] if message_obj.senders else None
-        except Exception:
-            sender = None
-        self.message_sender[message_id] = sender
-        if sender:
+        # Register every transmitter, including additional BO_TX_BU_ nodes.
+        senders = {sender for sender in (message_obj.senders or []) if sender}
+        self.message_senders[message_id] = senders
+        for sender in senders:
             self.node_tx_messages.setdefault(sender, []).append(message_id)
 
         # Receivers at message level (fallback when signals lack receivers)
@@ -378,9 +373,8 @@ class SelectionController:
             self._set_signal_checked(sig_id, checked)
 
         # After toggling a message, update the corresponding node cell(s)
-        # TX side: sender node
-        sender = self.message_sender.get(message_id)
-        if sender:
+        # TX side: synchronize all transmitter nodes.
+        for sender in self.message_senders.get(message_id, set()):
             self._update_node_tx_state(sender)
         # RX side: all receiver nodes for this message
         for node in self._receivers_for_message(message_id):
@@ -468,9 +462,6 @@ class SelectionController:
         for msg_id in self.message_children.keys():
             has_rx = len(self._receivers_for_message(msg_id)) > 0
             self.tree.set_message_cell_enabled(msg_id, 'RX', has_rx)
-        # (Optional) Symmetry for TX: enable only if sender exists
-        # for msg_id, sender in self.message_sender.items():
-        #     self.tree.set_message_cell_enabled(msg_id, 'TX', bool(sender))
 
     def on_signal_toggled(self, signal_id: str):
         return

@@ -208,6 +208,19 @@ def _normalize_attribute_name(value) -> str | None:
     )
 
 
+def _is_j1939_message(message, db) -> bool:
+    """Recognize J1939 from the message format or database protocol."""
+    return (
+        _normalize_attribute_name(getattr(message, "protocol", None)) == "J1939"
+        or _normalize_attribute_name(
+            _get_message_enum_attribute_name(message, "VFrameFormat")
+        ) == "J1939PG"
+        or _normalize_attribute_name(
+            _get_database_attribute(db, "ProtocolType")
+        ) == "J1939"
+    )
+
+
 def _is_can_fd_message(message, db) -> bool:
     """
     Determine whether a message uses CAN FD.
@@ -612,6 +625,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                     length=message.length,
                     dlc=get_dlc_from_data_length(message.length),
                     is_fd=resolved_is_fd,
+                    is_j1939=_is_j1939_message(message, db),
                     is_extended=message.is_extended_frame,
                     cycle_time=message.cycle_time or 0,
                     senders=list(message.senders or []),

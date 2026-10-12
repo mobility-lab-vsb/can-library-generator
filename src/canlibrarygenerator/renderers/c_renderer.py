@@ -1,6 +1,8 @@
 from jinja2 import Environment, FileSystemLoader
 import os
 
+from .formatting import format_generated_code
+
 
 class CRenderer:
     def __init__(self):
@@ -12,19 +14,19 @@ class CRenderer:
         )
 
     def render_db_h(self, ir):
-        return self.env.get_template("db_h.j2").render(ir=ir)
+        return format_generated_code(self.env.get_template("db_h.j2").render(ir=ir))
 
     def render_db_c(self, ir):
-        return self.env.get_template("db_c.j2").render(ir=ir)
+        return format_generated_code(self.env.get_template("db_c.j2").render(ir=ir))
 
     def render_interface_h(self, ir):
-        return self.env.get_template("interface_h.j2").render(ir=ir)
+        return format_generated_code(self.env.get_template("interface_h.j2").render(ir=ir))
 
     def render_interface_c(self, ir):
-        return self.env.get_template("interface_c.j2").render(ir=ir)
+        return format_generated_code(self.env.get_template("interface_c.j2").render(ir=ir))
 
     def render_can_db_def(self, ir):
-        return self.env.get_template("can_db_def.h.j2").render(ir=ir)
+        return format_generated_code(self.env.get_template("can_db_def.h.j2").render(ir=ir))
 
     def render_all(self, ir):
         return (

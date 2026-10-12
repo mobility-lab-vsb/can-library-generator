@@ -72,7 +72,9 @@ static can_db_sig_t {{ msg.name }}_signals[] = {
         .receivers = "{{ msg.receivers | join(', ') }}",
     {%- endif %}
         .num_signals = {{ msg.signals | length }},
-        .data = {0},
+        .data = {% if msg.is_j1939 %}{
+{% for row in range(8) %}            0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF{{ "," if not loop.last }}
+{% endfor %}        }{% else %}{0}{% endif %},
         .is_active = false,
         .timestamp_ms = 0,
         .is_fd = {{ 1 if msg.is_fd else 0 }},

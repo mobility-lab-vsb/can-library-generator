@@ -38,6 +38,7 @@ class MessageIR:
     mode_tx: bool
     start_delay_time: int
     cycle_time_fast: int = 0
+    is_j1939: bool = False
     j1939_crc_type: Optional[str] = None
     j1939_counter_type: Optional[str] = None
     j1939_crc_signal_code_name: Optional[str] = None

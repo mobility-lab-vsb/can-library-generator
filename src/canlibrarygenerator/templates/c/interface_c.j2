@@ -204,7 +204,24 @@ int {{ ir.library_name }}_package_message(const uint32_t can_id)
         return -1;
     }
 
+{%- set j1939_messages = ir.messages | selectattr('is_j1939') | list %}
+{%- if j1939_messages and j1939_messages | length == ir.messages | length %}
+    memset(msg->data, 0xFF, msg->length);
+{%- elif j1939_messages %}
+    /* Preserve unavailable bits in J1939 payloads. */
+    switch (can_id) {
+{%- for message in j1939_messages %}
+        case {{ "0x%X" | format(message.frame_id) }}:
+{%- endfor %}
+            memset(msg->data, 0xFF, msg->length);
+            break;
+        default:
+            memset(msg->data, 0, msg->length);
+            break;
+    }
+{%- else %}
     memset(msg->data, 0, msg->length);
+{%- endif %}
 
     for (size_t i = 0; i < msg->num_signals; i++) {
         can_db_sig_t* sig = &msg->signals[i];

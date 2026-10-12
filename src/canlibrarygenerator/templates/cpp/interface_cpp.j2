@@ -103,7 +103,24 @@ void {{ ir.library_name }}_insert_signal(uint8_t* data, const uint8_t msg_length
 int {{ ir.library_name }}_package_message(const uint32_t can_id) {
     can_db_msg_t* msg = {{ ir.library_name }}_find_message_by_id(can_id);
     if (!msg) return -1;
+{%- set j1939_messages = ir.messages | selectattr('is_j1939') | list %}
+{%- if j1939_messages and j1939_messages | length == ir.messages | length %}
+    std::memset(msg->data, 0xFF, msg->length);
+{%- elif j1939_messages %}
+    /* Preserve unavailable bits in J1939 payloads. */
+    switch (can_id) {
+{%- for message in j1939_messages %}
+        case {{ "0x%X" | format(message.frame_id) }}:
+{%- endfor %}
+            std::memset(msg->data, 0xFF, msg->length);
+            break;
+        default:
+            std::memset(msg->data, 0, msg->length);
+            break;
+    }
+{%- else %}
     std::memset(msg->data, 0, msg->length);
+{%- endif %}
     for (auto* sig : msg->signals) {
         sig->raw_value = static_cast<uint64_t>(std::llround((sig->phys_value - sig->offset) / sig->factor));
         {{ ir.library_name }}_insert_signal(msg->data, msg->length, (uint32_t)sig->raw_value, sig->start_bit, sig->length, sig->is_big_endian);
