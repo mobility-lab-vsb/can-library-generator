@@ -27,6 +27,17 @@ class ProjectConfigTests(unittest.TestCase):
         self.assertEqual(config["project"]["dependencies"],
                          config["tool"]["briefcase"]["app"]["canlibrarygenerator"]["requires"])
 
+    def test_linux_package_uses_distribution_python(self):
+        workflow = yaml.load((ROOT / ".github/workflows/build.yml").read_text(encoding="utf-8"),
+                             Loader=yaml.BaseLoader)
+        job = workflow["jobs"]["package"]
+        linux = next(platform for platform in job["strategy"]["matrix"]["include"]
+                     if platform["platform"] == "linux")
+        # Ubuntu's system-package backend rejects a different Python minor version.
+        self.assertEqual((linux["os"], linux["python"]), ("ubuntu-24.04", "3.12"))
+        setup = next(step for step in job["steps"] if step.get("uses") == "actions/setup-python@v5")
+        self.assertEqual(setup["with"]["python-version"], "${{ matrix.python }}")
+
     def test_version_injection_and_invalid_version(self):
         with tempfile.TemporaryDirectory(prefix="can_version_") as temp:
             root = Path(temp)

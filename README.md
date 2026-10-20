@@ -92,6 +92,8 @@ python -m src.canlibrarygenerator.scripts.build_docs
 
 This rebuilds `docs/api/` from current templates and the bundled example database. Manual documentation lives in `docs/guide.md`. The documentation workflow runs the same command.
 
+Linux `.deb` packages are built on Ubuntu 24.04 with Python 3.12. Briefcase system packages require the same Python minor version as the target distribution. Windows and macOS package builds use Python 3.11.
+
 For native packaging, install the build dependencies, set the version, then use Briefcase:
 
 ```sh
