@@ -29,6 +29,8 @@
 
 #include "{{ ir.library_name }}_db.h"
 
+{% include "common/hooks.j2" %}
+
 /**
  * @brief Finds a CAN message in the registry by its ID.
  *
@@ -70,7 +72,7 @@ int {{ ir.library_name }}_unpackage_message(uint32_t can_id, const uint8_t* data
  * @param is_big_endian Bool specifying byte order ("little_endian" or "big_endian").
  * @details Writes the bits of the raw signal value into the data array according to the specified start bit, length, and byte order.
  */
-void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, bool is_big_endian);
+void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint64_t raw_value, int start_bit, int length, bool is_big_endian);
 
 /**
  * @brief Packages CAN message signals into a data array for transmission.
@@ -79,6 +81,9 @@ void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint
  * @return int Finds the message by ID, checks DLC, and inserts raw signal values into the data array. Returns 0 on success, -1 on error.
  */
 int {{ ir.library_name }}_package_message(uint32_t can_id);
+
+/** @brief Package raw_value fields directly, preserving all 64 bits. */
+int {{ ir.library_name }}_package_message_raw(uint32_t can_id);
 
 /**
  * @brief Sets the CAN message signals data to initial.

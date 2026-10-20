@@ -1,0 +1,145 @@
+/* DBC Motorola positions advance from bit 0 to bit 7 of the next byte. */
+static int {{ ir.library_name }}_next_bit(int bit, bool is_big_endian)
+{
+    return is_big_endian ? ((bit % 8 == 0) ? bit + 15 : bit - 1) : bit + 1;
+}
+
+static uint64_t {{ ir.library_name }}_mask(int length)
+{
+    return length == 64 ? UINT64_MAX : (UINT64_C(1) << length) - UINT64_C(1);
+}
+
+static double {{ ir.library_name }}_physical_value(const can_db_sig_t* sig, uint64_t raw)
+{
+    double value = (double)raw;
+    if (sig->is_signed && (raw & (UINT64_C(1) << (sig->length - 1)))) {
+        value = -(double)((~raw & {{ ir.library_name }}_mask(sig->length)) + UINT64_C(1));
+    }
+    return value * sig->factor + sig->offset;
+}
+
+static int {{ ir.library_name }}_raw_value(const can_db_sig_t* sig, uint64_t* raw)
+{
+    if (!{% if is_cpp %}std::{% endif %}isfinite(sig->phys_value) || !{% if is_cpp %}std::{% endif %}isfinite(sig->factor) || sig->factor == 0) {
+        return -1;
+    }
+    long double value = roundl(((long double)sig->phys_value - sig->offset) / sig->factor);
+    long double upper = ldexpl(1.0L, sig->is_signed ? sig->length - 1 : sig->length);
+    long double lower = sig->is_signed ? -upper : 0.0L;
+    if (!{% if is_cpp %}std::{% endif %}isfinite(value) || value < lower || value >= upper) {
+        return -1;
+    }
+    *raw = (value < 0 ? UINT64_C(0) - (uint64_t)(-value) : (uint64_t)value)
+           & {{ ir.library_name }}_mask(sig->length);
+    return 0;
+}
+
+uint64_t {{ ir.library_name }}_parse_signal(const uint8_t* data, uint8_t msg_length,
+                                         uint16_t start_bit, uint8_t length, bool is_big_endian)
+{
+    if (!data || length == 0 || length > 64 || msg_length > 64) return 0;
+    uint64_t result = 0;
+    int bit = start_bit;
+    for (int i = 0; i < length; ++i) {
+        if (bit < 0 || bit >= (int)msg_length * 8) return 0;
+        uint64_t value = (data[bit / 8] >> (bit % 8)) & 1u;
+        result |= value << (is_big_endian ? length - 1 - i : i);
+        bit = {{ ir.library_name }}_next_bit(bit, is_big_endian);
+    }
+    return result;
+}
+
+void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint64_t raw_value,
+                                       int start_bit, int length, bool is_big_endian)
+{
+    if (!data || length <= 0 || length > 64 || msg_length > 64) return;
+    int bit = start_bit;
+    /* Validate the entire layout before changing any byte. */
+    for (int i = 0; i < length; ++i) {
+        if (bit < 0 || bit >= (int)msg_length * 8) return;
+        bit = {{ ir.library_name }}_next_bit(bit, is_big_endian);
+    }
+    bit = start_bit;
+    for (int i = 0; i < length; ++i) {
+        uint8_t mask = (uint8_t)(1u << (bit % 8));
+        int value_bit = is_big_endian ? length - 1 - i : i;
+        if ((raw_value >> value_bit) & UINT64_C(1)) data[bit / 8] |= mask;
+        else data[bit / 8] &= (uint8_t)~mask;
+        bit = {{ ir.library_name }}_next_bit(bit, is_big_endian);
+    }
+}
+
+int {{ ir.library_name }}_unpackage_message(uint32_t can_id, const uint8_t* data, uint8_t msg_length)
+{
+    can_db_msg_t* msg = {{ ir.library_name }}_find_message_by_id(can_id);
+    if (!msg || !data || msg_length > 64 || msg->length != msg_length) return -1;
+    memcpy(msg->data, data, msg_length);
+    for (size_t i = 0; i < msg->num_signals; ++i) {
+        can_db_sig_t* sig = {% if is_cpp %}msg->signals[i]{% else %}&msg->signals[i]{% endif %};
+        sig->raw_value = {{ ir.library_name }}_parse_signal(data, msg_length, sig->start_bit, sig->length, sig->is_big_endian);
+        sig->phys_value = {{ ir.library_name }}_physical_value(sig, sig->raw_value);
+    }
+    return 0;
+}
+
+int {{ ir.library_name }}_package_message_raw(uint32_t can_id)
+{
+    can_db_msg_t* msg = {{ ir.library_name }}_find_message_by_id(can_id);
+    if (!msg || msg->length > 64) return -1;
+    for (size_t i = 0; i < msg->num_signals; ++i) {
+        const can_db_sig_t* sig = {% if is_cpp %}msg->signals[i]{% else %}&msg->signals[i]{% endif %};
+        if (sig->raw_value & ~{{ ir.library_name }}_mask(sig->length)) return -1;
+    }
+{%- set protected = ir.messages | selectattr('is_j1939') | list %}
+{%- if protected and protected | length == ir.messages | length %}
+    memset(msg->data, 0xFF, msg->length);
+{%- elif protected %}
+    switch (can_id) {
+{%- for message in protected %}
+        case {{ "0x%X" | format(message.frame_id) }}:
+{%- endfor %}
+            memset(msg->data, 0xFF, msg->length);
+            break;
+        default:
+            memset(msg->data, 0, msg->length);
+            break;
+    }
+{%- else %}
+    memset(msg->data, 0, msg->length);
+{%- endif %}
+    for (size_t i = 0; i < msg->num_signals; ++i) {
+        const can_db_sig_t* sig = {% if is_cpp %}msg->signals[i]{% else %}&msg->signals[i]{% endif %};
+        {{ ir.library_name }}_insert_signal(msg->data, msg->length, sig->raw_value, sig->start_bit, sig->length, sig->is_big_endian);
+    }
+    return 0;
+}
+
+int {{ ir.library_name }}_package_message(uint32_t can_id)
+{
+    can_db_msg_t* msg = {{ ir.library_name }}_find_message_by_id(can_id);
+    if (!msg) return -1;
+    uint64_t raw;
+    /* Validate first so a failed conversion leaves data and raw values intact. */
+    for (size_t i = 0; i < msg->num_signals; ++i) {
+        const can_db_sig_t* sig = {% if is_cpp %}msg->signals[i]{% else %}&msg->signals[i]{% endif %};
+        if ({{ ir.library_name }}_raw_value(sig, &raw) != 0) return -1;
+    }
+    for (size_t i = 0; i < msg->num_signals; ++i) {
+        can_db_sig_t* sig = {% if is_cpp %}msg->signals[i]{% else %}&msg->signals[i]{% endif %};
+        (void){{ ir.library_name }}_raw_value(sig, &sig->raw_value);
+    }
+    return {{ ir.library_name }}_package_message_raw(can_id);
+}
+
+void {{ ir.library_name }}_init(can_db_msg_t* msg)
+{
+    if (!msg) return;
+    for (size_t i = 0; i < msg->num_signals; ++i) {
+        can_db_sig_t* sig = {% if is_cpp %}msg->signals[i]{% else %}&msg->signals[i]{% endif %};
+        sig->raw_value = sig->raw_init;
+        sig->phys_value = {{ ir.library_name }}_physical_value(sig, sig->raw_value);
+    }
+{%- if ir.generate_callback %}
+    if (msg->cb_fnc) msg->cb_fnc();
+{%- endif %}
+}

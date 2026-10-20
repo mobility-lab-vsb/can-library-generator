@@ -28,8 +28,10 @@
 #define {{ ir.library_name.upper() }}_DB_HPP
 
 #include <cstdint>
+{% if not ir.embedded %}
 #include <string>
 #include <vector>
+{% endif %}
 #include "can_db_def.hpp"
 
 {% for msg in ir.messages %}
@@ -55,6 +57,11 @@ extern {{ ir.library_name }}_db_{{ msg.name.replace(' ', '') }}_t {{ ir.library_
 {%- endfor %}
 
 // Global registry of all defined CAN messages.
+{% if ir.embedded %}
+extern can_db_msg_t* const {{ ir.library_name }}_all_messages[];
+{% else %}
 extern std::vector<can_db_msg_t*> {{ ir.library_name }}_all_messages;
+{% endif %}
+extern const size_t {{ ir.library_name }}_all_messages_count;
 
 #endif // {{ ir.library_name.upper() }}_DB_HPP

@@ -1,0 +1,69 @@
+{# Determine which J1939 helper functions are required. #}
+{%- set ns = namespace(
+    ctr_a=false,
+    ctr_d=false,
+    ctr_f=false,
+    crc_a=false,
+    crc_c=false,
+    crc_d=false,
+    crc_e=false
+) %}
+
+{%- for msg in ir.messages if msg.mode_tx %}
+    {%- if msg.j1939_counter_type == "a" %}
+        {%- set ns.ctr_a = true %}
+    {%- elif msg.j1939_counter_type == "d" %}
+        {%- set ns.ctr_d = true %}
+    {%- elif msg.j1939_counter_type == "f" %}
+        {%- set ns.ctr_f = true %}
+    {%- endif %}
+
+    {%- if msg.j1939_crc_type == "A" %}
+        {%- set ns.crc_a = true %}
+    {%- elif msg.j1939_crc_type == "C" %}
+        {%- set ns.crc_c = true %}
+    {%- elif msg.j1939_crc_type == "D" %}
+        {%- set ns.crc_d = true %}
+    {%- elif msg.j1939_crc_type == "E" %}
+        {%- set ns.crc_e = true %}
+    {%- endif %}
+{%- endfor %}
+
+{%- if ir.generate_counter and (ns.ctr_a or ns.ctr_d or ns.ctr_f) %}
+
+/*
+ * External J1939 message counter functions.
+ *
+ * The implementations must be provided by the integrating application.
+ */
+{%- if ns.ctr_a %}
+extern uint8_t j1939_increment_ctr_a(uint8_t previous_counter);
+{%- endif %}
+{%- if ns.ctr_d %}
+extern uint8_t j1939_increment_ctr_d(uint8_t previous_counter);
+{%- endif %}
+{%- if ns.ctr_f %}
+extern uint8_t j1939_increment_ctr_f(uint8_t previous_counter);
+{%- endif %}
+{%- endif %}
+
+{%- if ir.generate_crc and (ns.crc_a or ns.crc_c or ns.crc_d or ns.crc_e) %}
+
+/*
+ * External J1939 message CRC/checksum functions.
+ *
+ * The implementations must be provided by the integrating application.
+ */
+{%- if ns.crc_a %}
+extern uint8_t j1939_calculate_crc_a(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- if ns.crc_c %}
+extern uint8_t j1939_calculate_crc_c(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- if ns.crc_d %}
+extern uint8_t j1939_calculate_crc_d(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- if ns.crc_e %}
+extern uint8_t j1939_calculate_crc_e(can_db_msg_t *msg, uint8_t counter);
+{%- endif %}
+{%- endif %}

@@ -1,0 +1,28 @@
+[Setup]
+AppName=CANLibraryGenerator
+AppVersion=@VERSION@
+AppPublisher=MobilityLab
+SetupIconFile=src\canlibrarygenerator\resources\icon\icon.ico
+DefaultDirName={autopf}\CANLibraryGenerator
+DefaultGroupName=CANLibraryGenerator
+OutputDir=dist
+OutputBaseFilename=CANLibraryGeneratorInstaller
+Compression=lzma
+SolidCompression=yes
+WizardStyle=modern
+UninstallDisplayIcon={app}\@APP_EXECUTABLE@
+PrivilegesRequired=admin
+DisableDirPage=no
+DisableProgramGroupPage=no
+
+[Tasks]
+Name: "desktopicon"; Description: "Create desktop shortcut"; GroupDescription: "Shortcuts:"
+Name: "startmenuicon"; Description: "Create Start menu shortcut"; GroupDescription: "Shortcuts:"; Flags: unchecked
+
+[Files]
+Source: "build\canlibrarygenerator\windows\app\src\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+
+[Icons]
+Name: "{group}\CANLibraryGenerator"; Filename: "{app}\@APP_EXECUTABLE@"; Tasks: startmenuicon
+Name: "{userdesktop}\CANLibraryGenerator"; Filename: "{app}\@APP_EXECUTABLE@"; Tasks: desktopicon
+Name: "{group}\Uninstall CANLibraryGenerator"; Filename: "{uninstallexe}"

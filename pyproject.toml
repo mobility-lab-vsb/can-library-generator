@@ -1,28 +1,26 @@
 [build-system]
-requires = ["briefcase"]
-build-backend = "briefcase.build_system"
+requires = [ "setuptools>=77", "wheel",]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "canlibrarygenerator"
-version = "0.0.0"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 readme = "README.md"
-requires-python = ">=3.10"
-license.file = "LICENSE"
-authors = [
-    { name = "Adam Rychtar", email = "adam.rychtar@vsb.cz" }
-]
+requires-python = ">=3.11"
+dependencies = [ "cantools==42.0.3", "python-can==4.6.1", "Jinja2==3.1.6", "darkdetect==0.8.0", "PyQt6==6.9.1", "PyQt6-Qt6==6.9.1", "PyQt6_sip==13.10.2",]
+dynamic = [ "version",]
+license = "MIT"
+license-files = [ "LICENSE",]
+[[project.authors]]
+name = "Adam Rychtar"
+email = "adam.rychtar@vsb.cz"
 
-dependencies = [
-    "bitstruct==8.21.0",
-    "cantools==40.2.1",
-    "crccheck==1.3.0",
-    "darkdetect==0.8.0",
-    "pillow==10.4.0",
-    "PyQt6==6.9.1",
-    "PyQt6-Qt6==6.9.1",
-    "PyQt6_sip==13.10.2"
-]
+[project.optional-dependencies]
+test = [ "PyYAML==6.0.2",]
+build = [ "briefcase==0.3.24", "pillow==10.4.0", "packaging>=23", "toml==0.10.2", "build==1.3.0",]
+
+[project.scripts]
+can-library-generator = "canlibrarygenerator.__main__:main"
 
 [tool.briefcase]
 project_name = "CAN_Library_Generator"
@@ -30,7 +28,13 @@ bundle = "cz.mobilitylab"
 version = "0.0.0"
 url = "https://github.com/mobility-lab-vsb/can-library-generator"
 author = "MobilityLab"
-author_email = "adam.rychatr@vsb.cz"
+author_email = "adam.rychtar@vsb.cz"
+
+[tool.setuptools.package-dir]
+"" = "src"
+
+[tool.setuptools.package-data]
+canlibrarygenerator = [ "templates/*/*.j2", "resources/icon/*", "png/*.png", "dbc/*.dbc",]
 
 [tool.briefcase.app.canlibrarygenerator]
 formal_name = "CANLibraryGenerator"
@@ -38,21 +42,18 @@ app_name = "canlibrarygenerator"
 description = "GUI tool for generating C/C++ libraries from DBC files"
 long_description = "Generate C/C++ code from CAN DBC files via a GUI interface."
 icon = "src/canlibrarygenerator/resources/icon/icon"
-sources = ["src/canlibrarygenerator"]
+sources = [ "src/canlibrarygenerator",]
 entry_point = "canlibrarygenerator.__main__:main"
+requires = [ "cantools==42.0.3", "python-can==4.6.1", "Jinja2==3.1.6", "darkdetect==0.8.0", "PyQt6==6.9.1", "PyQt6-Qt6==6.9.1", "PyQt6_sip==13.10.2",]
 
-requires = [
-    "bitstruct==8.21.0",
-    "cantools==40.2.1",
-    "crccheck==1.3.0",
-    "darkdetect==0.8.0",
-    "pillow==10.4.0",
-    "PyQt6==6.9.1",
-    "PyQt6-Qt6==6.9.1",
-    "PyQt6_sip==13.10.2",
-    "python-can==4.5.0",
-    "Jinja2==3.1.6",
-]
+[tool.setuptools.dynamic.version]
+attr = "canlibrarygenerator.__version__"
+
+[tool.setuptools.packages.find]
+where = [ "src",]
+include = [ "canlibrarygenerator*",]
+exclude = [ "canlibrarygenerator.test*",]
+namespaces = false
 
 [tool.briefcase.app.canlibrarygenerator.macOS]
 universal_build = true

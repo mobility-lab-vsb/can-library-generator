@@ -1,0 +1,14 @@
+PROJECT_NAME = "CAN Library Generator"
+OUTPUT_DIRECTORY = docs
+INPUT = docs/guide.md .docs-build/input/cangen
+USE_MDFILE_AS_MAINPAGE = docs/guide.md
+RECURSIVE = YES
+FILE_PATTERNS = *.h *.hpp *.c *.cpp *.md
+HTML_OUTPUT = api
+GENERATE_HTML = YES
+GENERATE_LATEX = NO
+EXTRACT_ALL = YES
+EXTRACT_STATIC = NO
+QUIET = YES
+WARN_IF_UNDOCUMENTED = NO
+HAVE_DOT = NO

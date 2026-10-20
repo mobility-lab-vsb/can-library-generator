@@ -1,0 +1,138 @@
+/* TX message processing functions */
+{%- for msg in ir.messages %}
+{% if msg.mode_tx %}
+void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
+{
+{%- if ir.generate_counter %}
+{%- if msg.j1939_counter_type == "a" %}
+    /* Increment the J1939 message counter using counter rule 'a'. */
+    {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value = j1939_increment_ctr_a(
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_counter_type == "d" %}
+    /* Increment the J1939 message counter using counter rule 'd'. */
+    {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value = j1939_increment_ctr_d(
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_counter_type == "f" %}
+    /* Increment the J1939 message counter using counter rule 'f'. */
+    {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value = j1939_increment_ctr_f(
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+{%- else %}
+{%- for sig in msg.signals %}
+{%- if sig.gen_sig_func_type == 1 %}
+    /* Increment message counter */
+    {
+        can_db_sig_t* sig = {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }};
+        uint64_t counter;
+        if ({{ ir.library_name }}_raw_value(sig, &counter) != 0) return;
+        counter = (counter + UINT64_C(1)) & {{ ir.library_name }}_mask(sig->length);
+        sig->phys_value = {{ ir.library_name }}_physical_value(sig, counter);
+    }
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if ir.generate_callback %}
+    /* Execute user callback before message packaging */
+    if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
+    }
+{%- endif %}
+
+    /* Package all signals to message */
+    if ({{ ir.library_name }}_package_message({{ ir.library_name }}_{{ msg.name }}.base.id) != 0) return;
+
+{%- if ir.generate_crc %}
+{%- if msg.j1939_crc_type == "A" %}
+    /* Calculate the J1939 CRC using calculation rule 'A'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = j1939_calculate_crc_a(
+        &{{ ir.library_name }}_{{ msg.name }}.base,
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_crc_type == "C" %}
+    /* Calculate the J1939 CRC using calculation rule 'C'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = (uint8_t)(({{ ir.library_name }}_{{ msg.name }}.base.data[7] & 0x0Fu) |
+        (
+            (
+                j1939_calculate_crc_c(
+                    &{{ ir.library_name }}_{{ msg.name }}.base,
+                    (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+                )
+                & 0x0Fu
+            ) << 4u
+        )
+    );
+
+{%- elif msg.j1939_crc_type == "D" %}
+    /* Calculate the J1939 CRC using calculation rule 'D'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = j1939_calculate_crc_d(
+        &{{ ir.library_name }}_{{ msg.name }}.base,
+        (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+    );
+
+{%- elif msg.j1939_crc_type == "E" %}
+    /* Calculate the J1939 CRC using calculation rule 'E'. */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[7] = (uint8_t)(({{ ir.library_name }}_{{ msg.name }}.base.data[7] & 0x0Fu) |
+        (
+            (
+                j1939_calculate_crc_e(
+                    &{{ ir.library_name }}_{{ msg.name }}.base,
+                    (uint8_t){{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_counter_signal_code_name }}->phys_value
+                )
+                & 0x0Fu
+            ) << 4u
+        )
+    );
+
+{%- else %}
+{%- for sig in msg.signals %}
+{%- if sig.gen_sig_func_type == 2 %}
+
+    /* CRC calculation */
+    {{ ir.library_name }}_{{ msg.name }}.base.data[0] = calculate_crc({{ ir.library_name }}_{{ msg.name }}.base.data, {{ ir.library_name }}_{{ msg.name }}.base.length, 0x00u);
+    {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->raw_value = {{ ir.library_name }}_{{ msg.name }}.base.data[0];
+    {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->phys_value = {{ ir.library_name }}_physical_value(
+        {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}, {{ ir.library_name }}_{{ msg.name }}.base.data[0]);
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+
+{%- if ir.generate_crc and msg.j1939_crc_type %}
+    {
+        can_db_sig_t* sig = {{ ir.library_name }}_{{ msg.name }}.{{ msg.j1939_crc_signal_code_name }};
+        sig->raw_value = {{ ir.library_name }}_parse_signal({{ ir.library_name }}_{{ msg.name }}.base.data,
+            {{ msg.length }}, sig->start_bit, sig->length, sig->is_big_endian);
+        sig->phys_value = {{ ir.library_name }}_physical_value(sig, sig->raw_value);
+    }
+{%- endif %}
+
+}
+{%- endif %}
+{%- endfor %}
+
+/* RX message processing functions */
+{%- for msg in ir.messages %}
+{% if msg.mode_rx %}
+void {{ ir.library_name }}_{{ msg.name }}_input_processing(const can_db_msg_t* can_db_rx_msg)
+{
+    if (!can_db_rx_msg || can_db_rx_msg->id != {{ ir.library_name }}_{{ msg.name }}.base.id ||
+        {{ ir.library_name }}_unpackage_message(can_db_rx_msg->id, can_db_rx_msg->data, can_db_rx_msg->length) != 0) return;
+
+{%- if ir.generate_callback %}
+    /* Execute user callback after message unpacking */
+    if({{ ir.library_name }}_{{ msg.name }}.base.cb_fnc != NULL) {
+        {{ ir.library_name }}_{{ msg.name }}.base.cb_fnc();
+    }
+{%- endif %}
+}
+{%- endif %}
+{%- endfor %}

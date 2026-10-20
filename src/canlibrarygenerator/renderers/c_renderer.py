@@ -1,5 +1,6 @@
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 import os
+import json
 
 from .formatting import format_generated_code
 
@@ -8,10 +9,14 @@ class CRenderer:
     def __init__(self):
         template_dir = os.path.join(os.path.dirname(__file__), "..", "templates", "c")
         self.env = Environment(
-            loader=FileSystemLoader(template_dir),
+            loader=FileSystemLoader([template_dir, os.path.dirname(template_dir)]),
+            undefined=StrictUndefined,
             trim_blocks=False,
             lstrip_blocks=False
         )
+
+        self.env.filters["c_string"] = lambda value: json.dumps(str(value), ensure_ascii=True)
+        self.env.globals["is_cpp"] = False
 
     def render_db_h(self, ir):
         return format_generated_code(self.env.get_template("db_h.j2").render(ir=ir))

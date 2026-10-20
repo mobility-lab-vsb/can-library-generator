@@ -25,6 +25,8 @@
 #include <cmath>
 #include "{{ ir.library_name }}_db.hpp"
 
+{% include "common/hooks.j2" %}
+
 /**
  * @brief Finds a CAN message in the registry by its ID.
  * @param can_id The CAN ID of the message to find.
@@ -45,12 +47,15 @@ int {{ ir.library_name }}_unpackage_message(uint32_t can_id, const uint8_t* data
 /**
  * @brief Inserts the raw signal value into a CAN data byte array.
  */
-void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint32_t raw_value, int start_bit, int length, bool is_big_endian);
+void {{ ir.library_name }}_insert_signal(uint8_t* data, uint8_t msg_length, uint64_t raw_value, int start_bit, int length, bool is_big_endian);
 
 /**
  * @brief Packages CAN message signals into a data array for transmission.
  */
 int {{ ir.library_name }}_package_message(uint32_t can_id);
+
+/** @brief Package raw_value fields directly, preserving all 64 bits. */
+int {{ ir.library_name }}_package_message_raw(uint32_t can_id);
 
 /**
  * @brief Sets the CAN message signals data to initial.

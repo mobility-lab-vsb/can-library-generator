@@ -1,7 +1,6 @@
 venv
 library
 test.py
-.gitignore
 .vs
 .idea
 ico
@@ -13,3 +12,9 @@ prikaz-arm64-server.txt
 dist
 __pycache__
 installer.iss
+.venv/
+*.egg-info/
+*.py[cod]
+.DS_Store
+.docs-build/
+src/canlibrarygenerator/temp/

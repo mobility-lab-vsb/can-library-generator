@@ -35,11 +35,6 @@ int tests_passed = 0;
         } \
     } while(0)
 
-// Dummy implementation for linking
-void cangen_msg_send(const can_db_msg_t* msg) {
-    (void)msg;
-}
-
 bool compare_data(const uint8_t* a, const uint8_t* b, size_t len) {
     return std::memcmp(a, b, len) == 0;
 }
@@ -109,7 +104,7 @@ void test_registry_size() {
     std::cout << "\n--- Testing C++ Registry ---" << std::endl;
 
     // Using .size() instead of a hardcoded count as we discussed
-    size_t actual_size = cangen_all_messages.size();
+    size_t actual_size = cangen_all_messages_count;
     std::cout << "  Registry size: " << actual_size << " messages" << std::endl;
     TEST_ASSERT(actual_size > 0, "Registry is not empty");
 }

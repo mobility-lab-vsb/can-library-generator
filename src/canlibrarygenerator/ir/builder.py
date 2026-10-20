@@ -3,6 +3,8 @@ from ..utils.can_utils import get_dlc_from_data_length
 from datetime import datetime
 
 import re
+import math
+from collections import Counter
 
 
 J1939_CRC_SIGNAL_LAYOUTS = {
@@ -62,6 +64,62 @@ SUPPORTED_J1939_CRC_COUNTER_COMBINATIONS = {
 }
 
 
+CPP_KEYWORDS = set("alignas alignof and asm auto bitand bitor bool break case catch char class compl concept const constexpr consteval constinit continue co_await co_return co_yield decltype default delete do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept not nullptr operator or private protected public register reinterpret_cast requires return short signed sizeof static static_assert static_cast struct switch template this thread_local throw true try typedef typeid typename union unsigned using virtual void volatile wchar_t while xor _Bool _Complex _Imaginary".split())
+CPP_KEYWORDS.update("and_eq or_eq xor_eq not_eq const_cast char8_t char16_t char32_t _Alignas _Alignof _Atomic _Generic _Noreturn _Static_assert _Thread_local".split())
+
+
+def validate_identifier(value: str, role: str):
+    if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", value) or value in CPP_KEYWORDS:
+        raise ValueError(f"{role} '{value}' must be a valid C/C++ identifier and cannot be a keyword.")
+
+
+def _selection_key(tree, item):
+    if hasattr(tree, "message_key"):
+        key = tree.message_key(item)
+        if key is not None:
+            return key
+    return tree.item(item, "text")
+
+
+def _validate_generated_symbols(messages, prefix):
+    symbols = {f"{prefix}_{name}" for name in (
+        "all_messages", "all_messages_count", "find_message_by_id", "parse_signal",
+        "unpackage_message", "insert_signal", "package_message", "package_message_raw",
+        "init", "next_bit", "mask", "physical_value", "raw_value")}
+    macros = set()
+    for message in messages:
+        generated = [f"{prefix}_{message.name}", f"{prefix}_db_{message.name}_t",
+                     f"{message.name}_signals", f"{message.name}_signal_refs"]
+        for mode in ("rx", "tx"):
+            if getattr(message, f"mode_{mode}"):
+                direction = "input" if mode == "rx" else "output"
+                generated.append(f"{prefix}_{message.name}_{direction}_processing")
+        for symbol in generated:
+            if symbol in symbols:
+                raise ValueError(f"Message '{message.name}' produces a colliding generated symbol '{symbol}'.")
+            symbols.add(symbol)
+        macro = f"{prefix}_{message.name}_ID".upper()
+        if macro in macros:
+            raise ValueError(f"Message '{message.name}' produces a colliding CAN ID macro '{macro}'.")
+        macros.add(macro)
+
+
+def _validate_message(message, db):
+    validate_identifier(message.name, "Message name")
+    if message.is_multiplexed():
+        raise ValueError(f"Message '{message.name}' uses multiplexing, which is not supported.")
+    is_fd = _is_can_fd_message(message, db)
+    if message.length not in range(0, 9) and (not is_fd or get_dlc_from_data_length(message.length) is None):
+        raise ValueError(f"Message '{message.name}' has unsupported payload length {message.length}. Use Classic CAN 0–8 bytes or CAN FD 12/16/20/24/32/48/64 bytes; transport protocols are not supported.")
+    for sig in message.signals:
+        if sig.is_float:
+            raise ValueError(f"Signal '{sig.name}' uses a floating-point wire representation, which is not supported.")
+        if not 1 <= sig.length <= 64:
+            raise ValueError(f"Signal '{sig.name}' must contain 1–64 bits.")
+        if not math.isfinite(sig.scale) or sig.scale == 0 or not math.isfinite(sig.offset):
+            raise ValueError(f"Signal '{sig.name}' must have a finite nonzero factor and a finite offset.")
+
+
 def _sanitize_identifier_part(value: str) -> str:
     value = value.strip()
 
@@ -86,6 +144,8 @@ def _sanitize_identifier_part(value: str) -> str:
     value = re.sub(r"_+", "_", value)
     value = value.strip("_")
 
+    if value and (value[0].isdigit() or value in CPP_KEYWORDS):
+        value = "sig_" + value
     return value
 
 
@@ -139,24 +199,29 @@ def _get_database_attribute(db, attribute_name: str, default=None):
         if value is not None:
             return value
 
+    if db.dbc:
+        definition = (db.dbc.attribute_definitions or {}).get(attribute_name)
+        if definition is not None and definition.default_value is not None:
+            return definition.default_value
     return default
 
 
 def _get_message_enum_attribute_name(message, attribute_name: str) -> str | None:
-    if (
-        not message.dbc
-        or not message.dbc.attributes
-        or attribute_name not in message.dbc.attributes
-    ):
+    if not message.dbc:
         return None
-
-    attribute = message.dbc.attributes[attribute_name]
-    value = attribute.value
+    attribute = (message.dbc.attributes or {}).get(attribute_name)
+    definition = (message.dbc.attribute_definitions or {}).get(attribute_name)
+    if attribute is not None:
+        value = attribute.value
+        definition = getattr(attribute, "definition", definition)
+    elif definition is not None:
+        value = definition.default_value
+    else:
+        return None
 
     if isinstance(value, str):
         return value
 
-    definition = getattr(attribute, "definition", None)
     choices = getattr(definition, "choices", None)
 
     if choices is None:
@@ -446,13 +511,14 @@ def _find_j1939_protection_signals(
 
 def build_library_ir(selected_items, library_name, dbs, tree, version, message_modes, embedded=False, with_units=False,
                      generate_counter=True, generate_crc=True, generate_callback=True):
+    validate_identifier(library_name, "Library prefix")
     selected_messages = {}
 
     for item in selected_items:
         item_type = tree.item(item, "values")[0]
         if item_type == "Signal":
             parent = tree.parent(item)
-            msg_name = tree.item(parent, "text")
+            msg_name = _selection_key(tree, parent)
             sig_name = tree.item(item, "text")
             selected_messages.setdefault(msg_name, []).append(sig_name)
 
@@ -461,16 +527,30 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
     message_modes_by_name = {}
 
     for item_id, flags in message_modes.items():
-        msg_name = tree.item(item_id, "text")
+        msg_name = _selection_key(tree, item_id)
         message_modes_by_name[msg_name] = flags
 
-    for db in dbs:
+    name_counts = Counter(message.name for db in dbs for message in db.messages)
+    used_names = set()
+    used_ids = set()
+    for db_index, db in enumerate(dbs):
         for message in db.messages:
-            if message.name not in selected_messages:
+            identity = (db_index, message.frame_id, message.is_extended_frame)
+            key = identity if identity in selected_messages else message.name
+            if key not in selected_messages:
                 continue
+            if isinstance(key, str) and name_counts[message.name] > 1:
+                raise ValueError(f"Message name '{message.name}' is ambiguous across databases; select it by database identity.")
+            if message.name in used_names:
+                raise ValueError(f"Selected messages share the generated name '{message.name}'. Rename one message or generate separate libraries.")
+            if message.frame_id in used_ids:
+                raise ValueError(f"Selected messages share CAN ID 0x{message.frame_id:X}; ID lookup requires unique IDs.")
+            used_names.add(message.name)
+            used_ids.add(message.frame_id)
+            _validate_message(message, db)
 
             selected_signal_names = set(
-                selected_messages[message.name]
+                selected_messages[key]
             )
 
             j1939_crc_type, j1939_counter_type = (
@@ -503,11 +583,16 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 # select them explicitly in the GUI.
 
                 selected_signal_names.add(dbc_j1939_crc_signal.name)
-                selected_signal_names.add(dbc_j1939_counter_signal)
+                selected_signal_names.add(dbc_j1939_counter_signal.name)
+
+                for protection_signal in (dbc_j1939_crc_signal, dbc_j1939_counter_signal):
+                    if protection_signal.is_signed or protection_signal.scale != 1 or protection_signal.offset != 0:
+                        raise ValueError(f"J1939 protection signal '{protection_signal.name}' must be unsigned with factor 1 and offset 0.")
 
             signals = []
+            code_names = {"base"}
             for sig in message.signals:
-                if selected_messages[message.name] and sig.name not in selected_messages[message.name]:
+                if sig.name not in selected_signal_names:
                     continue
 
                 gen_sig_func_type = 0
@@ -515,10 +600,23 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 if sig.dbc and sig.dbc.attributes and "GenSigFuncType" in sig.dbc.attributes:
                     gen_sig_func_type = int(sig.dbc.attributes["GenSigFuncType"].value)
 
+                code_name = _make_signal_code_name(sig.name, sig.unit or "", with_units)
+                validate_identifier(code_name, "Generated signal name")
+                if code_name in code_names:
+                    raise ValueError(f"Message '{message.name}' contains colliding generated signal name '{code_name}'.")
+                code_names.add(code_name)
+                if gen_sig_func_type == 2 and j1939_crc_type is None and (sig.start != 0 or sig.length != 8 or sig.is_signed):
+                    raise ValueError(f"Ordinary CRC signal '{sig.name}' must be an unsigned 8-bit signal at bit 0.")
+                initial = int(sig.raw_initial or 0)
+                mask = (1 << sig.length) - 1
+                if initial < (-(1 << (sig.length - 1)) if sig.is_signed else 0) or initial > mask:
+                    raise ValueError(f"Initial value for '{sig.name}' does not fit its bit width.")
+                raw_initial = initial & mask
+                signed_initial = raw_initial - (1 << sig.length) if sig.is_signed and raw_initial & (1 << (sig.length - 1)) else raw_initial
                 signals.append(
                     SignalIR(
                         name=sig.name,
-                        code_name=_make_signal_code_name(sig.name, sig.unit or "", with_units),
+                        code_name=code_name,
                         start_bit=sig.start,
                         length=sig.length,
                         is_big_endian=(sig.byte_order == "big_endian"),
@@ -529,8 +627,8 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                         maximum=sig.maximum or 0,
                         unit=sig.unit or "",
                         receivers=list(sig.receivers or []),
-                        raw_initial=sig.raw_initial or 0,
-                        phys_initial=(sig.raw_initial or 0) * sig.scale + sig.offset,
+                        raw_initial=raw_initial,
+                        phys_initial=signed_initial * sig.scale + sig.offset,
                         gen_sig_func_type=gen_sig_func_type,
                         attributes={
                             k: v.value for k, v in sig.dbc.attributes.items()
@@ -538,7 +636,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                     )
                 )
 
-            modes = message_modes_by_name.get(message.name, {"rx": False, "tx": False})
+            modes = message_modes_by_name.get(key, {"rx": False, "tx": False})
 
             cycle_time_fast = int(
                 _get_message_attribute(
@@ -644,6 +742,9 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                 )
             )
 
+    if not messages:
+        raise ValueError("No messages with selected signals were found.")
+    _validate_generated_symbols(messages, library_name)
     return LibraryIR(
         library_name=library_name,
         generator_version=version,

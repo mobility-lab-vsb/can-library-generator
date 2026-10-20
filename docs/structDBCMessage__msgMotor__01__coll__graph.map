@@ -1,7 +1,0 @@
-<map id="DBCMessage_msgMotor_01" name="DBCMessage_msgMotor_01">
-<area shape="rect" id="Node000001" title=" " alt="" coords="43,196,247,221"/>
-<area shape="rect" id="Node000002" href="$structDBCMessageBase.html" title="Base structure for a CAN message." alt="" coords="5,5,145,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="87,43,143,195,138,197,82,45"/>
-<area shape="rect" id="Node000003" href="$structDBCSignal.html" title="Structure representing a CAN signal." alt="" coords="170,5,261,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="215,45,202,105,191,140,176,173,159,197,154,194,172,171,186,138,197,104,209,44"/>
-</map>
