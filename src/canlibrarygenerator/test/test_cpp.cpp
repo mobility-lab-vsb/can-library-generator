@@ -35,11 +35,6 @@ int tests_passed = 0;
         } \
     } while(0)
 
-// Dummy implementation for linking
-void cangen_msg_send(const can_db_msg_t* msg) {
-    (void)msg;
-}
-
 bool compare_data(const uint8_t* a, const uint8_t* b, size_t len) {
     return std::memcmp(a, b, len) == 0;
 }

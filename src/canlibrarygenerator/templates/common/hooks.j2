@@ -67,18 +67,3 @@ extern uint8_t j1939_calculate_crc_d(can_db_msg_t *msg, uint8_t counter);
 extern uint8_t j1939_calculate_crc_e(can_db_msg_t *msg, uint8_t counter);
 {%- endif %}
 {%- endif %}
-
-
-{%- if ir.messages | selectattr('mode_tx') | list %}
-/* Implement this transport hook in the integrating application. */
-void {{ ir.library_name }}_msg_send(const can_db_msg_t* msg);
-{%- endif %}
-{%- set ordinary = namespace(crc=false) %}
-{%- for msg in ir.messages if msg.mode_tx and not msg.j1939_crc_type %}
-{%- for sig in msg.signals if sig.gen_sig_func_type == 2 %}
-{%- set ordinary.crc = true %}
-{%- endfor %}
-{%- endfor %}
-{%- if ir.generate_crc and ordinary.crc %}
-uint8_t calculate_crc(const uint8_t* data, uint8_t length, uint8_t initial);
-{%- endif %}

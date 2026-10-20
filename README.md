@@ -63,7 +63,7 @@ Compile both generated source files and add `inc/` to your include path. C compi
 
 Set a signal's `phys_value` and call `<prefix>_package_message(id)`, which checks values before writing the payload. For exact 64-bit integer payloads, set `raw_value` and call `<prefix>_package_message_raw(id)`: the physical API uses floating-point values and cannot represent every 64-bit integer exactly. Both packaging functions return zero on success and `-1` on error.
 
-Use `<prefix>_unpackage_message(id, data, length)` to decode received bytes. Message-specific RX functions also run callbacks; message-specific TX functions update counters, run callbacks, package, calculate CRC and call your `<prefix>_msg_send(const can_db_msg_t *msg)` transport hook.
+Use `<prefix>_unpackage_message(id, data, length)` to decode received bytes. Message-specific RX functions also run callbacks; message-specific TX functions update counters, run callbacks, package and calculate CRC. Connect the prepared message to your transport library manually; the generator does not declare or call a send function.
 
 Implement the counter and checksum hooks declared in your generated interface header. The generator supplies their call sites, not the vehicle-specific algorithms. RX processing decodes signals; it does not validate CRC or counter sequences. See the [integration guide](docs/guide.md) and [generated API reference](docs/index.html).
 

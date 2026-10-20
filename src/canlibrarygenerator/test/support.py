@@ -20,7 +20,8 @@ def database(signals, attributes="", name="Sample", frame=256, length=8):
     return db
 
 
-def compile_and_run(test, db, body, language="c", embedded=False, hooks="", selected=None, **options):
+def compile_and_run(test, db, body, language="c", embedded=False, hooks="", selected=None,
+                    external_header="", **options):
     compiler = "gcc" if language == "c" else "g++"
     if not shutil.which(compiler):
         test.skipTest(f"{compiler} is required")
@@ -31,6 +32,9 @@ def compile_and_run(test, db, body, language="c", embedded=False, hooks="", sele
     header, source = ("h", "c") if language == "c" else ("hpp", "cpp")
     outputs = generate(tree.selected_items, "test", [db], tree, message_modes=tree.message_modes,
                        embedded=embedded, **options)
+    for output in outputs:
+        test.assertNotIn("test_msg_send", output)
+    test.assertNotIn("uint8_t calculate_crc(", outputs[3])
     with tempfile.TemporaryDirectory(prefix="can_regression_") as temp:
         folder = Path(temp)
         names = [f"can_db_def.{header}", f"test_db.{header}", f"test_db.{source}",
@@ -39,12 +43,15 @@ def compile_and_run(test, db, body, language="c", embedded=False, hooks="", sele
             (folder / name).write_text(text, encoding="utf-8")
         main = folder / f"main.{source}"
         main.write_text(f'#include <assert.h>\n#include <string.h>\n#include "test_interface.{header}"\n'
-                        'int sends = 0; int callbacks = 0;\n'
-                        'void test_msg_send(const can_db_msg_t* msg) { (void)msg; ++sends; }\n'
+                        'int callbacks = 0;\n'
                         'void callback(void) { ++callbacks; }\n' + hooks
                         + '\nint main(void) {\n' + body + '\nreturn 0; }\n', encoding="utf-8")
         executable = folder / ("test.exe" if os.name == "nt" else "test")
         flags = shlex.split(os.environ.get("CFLAGS" if language == "c" else "CXXFLAGS", ""))
+        if external_header:
+            external = folder / "external_crc.h"
+            external.write_text(external_header, encoding="utf-8")
+            flags.extend(["-include", str(external)])
         result = subprocess.run([compiler, "-std=c99" if language == "c" else "-std=c++11",
                                  "-Wall", "-Wextra", "-Werror", *flags, str(main),
                                  str(folder / names[2]), str(folder / names[4]), "-I", str(folder),

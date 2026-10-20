@@ -65,26 +65,6 @@ def generate_variant(embedded: bool, suffix: str, with_units: bool = False):
         output_dir=output_dir
     )
 
-def create_c_mock(c_dir: str):
-    """
-    Creates dummy send function for C linking.
-    C++ test already has dummy implementation inside test_cpp.cpp.
-    """
-    mock_file = os.path.join(c_dir, "mock.c")
-
-    with open(mock_file, "w", encoding="utf-8") as f:
-        f.write(f"""
-#include "{library_name}_db.h"
-
-void {library_name}_msg_send(const can_db_msg_t* msg)
-{{
-    (void)msg; // Dummy implementation for linking
-}}
-""")
-
-    return mock_file
-
-
 def executable_name(base_name: str):
     return f"{base_name}.exe" if os.name == "nt" else base_name
 
@@ -95,8 +75,6 @@ def compile_and_run_c(folder_name: str, exe_base_name: str):
     if not os.path.isdir(c_dir):
         print(f"❌ Error: C output directory not found: {c_dir}")
         sys.exit(1)
-
-    mock_file = create_c_mock(c_dir)
 
     c_test_file = os.path.join(test_dir, "test_c.c")
     c_exec = os.path.join(output_dir, executable_name(exe_base_name))
@@ -112,7 +90,6 @@ def compile_and_run_c(folder_name: str, exe_base_name: str):
         c_test_file,
         os.path.join(c_dir, f"{library_name}_interface.c"),
         os.path.join(c_dir, f"{library_name}_db.c"),
-        mock_file,
         "-I", c_dir,
         "-o", c_exec,
         "-lm"

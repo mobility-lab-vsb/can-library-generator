@@ -85,7 +85,7 @@ def _validate_generated_symbols(messages, prefix):
     symbols = {f"{prefix}_{name}" for name in (
         "all_messages", "all_messages_count", "find_message_by_id", "parse_signal",
         "unpackage_message", "insert_signal", "package_message", "package_message_raw",
-        "init", "next_bit", "mask", "physical_value", "raw_value", "msg_send")}
+        "init", "next_bit", "mask", "physical_value", "raw_value")}
     macros = set()
     for message in messages:
         generated = [f"{prefix}_{message.name}", f"{prefix}_db_{message.name}_t",

@@ -66,10 +66,12 @@ class CodecTests(unittest.TestCase):
         body = '''test_Sample.Count->phys_value = 15;
                   test_Sample_output_processing();
                   assert(test_Sample.Count->phys_value == 0);
-                  assert(test_Sample.base.data[0] == 0xA5); assert(sends == 1);'''
+                  assert(test_Sample.base.data[0] == 0xA5);'''
         for language in ('c', 'cpp'):
             with self.subTest(language=language):
-                compile_and_run(self, db, body, language, hooks=hooks)
+                compile_and_run(self, db, body, language, hooks=hooks,
+                                external_header='#include <stdint.h>\n'
+                                'uint8_t calculate_crc(const uint8_t*, uint8_t, uint8_t);\n')
 
 
 if __name__ == '__main__':

@@ -115,8 +115,6 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
     }
 {%- endif %}
 
-    /* Send message to CAN bus */
-    (void){{ ir.library_name }}_msg_send(&{{ ir.library_name }}_{{ msg.name }}.base);
 }
 {%- endif %}
 {%- endfor %}

@@ -3,7 +3,6 @@ var cangen__interface_8hpp =
     [ "cangen_find_message_by_id", "cangen__interface_8hpp.html#aaf119c603c63e976bd591b02a4f5f9a0", null ],
     [ "cangen_init", "cangen__interface_8hpp.html#a7b7bb2324885f8293dce66dca9cb617c", null ],
     [ "cangen_insert_signal", "cangen__interface_8hpp.html#a3611cc7a0f1ff2ca8d9656588abe969d", null ],
-    [ "cangen_msg_send", "cangen__interface_8hpp.html#aea2daeea3b393d9c9290c2299e84c452", null ],
     [ "cangen_msgMotor_01_input_processing", "cangen__interface_8hpp.html#a37152e160f0a84e0b5144c020894446f", null ],
     [ "cangen_msgMotor_01_output_processing", "cangen__interface_8hpp.html#a17226d057064cef2ae2cf173a515d1f4", null ],
     [ "cangen_msgVD_GNSS_precision_position_input_processing", "cangen__interface_8hpp.html#afb91c64f6360a8356f9ae462444662c5", null ],

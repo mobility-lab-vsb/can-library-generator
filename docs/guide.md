@@ -29,22 +29,11 @@ Both packaging paths reset unused bits to the database-specific fill value befor
 
 ## Application hooks
 
-For any TX selection, implement the exact transport hook declared in the generated header:
+Message-specific `<prefix>_<message>_output_processing()` updates enabled counters, calls the optional TX callback, packages the message and applies enabled CRC processing. It prepares the message's `base.data` for transmission; no transport function is declared or called by the generated library. Connect sending manually using your external transport library.
 
-```c
-void cangen_msg_send(const can_db_msg_t *msg)
-{
-    /* Copy msg->data[0..msg->length) into your CAN driver's TX buffer.
-       Use the ID and frame flags from the message. */
-    (void)msg;
-}
-```
+`<prefix>_<message>_input_processing(msg)` decodes a matching message and invokes its RX callback only after successful decoding. Generated signal/message state is mutable; synchronize concurrent access in the application.
 
-The generated library calls this synchronously. Applications that transmit asynchronously must copy the payload before a later call changes the generated message object. Generated signal/message state is mutable; synchronize concurrent access in the application.
-
-Message-specific `<prefix>_<message>_output_processing()` updates enabled counters, calls the optional TX callback, packages the message, applies enabled CRC processing and invokes the transport hook. Packaging failures prevent transmission. `<prefix>_<message>_input_processing(msg)` decodes a matching message and invokes its RX callback only after successful decoding.
-
-CRC/counter helpers are declared only when selected TX messages need them. Provide implementations in a separate application file:
+J1939 CRC/counter helpers are declared only when selected TX messages need them. Provide implementations in a separate application file. The ordinary `calculate_crc` declaration is supplied by your external library header; include that header when compiling the generated interface source:
 
 - Ordinary CRC: `uint8_t calculate_crc(const uint8_t *data, uint8_t length, uint8_t initial)`; length is the payload byte count. Ordinary configured CRC signals must occupy the first byte.
 - J1939 counters: `j1939_increment_ctr_a`, `_d` or `_f`, each accepting the previous counter and returning the next value.

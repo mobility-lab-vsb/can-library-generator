@@ -29,7 +29,7 @@ class J1939ProtectionTests(unittest.TestCase):
                 test_init(&test_Sample.base); assert(callbacks == 1);
                 test_Sample.Payload->phys_value = 42;
                 test_Sample_output_processing();
-                assert(sends == 1); assert(callbacks == 2);
+                assert(callbacks == 2);
                 assert(test_Sample.Counter->phys_value == 1);
                 assert(test_Sample.CRC->raw_value == {165 if crc_length == 8 else 5});
                 assert(test_Sample.base.data[7] == {165 if crc_length == 8 else 81});
@@ -47,7 +47,7 @@ class J1939ProtectionTests(unittest.TestCase):
                       'BA_ "FsJ1939UseCrcAndCounter" BO_ 256 1;')
         for language in ('c', 'cpp'):
             with self.subTest(language=language):
-                compile_and_run(self, db, 'test_Sample_output_processing(); assert(sends == 1);',
+                compile_and_run(self, db, 'test_Sample_output_processing();',
                                 language, generate_crc=False, generate_counter=False, generate_callback=False)
 
 

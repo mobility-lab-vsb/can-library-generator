@@ -113,18 +113,9 @@ Encoding and decoding</h1>
 <p>Both packaging paths reset unused bits to the database-specific fill value before inserting selected signals. They support Motorola and Intel integer signals up to 64 bits. Invalid bit layouts are rejected during generation; low-level insertion ignores invalid layouts without modifying the supplied buffer.</p>
 <h1 class="doxsection"><a class="anchor" id="autotoc_md3"></a>
 Application hooks</h1>
-<p>For any TX selection, implement the exact transport hook declared in the generated header:</p>
-<div class="fragment"><div class="line"><span class="keywordtype">void</span> <a class="code hl_function" href="cangen__interface_8h.html#aea2daeea3b393d9c9290c2299e84c452">cangen_msg_send</a>(<span class="keyword">const</span> <a class="code hl_struct" href="structcan__db__msg__t.html">can_db_msg_t</a> *msg)</div>
-<div class="line">{</div>
-<div class="line">    <span class="comment">/* Copy msg-&gt;data[0..msg-&gt;length) into your CAN driver&#39;s TX buffer.</span></div>
-<div class="line"><span class="comment">       Use the ID and frame flags from the message. */</span></div>
-<div class="line">    (void)msg;</div>
-<div class="line">}</div>
-<div class="ttc" id="acangen__interface_8h_html_aea2daeea3b393d9c9290c2299e84c452"><div class="ttname"><a href="cangen__interface_8h.html#aea2daeea3b393d9c9290c2299e84c452">cangen_msg_send</a></div><div class="ttdeci">void cangen_msg_send(const can_db_msg_t *msg)</div></div>
-<div class="ttc" id="astructcan__db__msg__t_html"><div class="ttname"><a href="structcan__db__msg__t.html">can_db_msg_t</a></div><div class="ttdoc">Base structure for CAN message.</div><div class="ttdef"><b>Definition</b> can_db_def.h:57</div></div>
-</div><!-- fragment --><p>The generated library calls this synchronously. Applications that transmit asynchronously must copy the payload before a later call changes the generated message object. Generated signal/message state is mutable; synchronize concurrent access in the application.</p>
-<p>Message-specific <span class="tt">&lt;prefix&gt;_&lt;message&gt;_output_processing()</span> updates enabled counters, calls the optional TX callback, packages the message, applies enabled CRC processing and invokes the transport hook. Packaging failures prevent transmission. <span class="tt">&lt;prefix&gt;_&lt;message&gt;_input_processing(msg)</span> decodes a matching message and invokes its RX callback only after successful decoding.</p>
-<p>CRC/counter helpers are declared only when selected TX messages need them. Provide implementations in a separate application file:</p>
+<p>Message-specific <span class="tt">&lt;prefix&gt;_&lt;message&gt;_output_processing()</span> updates enabled counters, calls the optional TX callback, packages the message and applies enabled CRC processing. It prepares the message's <span class="tt">base.data</span> for transmission; no transport function is declared or called by the generated library. Connect sending manually using your external transport library.</p>
+<p><span class="tt">&lt;prefix&gt;_&lt;message&gt;_input_processing(msg)</span> decodes a matching message and invokes its RX callback only after successful decoding. Generated signal/message state is mutable; synchronize concurrent access in the application.</p>
+<p>J1939 CRC/counter helpers are declared only when selected TX messages need them. Provide implementations in a separate application file. The ordinary <span class="tt">calculate_crc</span> declaration is supplied by your external library header; include that header when compiling the generated interface source:</p>
 <ul>
 <li>Ordinary CRC: <span class="tt">uint8_t calculate_crc(const uint8_t *data, uint8_t length, uint8_t initial)</span>; length is the payload byte count. Ordinary configured CRC signals must occupy the first byte.</li>
 <li>J1939 counters: <span class="tt">j1939_increment_ctr_a</span>, <span class="tt">_d</span> or <span class="tt">_f</span>, each accepting the previous counter and returning the next value.</li>

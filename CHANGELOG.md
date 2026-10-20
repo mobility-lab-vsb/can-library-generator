@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Leave transport integration to the application; generated TX processing prepares the payload without declaring or calling a send function.
+
 - Reworked GUI into resizable workspace panels, with database metadata, aligned tables, automatic node width and rounded application icons for all platforms.
 - Fixed signed decoding, Motorola bit order and packing of signals wider than 32 bits in C and C++.
 - Added exact 64-bit raw packaging and validation before packaging.
