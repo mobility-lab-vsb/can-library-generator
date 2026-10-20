@@ -39,11 +39,21 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y gcc g++ libegl1 libgl1 libxkbcommon0
       - name: Install test and build dependencies
         run: python -m pip install -r requirements-dev.txt
-      - name: Run regression suite
-        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+      - name: Run regression suite (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
         run: python -m unittest discover -s src/canlibrarygenerator/test -p 'test_*.py' -v
-      - name: Compile and execute example libraries
-        shell: ${{ matrix.os == 'windows-latest' && 'msys2 {0}' || 'bash' }}
+      - name: Run regression suite (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: python -m unittest discover -s src/canlibrarygenerator/test -p 'test_*.py' -v
+      - name: Compile and execute example libraries (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: python -m src.canlibrarygenerator.test.test_pipeline
+      - name: Compile and execute example libraries (Linux/macOS)
+        if: runner.os != 'Windows'
+        shell: bash
         run: python -m src.canlibrarygenerator.test.test_pipeline
       - name: Build and inspect wheel
         run: |
