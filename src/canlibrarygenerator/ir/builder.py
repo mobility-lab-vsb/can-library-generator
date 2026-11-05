@@ -85,7 +85,7 @@ def _validate_generated_symbols(messages, prefix):
     symbols = {f"{prefix}_{name}" for name in (
         "all_messages", "all_messages_count", "find_message_by_id", "parse_signal",
         "unpackage_message", "insert_signal", "package_message", "package_message_raw",
-        "init", "next_bit", "mask", "physical_value", "raw_value")}
+        "init", "next_bit", "mask", "physical_value", "raw_value", "msg_send")}
     macros = set()
     for message in messages:
         generated = [f"{prefix}_{message.name}", f"{prefix}_db_{message.name}_t",
@@ -625,6 +625,7 @@ def build_library_ir(selected_items, library_name, dbs, tree, version, message_m
                         offset=sig.offset,
                         minimum=sig.minimum or 0,
                         maximum=sig.maximum or 0,
+                        counter_maximum=sig.maximum if gen_sig_func_type == 1 else None,
                         unit=sig.unit or "",
                         receivers=list(sig.receivers or []),
                         raw_initial=raw_initial,

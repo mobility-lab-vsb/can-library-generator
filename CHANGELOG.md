@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Leave transport integration to the application; generated TX processing prepares the payload without declaring or calling a send function.
+- Restore the TX send call while keeping its declaration in the external transport library header.
+- Wrap unscaled message counters at their DBC maximum rather than the full bit-field range.
 
 - Reworked GUI into resizable workspace panels, with database metadata, aligned tables, automatic node width and rounded application icons for all platforms.
 - Fixed signed decoding, Motorola bit order and packing of signals wider than 32 bits in C and C++.

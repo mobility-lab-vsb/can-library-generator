@@ -29,7 +29,9 @@ Both packaging paths reset unused bits to the database-specific fill value befor
 
 ## Application hooks
 
-Message-specific `<prefix>_<message>_output_processing()` updates enabled counters, calls the optional TX callback, packages the message and applies enabled CRC processing. It prepares the message's `base.data` for transmission; no transport function is declared or called by the generated library. Connect sending manually using your external transport library.
+Message-specific `<prefix>_<message>_output_processing()` updates enabled counters, calls the optional TX callback, packages the message and applies enabled CRC processing. It then calls `<prefix>_msg_send(&message.base)` using your external transport library. Include that library's header when compiling the generated interface source (directly or through your build's forced-include option). The generator supplies the call but does not declare the send function or prescribe its return type; the return value is ignored. Packaging failure prevents the send call.
+
+For unscaled counters with a DBC maximum, TX processing increments the physical value by one and wraps to the DBC minimum at or above that maximum. This respects reserved values even if the bit field could hold a larger value. Counters without an explicit maximum, and scaled counters, retain raw-bit incrementing.
 
 `<prefix>_<message>_input_processing(msg)` decodes a matching message and invokes its RX callback only after successful decoding. Generated signal/message state is mutable; synchronize concurrent access in the application.
 

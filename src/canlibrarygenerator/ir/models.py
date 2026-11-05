@@ -19,6 +19,7 @@ class SignalIR:
     raw_initial: int
     phys_initial: float
     gen_sig_func_type: int = 0
+    counter_maximum: Optional[float] = None
     attributes: Dict[str, int] = field(default_factory=dict)
 
 

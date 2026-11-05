@@ -65,6 +65,21 @@ def generate_variant(embedded: bool, suffix: str, with_units: bool = False):
         output_dir=output_dir
     )
 
+def create_transport_mock(folder: str, cpp: bool = False):
+    """Supply the transport through an external header, as the application does."""
+    header_ext, source_ext = ('hpp', 'cpp') if cpp else ('h', 'c')
+    header = os.path.join(folder, 'external_transport.' + header_ext)
+    source = os.path.join(folder, 'external_transport.' + source_ext)
+    with open(header, 'w', encoding='utf-8') as f:
+        f.write(f'#include "can_db_def.{header_ext}"\n'
+                f'int {library_name}_msg_send(const can_db_msg_t*);\n')
+    with open(source, 'w', encoding='utf-8') as f:
+        f.write(f'#include "external_transport.{header_ext}"\n'
+                f'int {library_name}_msg_send(const can_db_msg_t* msg) '
+                '{ (void)msg; return 0; }\n')
+    return header, source
+
+
 def executable_name(base_name: str):
     return f"{base_name}.exe" if os.name == "nt" else base_name
 
@@ -76,6 +91,7 @@ def compile_and_run_c(folder_name: str, exe_base_name: str):
         print(f"❌ Error: C output directory not found: {c_dir}")
         sys.exit(1)
 
+    transport_header, transport_source = create_transport_mock(c_dir)
     c_test_file = os.path.join(test_dir, "test_c.c")
     c_exec = os.path.join(output_dir, executable_name(exe_base_name))
 
@@ -87,6 +103,8 @@ def compile_and_run_c(folder_name: str, exe_base_name: str):
         "-Wall",
         "-Wextra",
         *shlex.split(os.environ.get("CFLAGS", "-Werror")),
+        "-include", transport_header,
+        transport_source,
         c_test_file,
         os.path.join(c_dir, f"{library_name}_interface.c"),
         os.path.join(c_dir, f"{library_name}_db.c"),
@@ -105,6 +123,7 @@ def compile_and_run_cpp(folder_name: str, exe_base_name: str):
         print(f"❌ Error: C++ output directory not found: {cpp_dir}")
         sys.exit(1)
 
+    transport_header, transport_source = create_transport_mock(cpp_dir, cpp=True)
     cpp_test_file = os.path.join(test_dir, "test_cpp.cpp")
     cpp_exec = os.path.join(output_dir, executable_name(exe_base_name))
 
@@ -116,6 +135,8 @@ def compile_and_run_cpp(folder_name: str, exe_base_name: str):
         "-Wall",
         "-Wextra",
         *shlex.split(os.environ.get("CXXFLAGS", "-Werror")),
+        "-include", transport_header,
+        transport_source,
         cpp_test_file,
         os.path.join(cpp_dir, f"{library_name}_interface.cpp"),
         os.path.join(cpp_dir, f"{library_name}_db.cpp"),
