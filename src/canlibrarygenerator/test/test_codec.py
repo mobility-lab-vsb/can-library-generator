@@ -66,12 +66,38 @@ class CodecTests(unittest.TestCase):
         body = '''test_Sample.Count->phys_value = 15;
                   test_Sample_output_processing();
                   assert(test_Sample.Count->phys_value == 0);
-                  assert(test_Sample.base.data[0] == 0xA5);'''
+                  assert(test_Sample.base.data[0] == 0xA5);
+                  assert(sends == 1); assert(sent_message.data[0] == 0xA5);'''
         for language in ('c', 'cpp'):
             with self.subTest(language=language):
                 compile_and_run(self, db, body, language, hooks=hooks,
                                 external_header='#include <stdint.h>\n'
                                 'uint8_t calculate_crc(const uint8_t*, uint8_t, uint8_t);\n')
+
+    def test_counter_uses_dbc_range_and_tx_sends_only_valid_payload(self):
+        for bits, maximum in ((4, 15), (8, 15), (4, 14)):
+            db = database(f' SG_ Count : 0|{bits}@1+ (1,0) [0|{maximum}] "" ECU\n'
+                          ' SG_ Value : 8|8@1+ (1,0) [0|255] "" ECU',
+                          'BA_DEF_ SG_ "GenSigFuncType" INT 0 2;\n'
+                          'BA_ "GenSigFuncType" SG_ 256 Count 1;')
+            body = f'''
+                test_Sample.Count->phys_value = {maximum - 1};
+                test_Sample_output_processing();
+                assert(test_Sample.Count->phys_value == {maximum}); assert(sends == 1);
+                assert((sent_message.data[0] & {(1 << bits) - 1}) == {maximum});
+                test_Sample_output_processing();
+                assert(test_Sample.Count->phys_value == 0); assert(sends == 2);
+                assert(sent_message.data[0] == 0);
+                test_Sample.Count->phys_value = 255;
+                test_Sample_output_processing();
+                assert(test_Sample.Count->phys_value == 0); assert(sends == 3);
+                test_Sample.Value->phys_value = -1;
+                test_Sample_output_processing(); assert(sends == 3);
+            '''
+            for language in ('c', 'cpp'):
+                for embedded in (False, True):
+                    with self.subTest(bits=bits, maximum=maximum, language=language, embedded=embedded):
+                        compile_and_run(self, db, body, language, embedded)
 
 
 if __name__ == '__main__':

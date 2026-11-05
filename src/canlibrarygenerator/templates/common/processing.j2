@@ -25,6 +25,11 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
 {%- for sig in msg.signals %}
 {%- if sig.gen_sig_func_type == 1 %}
     /* Increment message counter */
+{%- if sig.counter_maximum is not none and sig.factor == 1 and sig.offset == 0 %}
+    {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->phys_value =
+        ({{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->phys_value >= {{ sig.counter_maximum | float }})
+        ? {{ sig.minimum | float }} : {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }}->phys_value + 1.0;
+{%- else %}
     {
         can_db_sig_t* sig = {{ ir.library_name }}_{{ msg.name }}.{{ sig.code_name }};
         uint64_t counter;
@@ -32,6 +37,7 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
         counter = (counter + UINT64_C(1)) & {{ ir.library_name }}_mask(sig->length);
         sig->phys_value = {{ ir.library_name }}_physical_value(sig, counter);
     }
+{%- endif %}
 
 {%- endif %}
 {%- endfor %}
@@ -115,6 +121,8 @@ void {{ ir.library_name }}_{{ msg.name }}_output_processing(void)
     }
 {%- endif %}
 
+    /* Send the prepared message through the externally declared transport. */
+    (void){{ ir.library_name }}_msg_send(&{{ ir.library_name }}_{{ msg.name }}.base);
 }
 {%- endif %}
 {%- endfor %}

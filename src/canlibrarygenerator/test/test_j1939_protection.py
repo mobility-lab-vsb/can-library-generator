@@ -29,7 +29,8 @@ class J1939ProtectionTests(unittest.TestCase):
                 test_init(&test_Sample.base); assert(callbacks == 1);
                 test_Sample.Payload->phys_value = 42;
                 test_Sample_output_processing();
-                assert(callbacks == 2);
+                assert(callbacks == 2); assert(sends == 1);
+                assert(sent_message.data[7] == test_Sample.base.data[7]);
                 assert(test_Sample.Counter->phys_value == 1);
                 assert(test_Sample.CRC->raw_value == {165 if crc_length == 8 else 5});
                 assert(test_Sample.base.data[7] == {165 if crc_length == 8 else 81});
@@ -39,7 +40,7 @@ class J1939ProtectionTests(unittest.TestCase):
                     with self.subTest(combination=combination, language=language, embedded=embedded):
                         compile_and_run(self, db, body, language, embedded, hooks=hooks, selected=['Payload'])
 
-    def test_disabled_crc_counter_and_callbacks_need_no_hooks(self):
+    def test_disabled_crc_counter_and_callbacks_need_only_transport(self):
         db = database(' SG_ Payload : 0|8@1+ (1,0) [0|255] "" ECU\n'
                       ' SG_ Counter : 52|4@1+ (1,0) [0|15] "" ECU\n'
                       ' SG_ CRC : 56|8@1+ (1,0) [0|255] "" ECU',
@@ -47,7 +48,7 @@ class J1939ProtectionTests(unittest.TestCase):
                       'BA_ "FsJ1939UseCrcAndCounter" BO_ 256 1;')
         for language in ('c', 'cpp'):
             with self.subTest(language=language):
-                compile_and_run(self, db, 'test_Sample_output_processing();',
+                compile_and_run(self, db, 'test_Sample_output_processing(); assert(sends == 1);',
                                 language, generate_crc=False, generate_counter=False, generate_callback=False)
 
 
